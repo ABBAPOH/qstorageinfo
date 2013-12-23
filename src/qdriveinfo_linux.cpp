@@ -311,12 +311,13 @@ QList<QDriveInfo> QDriveInfoPrivate::drives()
     if (fp) {
         struct mntent *mnt;
         while ((mnt = ::getmntent(fp))) {
-            QByteArray mountType(mnt->mnt_type);
-            if (isPseudoFs(mountType))
+            const QString mountDir = QFile::decodeName(mnt->mnt_dir);
+            const QByteArray mountType(mnt->mnt_type);
+            if (isPseudoFs(mountDir, mountType))
                 continue;
 
             QDriveInfoPrivate *data = new QDriveInfoPrivate;
-            data->rootPath = QFile::decodeName(mnt->mnt_dir);
+            data->rootPath = mountDir;
             data->device = QByteArray(mnt->mnt_fsname);
             data->fileSystemName = mountType;
             data->setCachedFlag(CachedRootPathFlag |
