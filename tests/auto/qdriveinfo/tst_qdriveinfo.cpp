@@ -129,7 +129,13 @@ void tst_QDriveInfo::testCurrentDrive()
     QVERIFY(drive.isReady());
     QVERIFY(appPath.startsWith(drive.rootPath()));
     QVERIFY(drive.type() != QDriveInfo::UnknownDrive);
+#ifndef Q_OS_WIN
     QVERIFY(!drive.device().isEmpty());
+#else
+    // remote drives have no device on Windows
+    if (drive.type() != QDriveInfo::RemoteDrive)
+        QVERIFY(!drive.device().isEmpty());
+#endif
     QVERIFY(!drive.fileSystemName().isEmpty());
     QVERIFY(drive.bytesTotal() > 0);
     QVERIFY(drive.bytesFree() > 0);
