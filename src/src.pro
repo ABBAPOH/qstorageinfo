@@ -17,12 +17,11 @@ win* {
     LIBS += -luserenv -lNetapi32 -lMpr -luser32 -lWinmm
 }
 
-macx-* {
-    SOURCES += qdriveinfo_mac.cpp
-    LIBS += -framework CoreServices -framework DiskArbitration -framework IOKit
+unix {
+    macx {
+        SOURCES += qdriveinfo_mac.cpp
+        LIBS += -framework CoreServices -framework DiskArbitration -framework IOKit
+    } else {
+        SOURCES += qdriveinfo_unix.cpp
+    }
 }
-
-linux-*: {
-    SOURCES += qdriveinfo_linux.cpp
-}
-

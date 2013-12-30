@@ -46,19 +46,31 @@
 #include <QtCore/QTextStream>
 
 #include <errno.h>
-#include <mntent.h>
 #include <sys/stat.h>
 #include <sys/statvfs.h>
 
-#include <private/qcore_unix_p.h>
+#ifdef Q_OS_LINUX
+#include <mntent.h>
+#endif
+#ifdef Q_OS_BSD4
+#include <sys/mount.h>
+#endif
 
-#if defined(QT_LARGEFILE_SUPPORT)
-#  define QT_STATFSBUF struct statvfs64
-#  define QT_STATFS    ::statvfs64
-#else
+#include <private/qcore_unix_p.h>
+#include <qplatformdefs.h>
+
+#ifdef Q_OS_BSD4
 #  define QT_STATFSBUF struct statvfs
 #  define QT_STATFS    ::statvfs
-#endif
+#else
+#  if defined(QT_LARGEFILE_SUPPORT)
+#    define QT_STATFSBUF struct statvfs64
+#    define QT_STATFS    ::statvfs64
+#  else
+#    define QT_STATFSBUF struct statvfs
+#    define QT_STATFS    ::statvfs
+#  endif // QT_LARGEFILE_SUPPORT
+#endif // Q_OS_BSD4
 
 static const char pathMounted[] = "/etc/mtab";
 static const char pathDiskByLabel[] = "/dev/disk/by-label";
@@ -89,32 +101,125 @@ static bool isPseudoFs(const QString &mountDir, const QByteArray &type)
     return false;
 }
 
+class DriveIterator
+{
+public:
+    DriveIterator();
+    ~DriveIterator();
+
+    bool valid() const;
+    bool next();
+    QString rootPath() const;
+    QByteArray fileSystemName() const;
+    QByteArray device() const;
+private:
+#if defined(Q_OS_LINUX)
+    FILE *fp;
+    struct mntent *mnt;
+#elif defined(Q_OS_BSD4)
+    struct statfs *stat_buf;
+    int count;
+    int i;
+#endif
+};
+
+#if defined(Q_OS_LINUX)
+inline DriveIterator::DriveIterator():
+    fp(::setmntent(pathMounted, "r"))
+{
+}
+
+inline DriveIterator::~DriveIterator()
+{
+    if (fp)
+        ::endmntent(fp);
+}
+
+inline bool DriveIterator::valid() const
+{
+    return fp != 0;
+}
+
+inline bool DriveIterator::next()
+{
+    return (mnt = ::getmntent(fp));
+}
+
+inline QString DriveIterator::rootPath() const
+{
+    return QFile::decodeName(mnt->mnt_dir);
+}
+
+inline QByteArray DriveIterator::fileSystemName() const
+{
+    return QByteArray(mnt->mnt_type);
+}
+
+inline QByteArray DriveIterator::device() const
+{
+    return QByteArray(mnt->mnt_fsname);
+}
+#elif defined(Q_OS_BSD4)
+inline DriveIterator::DriveIterator():
+    count(getmntinfo(&stat_buf, 0)),
+    i(-1)
+{
+}
+
+inline DriveIterator::~DriveIterator()
+{
+}
+
+inline bool DriveIterator::valid() const
+{
+    return count != -1;
+}
+
+inline bool DriveIterator::next()
+{
+    return ++i < count;
+}
+
+inline QString DriveIterator::rootPath() const
+{
+    return QFile::decodeName(stat_buf[i].f_mntonname);
+}
+
+inline QByteArray DriveIterator::fileSystemName() const
+{
+    return QByteArray(stat_buf[i].f_fstypename);
+}
+
+inline QByteArray DriveIterator::device() const
+{
+    return QByteArray(stat_buf[i].f_mntfromname);
+}
+#endif
+
 void QDriveInfoPrivate::initRootPath()
 {
     if (rootPath.isEmpty())
         return;
 
-    FILE *fp = ::setmntent(pathMounted, "r");
-    if (fp) {
-        quint32 maxLength = 0;
+    DriveIterator it;
+    if (it.valid()) {
+        int maxLength = 0;
         const QString oldRootPath = rootPath;
         rootPath.clear();
 
-        struct mntent *mnt;
-        while ((mnt = ::getmntent(fp))) {
-            const QString mountDir = QFile::decodeName(mnt->mnt_dir);
-            const QByteArray mountType(mnt->mnt_type);
-            if (isPseudoFs(mountDir, mountType))
+        while (it.next()) {
+            const QString mountDir = it.rootPath();
+            const QByteArray fsName = it.fileSystemName();
+            if (isPseudoFs(mountDir, fsName))
                 continue;
             // we try to find most suitable entry
-            if (oldRootPath.startsWith(mountDir) && maxLength < (quint32)mountDir.length()) {
+            if (oldRootPath.startsWith(mountDir) && maxLength < mountDir.length()) {
                 maxLength = mountDir.length();
                 rootPath = mountDir;
-                device = QByteArray(mnt->mnt_fsname);
-                fileSystemName = mountType;
+                device = it.device();
+                fileSystemName = fsName;
             }
         }
-        ::endmntent(fp);
     }
 }
 
@@ -165,6 +270,7 @@ static inline QDriveInfo::DriveType determineType(const QByteArray &device)
 // so we don't need to link to libudev.
 static inline QString getName(const QByteArray &device)
 {
+#ifdef Q_OS_LINUX
     QDirIterator it(QLatin1String(pathDiskByLabel), QDir::NoDotAndDotDot);
     while (it.hasNext()) {
         it.next();
@@ -172,6 +278,9 @@ static inline QString getName(const QByteArray &device)
         if (fileInfo.isSymLink() && fileInfo.symLinkTarget().toLatin1() == device)
             return fileInfo.fileName();
     }
+#else
+    Q_UNUSED(device);
+#endif
 
     return QString();
 }
@@ -307,25 +416,23 @@ QList<QDriveInfo> QDriveInfoPrivate::drives()
 {
     QList<QDriveInfo> drives;
 
-    FILE *fp = ::setmntent(pathMounted, "r");
-    if (fp) {
-        struct mntent *mnt;
-        while ((mnt = ::getmntent(fp))) {
-            const QString mountDir = QFile::decodeName(mnt->mnt_dir);
-            const QByteArray mountType(mnt->mnt_type);
-            if (isPseudoFs(mountDir, mountType))
+    DriveIterator it;
+    if (it.valid()) {
+        while (it.next()) {
+            const QString mountDir = it.rootPath();
+            const QByteArray fsName = it.fileSystemName();
+            if (isPseudoFs(mountDir, fsName))
                 continue;
 
             QDriveInfoPrivate *data = new QDriveInfoPrivate;
             data->rootPath = mountDir;
-            data->device = QByteArray(mnt->mnt_fsname);
-            data->fileSystemName = mountType;
+            data->device = QByteArray(it.device());
+            data->fileSystemName = fsName;
             data->setCachedFlag(CachedRootPathFlag |
-                               CachedFileSystemNameFlag |
-                               CachedDeviceFlag);
+                                CachedFileSystemNameFlag |
+                                CachedDeviceFlag);
             drives.append(QDriveInfo(*data));
         }
-        ::endmntent(fp);
     }
 
     return drives;
