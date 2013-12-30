@@ -72,6 +72,8 @@
 #  endif // QT_LARGEFILE_SUPPORT
 #endif // Q_OS_BSD4
 
+QT_BEGIN_NAMESPACE
+
 static const char pathMounted[] = "/etc/mtab";
 static const char pathDiskByLabel[] = "/dev/disk/by-label";
 
@@ -124,6 +126,7 @@ private:
 };
 
 #if defined(Q_OS_LINUX)
+
 inline DriveIterator::DriveIterator():
     fp(::setmntent(pathMounted, "r"))
 {
@@ -159,7 +162,9 @@ inline QByteArray DriveIterator::device() const
 {
     return QByteArray(mnt->mnt_fsname);
 }
+
 #elif defined(Q_OS_BSD4)
+
 inline DriveIterator::DriveIterator():
     count(getmntinfo(&stat_buf, 0)),
     i(-1)
@@ -194,6 +199,7 @@ inline QByteArray DriveIterator::device() const
 {
     return QByteArray(stat_buf[i].f_mntfromname);
 }
+
 #endif
 
 void QDriveInfoPrivate::initRootPath()
@@ -202,23 +208,24 @@ void QDriveInfoPrivate::initRootPath()
         return;
 
     DriveIterator it;
-    if (it.valid()) {
-        int maxLength = 0;
-        const QString oldRootPath = rootPath;
-        rootPath.clear();
+    if (!it.valid())
+        return;
 
-        while (it.next()) {
-            const QString mountDir = it.rootPath();
-            const QByteArray fsName = it.fileSystemName();
-            if (isPseudoFs(mountDir, fsName))
-                continue;
-            // we try to find most suitable entry
-            if (oldRootPath.startsWith(mountDir) && maxLength < mountDir.length()) {
-                maxLength = mountDir.length();
-                rootPath = mountDir;
-                device = it.device();
-                fileSystemName = fsName;
-            }
+    int maxLength = 0;
+    const QString oldRootPath = rootPath;
+    rootPath.clear();
+
+    while (it.next()) {
+        const QString mountDir = it.rootPath();
+        const QByteArray fsName = it.fileSystemName();
+        if (isPseudoFs(mountDir, fsName))
+            continue;
+        // we try to find most suitable entry
+        if (oldRootPath.startsWith(mountDir) && maxLength < mountDir.length()) {
+            maxLength = mountDir.length();
+            rootPath = mountDir;
+            device = it.device();
+            fileSystemName = fsName;
         }
     }
 }
@@ -411,28 +418,28 @@ void QDriveInfoPrivate::getCapabilities()
     capabilities = QDriveInfo::Capabilities(flags);
 }
 
-
 QList<QDriveInfo> QDriveInfoPrivate::drives()
 {
     QList<QDriveInfo> drives;
 
     DriveIterator it;
-    if (it.valid()) {
-        while (it.next()) {
-            const QString mountDir = it.rootPath();
-            const QByteArray fsName = it.fileSystemName();
-            if (isPseudoFs(mountDir, fsName))
-                continue;
+    if (!it.valid())
+        return drives;
 
-            QDriveInfoPrivate *data = new QDriveInfoPrivate;
-            data->rootPath = mountDir;
-            data->device = QByteArray(it.device());
-            data->fileSystemName = fsName;
-            data->setCachedFlag(CachedRootPathFlag |
-                                CachedFileSystemNameFlag |
-                                CachedDeviceFlag);
-            drives.append(QDriveInfo(*data));
-        }
+    while (it.next()) {
+        const QString mountDir = it.rootPath();
+        const QByteArray fsName = it.fileSystemName();
+        if (isPseudoFs(mountDir, fsName))
+            continue;
+
+        QDriveInfoPrivate *data = new QDriveInfoPrivate;
+        data->rootPath = mountDir;
+        data->device = QByteArray(it.device());
+        data->fileSystemName = fsName;
+        data->setCachedFlag(CachedRootPathFlag |
+                            CachedFileSystemNameFlag |
+                            CachedDeviceFlag);
+        drives.append(QDriveInfo(*data));
     }
 
     return drives;
@@ -442,3 +449,5 @@ QDriveInfo QDriveInfoPrivate::rootDrive()
 {
     return QDriveInfo(QStringLiteral("/"));
 }
+
+QT_END_NAMESPACE

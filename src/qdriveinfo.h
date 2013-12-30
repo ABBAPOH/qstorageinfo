@@ -48,8 +48,6 @@
 #include <QtCore/QString>
 #include <QtCore/QSharedDataPointer>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QDriveInfoPrivate;
@@ -133,7 +131,5 @@ inline bool QDriveInfo::hasCapability(QDriveInfo::Capability capability) const
 { return (capabilities() & capability) != 0; }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QDRIVEINFO_H
