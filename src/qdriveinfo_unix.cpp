@@ -97,7 +97,9 @@ static bool isPseudoFs(const QString &mountDir, const QByteArray &type)
             || type == "securityfs"
             || type == "debugfs"
             || type == "fusectl"
-            || type == "binfmt_misc")
+            || type == "fuse.gvfsd-fuse"
+            || type == "binfmt_misc"
+            || type.startsWith("fuse.vmware"))
         return true;
 
     return false;
