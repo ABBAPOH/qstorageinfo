@@ -170,8 +170,7 @@ QDriveInfo::~QDriveInfo()
 */
 QDriveInfo &QDriveInfo::operator=(const QDriveInfo &other)
 {
-    if (d != other.d)
-        d = other.d;
+    d = other.d;
     return *this;
 }
 
