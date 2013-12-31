@@ -49,11 +49,12 @@
 #include <sys/stat.h>
 #include <sys/statvfs.h>
 
-#ifdef Q_OS_LINUX
-#include <mntent.h>
-#endif
-#ifdef Q_OS_BSD4
-#include <sys/mount.h>
+#if defined(Q_OS_BSD4)
+#  include <sys/mount.h>
+#elif defined(Q_OS_LINUX)
+#  include <mntent.h>
+#elif defined(Q_OS_SOLARIS)
+#  include <sys/mnttab.h>
 #endif
 
 #include <private/qcore_unix_p.h>
@@ -74,7 +75,6 @@
 
 QT_BEGIN_NAMESPACE
 
-static const char pathMounted[] = "/etc/mtab";
 static const char pathDiskByLabel[] = "/dev/disk/by-label";
 
 static bool isPseudoFs(const QString &mountDir, const QByteArray &type)
@@ -115,17 +115,59 @@ public:
     QByteArray fileSystemName() const;
     QByteArray device() const;
 private:
-#if defined(Q_OS_LINUX)
-    FILE *fp;
-    struct mntent *mnt;
-#elif defined(Q_OS_BSD4)
+#if defined(Q_OS_BSD4)
     struct statfs *stat_buf;
     int count;
     int i;
+#elif defined(Q_OS_LINUX)
+    FILE *fp;
+    struct mntent *mnt;
+#elif defined(Q_OS_SOLARIS)
+    FILE *fp;
+    struct mnttab mnt;
 #endif
 };
 
-#if defined(Q_OS_LINUX)
+#if defined(Q_OS_BSD4)
+
+inline DriveIterator::DriveIterator():
+    count(getmntinfo(&stat_buf, 0)),
+    i(-1)
+{
+}
+
+inline DriveIterator::~DriveIterator()
+{
+}
+
+inline bool DriveIterator::valid() const
+{
+    return count != -1;
+}
+
+inline bool DriveIterator::next()
+{
+    return ++i < count;
+}
+
+inline QString DriveIterator::rootPath() const
+{
+    return QFile::decodeName(stat_buf[i].f_mntonname);
+}
+
+inline QByteArray DriveIterator::fileSystemName() const
+{
+    return QByteArray(stat_buf[i].f_fstypename);
+}
+
+inline QByteArray DriveIterator::device() const
+{
+    return QByteArray(stat_buf[i].f_mntfromname);
+}
+
+#elif defined(Q_OS_LINUX)
+
+static const char pathMounted[] = "/etc/mtab";
 
 inline DriveIterator::DriveIterator():
     fp(::setmntent(pathMounted, "r"))
@@ -163,11 +205,49 @@ inline QByteArray DriveIterator::device() const
     return QByteArray(mnt->mnt_fsname);
 }
 
-#elif defined(Q_OS_BSD4)
+#elif defined(Q_OS_SOLARIS)
+
+static const char pathMounted[] = "/etc/mnttab";
 
 inline DriveIterator::DriveIterator():
-    count(getmntinfo(&stat_buf, 0)),
-    i(-1)
+    fp(::fopen(pathMounted, "r"))
+{
+}
+
+inline DriveIterator::~DriveIterator()
+{
+    if (fp)
+        ::fclose(fp);
+}
+
+inline bool DriveIterator::valid() const
+{
+    return fp != 0;
+}
+
+inline bool DriveIterator::next()
+{
+    return (getmntent(fp, &mnt) == 0);
+}
+
+inline QString DriveIterator::rootPath() const
+{
+    return QFile::decodeName(mnt->mnt_mountp);
+}
+
+inline QByteArray DriveIterator::fileSystemName() const
+{
+    return QByteArray(mnt->mnt_fstype);
+}
+
+inline QByteArray DriveIterator::device() const
+{
+    return QByteArray(mnt->mnt_mntopts);
+}
+
+#else // no information available
+
+inline DriveIterator::DriveIterator()
 {
 }
 
@@ -177,29 +257,28 @@ inline DriveIterator::~DriveIterator()
 
 inline bool DriveIterator::valid() const
 {
-    return count != -1;
+    return false;
 }
 
 inline bool DriveIterator::next()
 {
-    return ++i < count;
+    return false;
 }
 
 inline QString DriveIterator::rootPath() const
 {
-    return QFile::decodeName(stat_buf[i].f_mntonname);
+    return QString();
 }
 
 inline QByteArray DriveIterator::fileSystemName() const
 {
-    return QByteArray(stat_buf[i].f_fstypename);
+    return QByteArray();
 }
 
 inline QByteArray DriveIterator::device() const
 {
-    return QByteArray(stat_buf[i].f_mntfromname);
+    return QByteArray();
 }
-
 #endif
 
 void QDriveInfoPrivate::initRootPath()
@@ -208,8 +287,10 @@ void QDriveInfoPrivate::initRootPath()
         return;
 
     DriveIterator it;
-    if (!it.valid())
+    if (!it.valid()) {
+        rootPath = QStringLiteral("/");
         return;
+    }
 
     int maxLength = 0;
     const QString oldRootPath = rootPath;
@@ -427,11 +508,11 @@ void QDriveInfoPrivate::getCapabilities()
 
 QList<QDriveInfo> QDriveInfoPrivate::drives()
 {
-    QList<QDriveInfo> drives;
-
     DriveIterator it;
     if (!it.valid())
-        return drives;
+        return QList<QDriveInfo>() << rootDrive();
+
+    QList<QDriveInfo> drives;
 
     while (it.next()) {
         const QString mountDir = it.rootPath();
