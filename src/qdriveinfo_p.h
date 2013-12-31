@@ -54,8 +54,6 @@
 // We mean it.
 //
 
-//#include <qplatformdefs.h>
-
 #include "qdriveinfo.h"
 
 #include <QtCore/QExplicitlySharedDataPointer>

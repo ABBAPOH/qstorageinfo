@@ -57,8 +57,7 @@
 #  include <sys/mnttab.h>
 #endif
 
-#include <private/qcore_unix_p.h>
-#include <qplatformdefs.h>
+#include <QtCore/private/qcore_unix_p.h>
 
 #ifdef Q_OS_BSD4
 #  define QT_STATFSBUF struct statvfs
