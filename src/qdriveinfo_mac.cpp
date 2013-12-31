@@ -111,7 +111,7 @@ static inline QDriveInfo::DriveType determineType(const QByteArray &device)
         mediaService = DADiskCopyIOMedia(wholeDisk);
         if (mediaService) {
             if (IOObjectConformsTo(mediaService, kIOCDMediaClass)
-                || IOObjectConformsTo(mediaService, kIODVDMediaClass)) {
+                    || IOObjectConformsTo(mediaService, kIODVDMediaClass)) {
                 drivetype = QDriveInfo::CdromDrive;
             }
             IOObjectRelease(mediaService);
@@ -155,8 +155,8 @@ void QDriveInfoPrivate::doStat(uint requiredFlags)
         setCachedFlag(bitmask);
     }
 
-    bitmask = CachedBytesTotalFlag | CachedBytesFreeFlag | CachedBytesAvailableFlag |
-              CachedCapabilitiesFlag;
+    bitmask = CachedBytesTotalFlag | CachedBytesFreeFlag | CachedBytesAvailableFlag
+            | CachedCapabilitiesFlag;
     if (requiredFlags & bitmask) {
         getUrlProperties();
         setCachedFlag(bitmask);
@@ -193,12 +193,12 @@ static inline qint64 CFDictionaryGetInt64(CFDictionaryRef dictionary, const void
 
 static inline QString CFDictionaryGetQString(CFDictionaryRef dictionary, const void *key)
 {
-     return QCFString::toQString((CFStringRef)CFDictionaryGetValue(dictionary, key));
+    return QCFString::toQString((CFStringRef)CFDictionaryGetValue(dictionary, key));
 }
 
 static inline bool CFDictionaryGetBool(CFDictionaryRef dictionary, const void *key)
 {
-     return CFBooleanGetValue((CFBooleanRef)CFDictionaryGetValue(dictionary, key));
+    return CFBooleanGetValue((CFBooleanRef)CFDictionaryGetValue(dictionary, key));
 }
 
 void QDriveInfoPrivate::getUrlProperties(bool initRootPath)

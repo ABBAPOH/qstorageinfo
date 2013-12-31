@@ -132,8 +132,8 @@ void QDriveInfoPrivate::doStat(uint requiredFlags)
 
     uint bitmask = 0;
 
-    bitmask = CachedFileSystemNameFlag | CachedNameFlag |
-              CachedReadOnlyFlag | CachedReadyFlag | CachedValidFlag;
+    bitmask = CachedFileSystemNameFlag | CachedNameFlag
+            | CachedReadOnlyFlag | CachedReadyFlag | CachedValidFlag;
     if (requiredFlags & bitmask) {
         getVolumeInfo();
         if (valid && !ready)
@@ -172,10 +172,10 @@ void QDriveInfoPrivate::getVolumeInfo()
     DWORD fileSystemFlags = 0;
     wchar_t fileSystemNameBuf[MAX_PATH + 1];
     const bool result = ::GetVolumeInformation(reinterpret_cast<const wchar_t *>(path.utf16()),
-                                         nameBuf, MAX_PATH,
-                                         0, 0,
-                                         &fileSystemFlags,
-                                         fileSystemNameBuf, MAX_PATH);
+                                               nameBuf, MAX_PATH,
+                                               0, 0,
+                                               &fileSystemFlags,
+                                               fileSystemNameBuf, MAX_PATH);
     if (!result) {
         ready = false;
         valid = ::GetLastError() == ERROR_NOT_READY;

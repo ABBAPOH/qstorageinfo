@@ -314,8 +314,8 @@ void QDriveInfoPrivate::doStat(uint requiredFlags)
 
     uint bitmask = 0;
 
-    bitmask = CachedBytesTotalFlag | CachedBytesFreeFlag | CachedBytesAvailableFlag |
-              CachedReadOnlyFlag | CachedReadyFlag | CachedValidFlag;
+    bitmask = CachedBytesTotalFlag | CachedBytesFreeFlag | CachedBytesAvailableFlag
+            | CachedReadOnlyFlag | CachedReadyFlag | CachedValidFlag;
     if (requiredFlags & bitmask) {
         getVolumeInfo();
         setCachedFlag(bitmask);
@@ -342,11 +342,11 @@ void QDriveInfoPrivate::doStat(uint requiredFlags)
         if (type == QDriveInfo::UnknownDrive) {
             // test for UNC shares
             if (rootPath.startsWith(QStringLiteral("//"))
-                || fileSystemName == "nfs"
-                || fileSystemName == "cifs"
-                || fileSystemName == "autofs"
-                || fileSystemName == "subfs"
-                || fileSystemName.startsWith("smb")) {
+                    || fileSystemName == "nfs"
+                    || fileSystemName == "cifs"
+                    || fileSystemName == "autofs"
+                    || fileSystemName == "subfs"
+                    || fileSystemName.startsWith("smb")) {
                 type = QDriveInfo::RemoteDrive;
             }
         }
