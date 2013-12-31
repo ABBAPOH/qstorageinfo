@@ -110,7 +110,7 @@ public:
     DriveIterator();
     ~DriveIterator();
 
-    bool valid() const;
+    bool isValid() const;
     bool next();
     QString rootPath() const;
     QByteArray fileSystemName() const;
@@ -141,7 +141,7 @@ inline DriveIterator::~DriveIterator()
 {
 }
 
-inline bool DriveIterator::valid() const
+inline bool DriveIterator::isValid() const
 {
     return count != -1;
 }
@@ -181,7 +181,7 @@ inline DriveIterator::~DriveIterator()
         ::endmntent(fp);
 }
 
-inline bool DriveIterator::valid() const
+inline bool DriveIterator::isValid() const
 {
     return fp != 0;
 }
@@ -221,7 +221,7 @@ inline DriveIterator::~DriveIterator()
         ::fclose(fp);
 }
 
-inline bool DriveIterator::valid() const
+inline bool DriveIterator::isValid() const
 {
     return fp != 0;
 }
@@ -256,7 +256,7 @@ inline DriveIterator::~DriveIterator()
 {
 }
 
-inline bool DriveIterator::valid() const
+inline bool DriveIterator::isValid() const
 {
     return false;
 }
@@ -288,7 +288,7 @@ void QDriveInfoPrivate::initRootPath()
         return;
 
     DriveIterator it;
-    if (!it.valid()) {
+    if (!it.isValid()) {
         rootPath = QStringLiteral("/");
         return;
     }
@@ -510,7 +510,7 @@ void QDriveInfoPrivate::getCapabilities()
 QList<QDriveInfo> QDriveInfoPrivate::drives()
 {
     DriveIterator it;
-    if (!it.valid())
+    if (!it.isValid())
         return QList<QDriveInfo>() << rootDrive();
 
     QList<QDriveInfo> drives;
