@@ -381,7 +381,6 @@ void QDriveInfoPrivate::getCapabilities()
             || fileSystem == "ext3cow"
             || fileSystem == "xfs"
             || fileSystem == "jfs"
-            || fileSystem == "ntfs"
             || fileSystem == "reiserfs"
             || fileSystem == "hfsplus")
         flags = QDriveInfo::SupportsSymbolicLinks
@@ -399,12 +398,16 @@ void QDriveInfoPrivate::getCapabilities()
                 | QDriveInfo::SupportsCaseSensitiveNames
                 | QDriveInfo::SupportsCasePreservedNames
                 | QDriveInfo::SupportsSparseFiles;
-    else if (fileSystem == "ntfs-3g")
+    else if (fileSystem == "ntfs-3g"
+             || fileSystem.contains("fuse.ntfs")
+             || fileSystem.contains("fuseblk.ntfs")
+             || fileSystem == "fuseblk")
         flags = QDriveInfo::SupportsSparseFiles;
     else if (fileSystem == "fat32"
              || fileSystem == "vfat"
              || fileSystem == "fat16"
-             || fileSystem == "fat12")
+             || fileSystem == "fat12"
+             || fileSystem == "msdos")
         flags = 0;
     else if (fileSystem == "exfat")
         flags = QDriveInfo::SupportsCasePreservedNames;
@@ -414,7 +417,9 @@ void QDriveInfoPrivate::getCapabilities()
                 | QDriveInfo::SupportsSparseFiles;
     else if (fileSystem == "nfs"
              || fileSystem == "cifs"
-             || fileSystem.startsWith("smb"))
+             || fileSystem.startsWith("smb")
+             || fileSystem == "autofs"
+             || fileSystem == "subfs")
         flags = 0;
 
     capabilities = QDriveInfo::Capabilities(flags);
