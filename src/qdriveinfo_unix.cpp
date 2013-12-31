@@ -344,6 +344,8 @@ void QDriveInfoPrivate::doStat(uint requiredFlags)
             if (rootPath.startsWith(QStringLiteral("//"))
                 || fileSystemName == "nfs"
                 || fileSystemName == "cifs"
+                || fileSystemName == "autofs"
+                || fileSystemName == "subfs"
                 || fileSystemName.startsWith("smb")) {
                 type = QDriveInfo::RemoteDrive;
             }
