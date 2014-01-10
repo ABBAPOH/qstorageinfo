@@ -58,12 +58,10 @@ void QDriveInfoPrivate::initRootPath()
     rootPath.clear();
 
     if (path.startsWith(QStringLiteral("\\\\?\\")))
-        path = path.remove(0, 4);
+        path.remove(0, 4);
     if (path.isEmpty())
         return;
-    if (path.length() < 2)
-        return;
-    if (path.at(1) != QLatin1Char(':'))
+    if (path.length() < 2 || path.at(1) != QLatin1Char(':'))
         return;
     path[0] = path[0].toUpper();
     if (!(path.at(0).unicode() >= 'A' && path.at(0).unicode() <= 'Z'))
