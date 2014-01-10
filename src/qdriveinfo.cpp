@@ -89,7 +89,7 @@ void QDriveInfoPrivate::ensureCached(const QDriveInfo *q, uint flags)
     \value InternalDrive         Is an internal mass storage drive like a hard drive.
     \value RemovableDrive        Is a removable disk like flash disk or MMC.
     \value RemoteDrive           Is a network drive.
-    \value CdromDrive            Is a CD ROM or DVD drive.
+    \value OpticalDrive          Is a CD ROM or DVD drive.
     \value InternalFlashDrive    Is an internal flash disk, or phone memory.
     \value RamDrive              Is a virtual drive made in RAM.
 */
@@ -290,7 +290,7 @@ QByteArray QDriveInfo::fileSystemName() const
     Returns the device for this drive.
 
     The result of this function is platform-dependent and usually should not be used. However,
-    you can retrieve this value for some platform-specific notes. By example, you can get device
+    you can retrieve this value for some platform-specific purposes. By example, you can get device
     on Unix and try to read from it manually.
 
     For example, on Unix filesystems (including Mac OS), this returns the devpath like '/dev/sda0'
