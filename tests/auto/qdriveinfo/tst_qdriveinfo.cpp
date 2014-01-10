@@ -127,7 +127,7 @@ void tst_QDriveInfo::testCurrentDrive()
     QDriveInfo drive(appPath);
     QVERIFY(drive.isValid());
     QVERIFY(drive.isReady());
-    QVERIFY(appPath.startsWith(drive.rootPath()));
+    QVERIFY(appPath.startsWith(drive.rootPath(), Qt::CaseInsensitive));
     QVERIFY(drive.type() != QDriveInfo::UnknownDrive);
 #ifndef Q_OS_WIN
     QVERIFY(!drive.device().isEmpty());
