@@ -76,7 +76,7 @@ public:
     Q_DECLARE_FLAGS(Capabilities, Capability)
 
     QDriveInfo();
-    explicit QDriveInfo(const QString &rootPath);
+    explicit QDriveInfo(const QString &path);
     QDriveInfo(const QDriveInfo &other);
     ~QDriveInfo();
 
@@ -86,7 +86,7 @@ public:
     inline bool operator!=(const QDriveInfo &other) const;
 
     QString rootPath() const;
-    void setRootPath(const QString &rootPath);
+    void setPath(const QString &path);
 
     QByteArray device() const;
     QByteArray fileSystemName() const;

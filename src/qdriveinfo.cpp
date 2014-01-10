@@ -69,7 +69,7 @@ void QDriveInfoPrivate::ensureCached(const QDriveInfo *q, uint flags)
 
     You can create an instance of QDriveInfo passing the path to the drive's
     mount point as the constructor parameter, or you can set it using
-    setRootPath() method. The static drives() method can be used to get the
+    setPath() method. The static drives() method can be used to get the
     list of all mounted filesystems.
 
     QDriveInfo always caches the retrieved information but you can call
@@ -113,7 +113,7 @@ void QDriveInfoPrivate::ensureCached(const QDriveInfo *q, uint flags)
 
     This object is not ready for use, invalid and all its parameters are empty.
 
-    \sa setRootPath(), isReady(), isValid()
+    \sa setPath(), isReady(), isValid()
 */
 QDriveInfo::QDriveInfo()
     : d(new QDriveInfoPrivate)
@@ -122,24 +122,24 @@ QDriveInfo::QDriveInfo()
 
 /*!
     Constructs a new QDriveInfo that gives information about the drive mounted
-    at \a rootPath.
+    at \a path.
 
     If you pass a directory or file, the QDriveInfo object will refer to the
     volume where this directory or file is located.
-    You can check if \a rootPath is correct using the isValid() method.
+    You can check if the created object is correct using the isValid() method.
 
     The following example shows how to get drive on which application is
     located. It is recommended to always check that drive is ready and valid.
 
     \snippet code/src_corelib_io_qdriveinfo.cpp 0
 
-    \sa setRootPath()
+    \sa setPath()
 */
-QDriveInfo::QDriveInfo(const QString &rootPath)
+QDriveInfo::QDriveInfo(const QString &path)
     : d(new QDriveInfoPrivate)
 {
     // remove symlinks for correct drive detection
-    d->rootPath = QFileInfo(rootPath).canonicalFilePath();
+    d->rootPath = QFileInfo(path).canonicalFilePath();
 }
 
 /*!
@@ -204,11 +204,11 @@ bool QDriveInfo::operator==(const QDriveInfo &other) const
     On Windows, returns drive letter in case the drive is not mounted to directory.
 
     Note that the value returned by rootPath() is the real mount point of a drive
-    and may not be equal to the value passed to constructor or setRootPath() method.
+    and may not be equal to the value passed to constructor or setPath() method.
     For example, if you have only the root drive in the system and pass '/directory'
-    to setRootPath(), then this method will return '/'.
+    to setPath(), then this method will return '/'.
 
-    \sa setRootPath(), device()
+    \sa setPath(), device()
 */
 QString QDriveInfo::rootPath() const
 {
@@ -217,20 +217,21 @@ QString QDriveInfo::rootPath() const
 }
 
 /*!
-    Sets QDriveInfo to the filesystem mounted at \a rootPath.
+    Sets QDriveInfo to the filesystem mounted where \a path is located.
 
-    You can also pass a path to the directory on the drive, in that case the rootPath()
-    will return path that represents the drive's mount point.
+    Path can either be a root path of the filesystem, or a directory or a file within that
+    filesystem.
 
     \sa rootPath()
 */
-void QDriveInfo::setRootPath(const QString &rootPath)
+void QDriveInfo::setPath(const QString &path)
 {
-    if (d.constData()->rootPath == rootPath)
+    const QString canonicalPath = QFileInfo(path).canonicalFilePath();
+    if (d.constData()->rootPath == canonicalPath)
         return;
 
     d->clear();
-    d->rootPath = rootPath;
+    d->rootPath = canonicalPath;
 }
 
 /*!
