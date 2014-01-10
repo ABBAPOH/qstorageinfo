@@ -92,7 +92,7 @@ static QString typeToString(QDriveInfo::DriveType type)
         return DriveModel::tr("Removable");
     case QDriveInfo::RemoteDrive:
         return DriveModel::tr("Remote");
-    case QDriveInfo::CdromDrive:
+    case QDriveInfo::OpticalDrive:
         return DriveModel::tr("Cdrom");
     case QDriveInfo::InternalFlashDrive:
         return DriveModel::tr("Internal flash");

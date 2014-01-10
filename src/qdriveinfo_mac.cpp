@@ -112,7 +112,7 @@ static inline QDriveInfo::DriveType determineType(const QByteArray &device)
         if (mediaService) {
             if (IOObjectConformsTo(mediaService, kIOCDMediaClass)
                     || IOObjectConformsTo(mediaService, kIODVDMediaClass)) {
-                drivetype = QDriveInfo::CdromDrive;
+                drivetype = QDriveInfo::OpticalDrive;
             }
             IOObjectRelease(mediaService);
         }

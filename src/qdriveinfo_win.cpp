@@ -99,7 +99,7 @@ static inline QDriveInfo::DriveType determineType(const QString &rootPath)
     case DRIVE_REMOTE:
         return QDriveInfo::RemoteDrive;
     case DRIVE_CDROM:
-        return QDriveInfo::CdromDrive;
+        return QDriveInfo::OpticalDrive;
     case DRIVE_RAMDISK:
         return QDriveInfo::RamDrive;
     case DRIVE_UNKNOWN:

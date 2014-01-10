@@ -59,7 +59,7 @@ public:
         InternalDrive,
         RemovableDrive,
         RemoteDrive,
-        CdromDrive,
+        OpticalDrive,
         InternalFlashDrive,
         RamDrive
     };
