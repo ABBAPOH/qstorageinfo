@@ -59,26 +59,26 @@ void QDriveInfoPrivate::ensureCached(const QDriveInfo *q, uint flags)
     \class QDriveInfo
     \inmodule QtCore
     \since 5.3
-    \brief QDriveInfo provides information about currently mounted drives and volumes.
+    \brief Provides information about currently mounted drives and volumes.
 
     \ingroup io
     \ingroup shared
 
-    It allows to retrieve information about drive's space, its mount point, label, filesystem
-    name and type.
+    Allows retrieving information about the drive's space, its mount point,
+    label, filesystem name and type.
 
-    You can create QDriveInfo and pass the path to the drive's mount point as the constructor
-    parameter, or you can set it using setRootPath() method. Also, you can get the list of all
-    mounted filesystems using drives() method.
+    You can create an instance of QDriveInfo passing the path to the drive's
+    mount point as the constructor parameter, or you can set it using
+    setRootPath() method. The static drives() method can be used to get the
+    list of all mounted filesystems.
 
-    QDriveInfo always caches the retrieved information but you can call refresh() to
-    invalidate the cache.
+    QDriveInfo always caches the retrieved information but you can call
+    refresh() to invalidate the cache.
 
-    The following example retrieves the most common information about a root drive of
-    the system and prints information about it.
+    The following example retrieves the most common information about the root
+    drive of the system and prints information about it.
 
     \snippet code/src_corelib_io_qdriveinfo.cpp 2
-
 */
 
 /*!
@@ -86,18 +86,18 @@ void QDriveInfoPrivate::ensureCached(const QDriveInfo *q, uint flags)
     This enum describes the type of a drive or volume
 
     \value UnknownDrive          Drive type cannot be determined.
-    \value InternalDrive         Is internal mass storage drive like a hard drive.
+    \value InternalDrive         Is an internal mass storage drive like a hard drive.
     \value RemovableDrive        Is a removable disk like flash disk or MMC.
     \value RemoteDrive           Is a network drive.
     \value CdromDrive            Is a CD ROM or DVD drive.
-    \value InternalFlashDrive    Is an internal flash disk, or Phone Memory.
-    \value RamDrive              Is a virtual drive made in RAM memory.
+    \value InternalFlashDrive    Is an internal flash disk, or phone memory.
+    \value RamDrive              Is a virtual drive made in RAM.
 */
 
 /*!
     \enum QDriveInfo::Capability
     This enum describes the capabilities provided by filesystem represented by
-    QDriveInfo object.
+    the QDriveInfo object.
 
     \value SupportsSymbolicLinks Whether the filesystem supports symbolic links.
     \value SupportsHardLinks Whether the filesystem supports hard links.
@@ -121,15 +121,15 @@ QDriveInfo::QDriveInfo()
 }
 
 /*!
-    Constructs a new QDriveInfo that gives information about the drive, mounted at
-    \a rootPath.
+    Constructs a new QDriveInfo that gives information about the drive mounted
+    at \a rootPath.
 
-    If you pass a directory or file, the QDriveInfo object will refer to the volume where
-    this directory or file is located.
-    You can check if \a rootPath is correct using isValid() method.
+    If you pass a directory or file, the QDriveInfo object will refer to the
+    volume where this directory or file is located.
+    You can check if \a rootPath is correct using the isValid() method.
 
-    The following example shows how to get drive on which application is located.
-    It is a goods idea always check that drive is ready and valid.
+    The following example shows how to get drive on which application is
+    located. It is recommended to always check that drive is ready and valid.
 
     \snippet code/src_corelib_io_qdriveinfo.cpp 0
 
@@ -199,7 +199,7 @@ bool QDriveInfo::operator==(const QDriveInfo &other) const
 }
 
 /*!
-    Returns mount point of the filesystem this QDriveInfo object represents.
+    Returns the mount point of the filesystem this QDriveInfo object represents.
 
     On Windows, returns drive letter in case the drive is not mounted to directory.
 
@@ -234,9 +234,10 @@ void QDriveInfo::setRootPath(const QString &rootPath)
 }
 
 /*!
-    Returns the size (in bytes) available for current user. If user is a root, returns all available size.
+    Returns the size (in bytes) available for the current user. If the user is the root user or a
+    system administrator returns all available size.
 
-    This size can be less thant or equal to the free size, returned by bytesFree() function.
+    This size can be less than or equal to the free size, returned by bytesFree() function.
 
     \sa bytesTotal(), bytesFree()
 */
@@ -247,8 +248,8 @@ qint64 QDriveInfo::bytesAvailable() const
 }
 
 /*!
-    Returns the free size (in bytes) available on drive. Note, that if there is some kind
-    of quotas on the filesystem, this value can be bigger than bytesAvailable().
+    Returns the free size (in bytes) available on the drive. Note, that if there are some kind of
+    quotas on the filesystem, this value can be bigger than bytesAvailable().
 
     \sa bytesTotal(), bytesAvailable()
 */
@@ -273,7 +274,7 @@ qint64 QDriveInfo::bytesTotal() const
     Returns the name of the filesystem.
 
     This is a platform-dependent function, and filesystem names can vary between different
-    operation systems. For example, on Windows filesystem can be named as 'NTFS' and on Linux
+    operating systems. For example, on Windows filesystems can be named as 'NTFS' and on Linux
     as 'ntfs-3g' or 'fuseblk'.
 
     \sa name()
@@ -291,9 +292,9 @@ QByteArray QDriveInfo::fileSystemName() const
     you can retrieve this value for some platform-specific notes. By example, you can get device
     on Unix and try to read from it manually.
 
-    On Unix filesystems (including Mac OS), this returns devpath like '/dev/sda0' for local drives.
-
-    On Windows, returns UNC path starting with \\\\?\\ for local drives (i.e. volume GUID).
+    For example, on Unix filesystems (including Mac OS), this returns the devpath like '/dev/sda0'
+    for local drives. On Windows, returns the UNC path starting with \\\\?\\ for local drives
+    (i.e. volume GUID).
 
     \sa rootPath()
 */
@@ -304,10 +305,11 @@ QByteArray QDriveInfo::device() const
 }
 
 /*!
-    Returns human-readable name of a filesystem, usually called 'label'.
+    Returns the human-readable name of a filesystem, usually called 'label'.
 
     Not all filesystems support this feature, in this case value returned by this method could
-    be empty. Also, empty string is returned if no label is set for drive.
+    be empty. An empty string is returned if the file system does not support labels or no label
+    is set.
 
     On Linux, retrieving the drive's label requires udev to be present in the system.
 
@@ -324,8 +326,8 @@ QString QDriveInfo::name() const
 
     Returns true if this QDriveInfo represents the system root volume or drive; false otherwise.
 
-    On Unix filesystems, root drive is a drive mounted at "/", on Windows root drive is a drive
-    where OS is installed.
+    On Unix filesystems, the root drive is a drive mounted at "/", on Windows the root drive is a
+    drive where OS is installed.
 
     \sa rootDrive()
 */
@@ -340,10 +342,11 @@ bool QDriveInfo::isReadOnly() const
 }
 
 /*!
-    Returns true if current filesystem is ready to work; false otherwise.
+    Returns true if current filesystem is ready to work; false otherwise. For example, false is
+    returned if CD drive is not inserted.
 
-    Note that fileSystemName(), name(), bytesTotal(), bytesFree(), and bytesAvailable()
-    will return invalid data until the drive is ready.
+    Note that fileSystemName(), name(), bytesTotal(), bytesFree(), and bytesAvailable() will return
+    invalid data until the drive is ready.
 
     \sa isValid()
 */
@@ -354,7 +357,7 @@ bool QDriveInfo::isReady() const
 }
 
 /*!
-    Returns true if QDriveInfo specified by rootPath exists and is mounted correctly.
+    Returns true if the QDriveInfo specified by rootPath exists and is mounted correctly.
 
     \sa isReady()
 */
@@ -365,7 +368,7 @@ bool QDriveInfo::isValid() const
 }
 
 /*!
-    Returns the type of filesystem (i.e. remote drive, removable and so on).
+    Returns the type of the filesystem (i.e. remote drive, removable and so on).
 
     The following example prints the type of a drive.
 
@@ -395,7 +398,7 @@ QDriveInfo::Capabilities QDriveInfo::capabilities() const
 */
 
 /*!
-    Resets QDriveInfo's inner cache.
+    Resets QDriveInfo's internal cache.
 
     QDriveInfo caches information about drives to speed up performance. Some information can be
     retrieved by only one native function call (for example, if you call bytesTotal(),
@@ -412,11 +415,9 @@ void QDriveInfo::refresh()
     Returns list of QDriveInfo's that corresponds to the list of currently mounted filesystems.
 
     On Windows, this returns drives presented in 'My Computer' folder. On Unix operation systems,
-    returns list of all mounted filesystems (except for Mac, where devfs is ignored). In Linux, you
-    will get a lot of pseudo filesystems by calling this function, but you can filter them out
-    by using type() (as they always have an UnknownDrive type).
+    returns list of all mounted filesystems (except for Mac, where devfs is ignored).
 
-    The example shows how to retrieve all drives present in system and skip read-only drives.
+    The example shows how to retrieve all drives present in the system and skip read-only drives.
 
     \snippet code/src_corelib_io_qdriveinfo.cpp 1
 
@@ -432,8 +433,8 @@ Q_GLOBAL_STATIC_WITH_ARGS(QDriveInfo, theRootDrive, (QDriveInfoPrivate::rootDriv
 /*!
     Returns a QDriveInfo object that represents the system root volume or drive.
 
-    On Unix systems this call returns '/' volume, on Windows - volume where operating
-    system is installed.
+    On Unix systems this call returns '/' volume, on Windows the volume where operating
+    system is installed is returned.
 
     \sa isRoot()
 */
