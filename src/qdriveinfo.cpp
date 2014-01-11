@@ -43,8 +43,6 @@
 #include "qdriveinfo.h"
 #include "qdriveinfo_p.h"
 
-#include <QtCore/qfileinfo.h>
-
 QT_BEGIN_NAMESPACE
 
 void QDriveInfoPrivate::ensureCached(const QDriveInfo *q, uint flags)
@@ -138,8 +136,7 @@ QDriveInfo::QDriveInfo()
 QDriveInfo::QDriveInfo(const QString &path)
     : d(new QDriveInfoPrivate)
 {
-    // remove symlinks for correct drive detection
-    d->rootPath = QFileInfo(path).canonicalFilePath();
+    d->rootPath = path;
 }
 
 /*!
@@ -208,12 +205,8 @@ bool QDriveInfo::operator==(const QDriveInfo &other) const
 */
 void QDriveInfo::setPath(const QString &path)
 {
-    const QString canonicalPath = QFileInfo(path).canonicalFilePath();
-    if (d.constData()->rootPath == canonicalPath)
-        return;
-
     d->clear();
-    d->rootPath = canonicalPath;
+    d->rootPath = path;
 }
 
 /*!

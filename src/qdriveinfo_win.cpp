@@ -43,6 +43,7 @@
 #include "qdriveinfo_p.h"
 
 #include <QtCore/QDir>
+#include <QtCore/QFileInfo>
 #include <QtCore/QVarLengthArray>
 
 #include <userenv.h>
@@ -51,6 +52,8 @@ QT_BEGIN_NAMESPACE
 
 void QDriveInfoPrivate::initRootPath()
 {
+    rootPath = QFileInfo(rootPath).canonicalFilePath();
+
     if (rootPath.isEmpty())
         return;
 

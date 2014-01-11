@@ -49,6 +49,7 @@
 #include <IOKit/storage/IODVDMedia.h>
 
 #include <sys/mount.h>
+#include <QtCore/QFileInfo>
 #include <QtCore/private/qcore_mac_p.h>
 
 #define QT_STATFSBUF struct statfs
@@ -58,6 +59,8 @@ QT_BEGIN_NAMESPACE
 
 void QDriveInfoPrivate::initRootPath()
 {
+    rootPath = QFileInfo(rootPath).canonicalFilePath();
+
     if (rootPath.isEmpty())
         return;
 

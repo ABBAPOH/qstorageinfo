@@ -43,6 +43,7 @@
 #include "qdriveinfo_p.h"
 
 #include <QtCore/QDirIterator>
+#include <QtCore/QFileInfo>
 #include <QtCore/QTextStream>
 
 #include <errno.h>
@@ -284,6 +285,8 @@ inline QByteArray DriveIterator::device() const
 
 void QDriveInfoPrivate::initRootPath()
 {
+    rootPath = QFileInfo(rootPath).canonicalFilePath();
+
     if (rootPath.isEmpty())
         return;
 
