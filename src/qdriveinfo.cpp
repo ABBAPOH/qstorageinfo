@@ -199,24 +199,6 @@ bool QDriveInfo::operator==(const QDriveInfo &other) const
 }
 
 /*!
-    Returns the mount point of the filesystem this QDriveInfo object represents.
-
-    On Windows, returns drive letter in case the drive is not mounted to directory.
-
-    Note that the value returned by rootPath() is the real mount point of a drive
-    and may not be equal to the value passed to constructor or setPath() method.
-    For example, if you have only the root drive in the system and pass '/directory'
-    to setPath(), then this method will return '/'.
-
-    \sa setPath(), device()
-*/
-QString QDriveInfo::rootPath() const
-{
-    QDriveInfoPrivate::ensureCached(this, QDriveInfoPrivate::CachedRootPathFlag);
-    return d->rootPath;
-}
-
-/*!
     Sets QDriveInfo to the filesystem mounted where \a path is located.
 
     Path can either be a root path of the filesystem, or a directory or a file within that
@@ -232,6 +214,24 @@ void QDriveInfo::setPath(const QString &path)
 
     d->clear();
     d->rootPath = canonicalPath;
+}
+
+/*!
+    Returns the mount point of the filesystem this QDriveInfo object represents.
+
+    On Windows, returns drive letter in case the drive is not mounted to directory.
+
+    Note that the value returned by rootPath() is the real mount point of a drive
+    and may not be equal to the value passed to constructor or setPath() method.
+    For example, if you have only the root drive in the system and pass '/directory'
+    to setPath(), then this method will return '/'.
+
+    \sa setPath(), device()
+*/
+QString QDriveInfo::rootPath() const
+{
+    QDriveInfoPrivate::ensureCached(this, QDriveInfoPrivate::CachedRootPathFlag);
+    return d->rootPath;
 }
 
 /*!

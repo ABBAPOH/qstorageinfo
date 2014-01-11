@@ -85,9 +85,9 @@ public:
     bool operator==(const QDriveInfo &other) const;
     inline bool operator!=(const QDriveInfo &other) const;
 
-    QString rootPath() const;
     void setPath(const QString &path);
 
+    QString rootPath() const;
     QByteArray device() const;
     QByteArray fileSystemName() const;
     QString name() const;
