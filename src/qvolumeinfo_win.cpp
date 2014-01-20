@@ -40,7 +40,7 @@
 **
 ****************************************************************************/
 
-#include "qdriveinfo_p.h"
+#include "qvolumeinfo_p.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
@@ -50,7 +50,7 @@
 
 QT_BEGIN_NAMESPACE
 
-void QDriveInfoPrivate::initRootPath()
+void QVolumeInfoPrivate::initRootPath()
 {
     rootPath = QFileInfo(rootPath).canonicalFilePath();
 
@@ -86,21 +86,21 @@ static inline QByteArray getDevice(const QString &rootPath)
     return QByteArray();
 }
 
-static inline QDriveInfo::DriveType determineType(const QString &rootPath)
+static inline QVolumeInfo::VolumeType determineType(const QString &rootPath)
 {
 #if !defined(Q_OS_WINCE)
     UINT result = ::GetDriveType(reinterpret_cast<const wchar_t *>(rootPath.utf16()));
     switch (result) {
     case DRIVE_REMOVABLE:
-        return QDriveInfo::RemovableDrive;
+        return QVolumeInfo::RemovableVolume;
     case DRIVE_FIXED:
-        return QDriveInfo::InternalDrive;
+        return QVolumeInfo::InternalVolume;
     case DRIVE_REMOTE:
-        return QDriveInfo::RemoteDrive;
+        return QVolumeInfo::RemoteVolume;
     case DRIVE_CDROM:
-        return QDriveInfo::OpticalDrive;
+        return QVolumeInfo::OpticalVolume;
     case DRIVE_RAMDISK:
-        return QDriveInfo::RamDrive;
+        return QVolumeInfo::RamVolume;
     case DRIVE_UNKNOWN:
     case DRIVE_NO_ROOT_DIR:
     // fall through
@@ -110,10 +110,10 @@ static inline QDriveInfo::DriveType determineType(const QString &rootPath)
 #else
     Q_UNUSED(rootPath)
 #endif
-    return QDriveInfo::UnknownDrive;
+    return QVolumeInfo::UnknownVolume;
 }
 
-void QDriveInfoPrivate::doStat(uint requiredFlags)
+void QVolumeInfoPrivate::doStat(uint requiredFlags)
 {
     if (getCachedFlag(requiredFlags))
         return;
@@ -127,7 +127,7 @@ void QDriveInfoPrivate::doStat(uint requiredFlags)
         return;
 
     if (!getCachedFlag(CachedValidFlag))
-        requiredFlags |= CachedValidFlag; // force drive validation
+        requiredFlags |= CachedValidFlag; // force volume validation
 
     uint bitmask = 0;
 
@@ -162,7 +162,7 @@ void QDriveInfoPrivate::doStat(uint requiredFlags)
     }
 }
 
-void QDriveInfoPrivate::getVolumeInfo()
+void QVolumeInfoPrivate::getVolumeInfo()
 {
     const UINT oldmode = ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 
@@ -189,25 +189,25 @@ void QDriveInfoPrivate::getVolumeInfo()
 
         capabilities = 0;
         if (fileSystemFlags & FILE_SUPPORTS_OBJECT_IDS) // ?
-            capabilities |= QDriveInfo::SupportsPersistentIDs;
+            capabilities |= QVolumeInfo::SupportsPersistentIDs;
         if (fileSystemName.toLower() == "ntfs") // ###
-            capabilities |= QDriveInfo::SupportsSymbolicLinks;
+            capabilities |= QVolumeInfo::SupportsSymbolicLinks;
         if (fileSystemFlags & FILE_SUPPORTS_HARD_LINKS)
-            capabilities |= QDriveInfo::SupportsHardLinks;
+            capabilities |= QVolumeInfo::SupportsHardLinks;
         if (fileSystemFlags & FILE_SUPPORTS_USN_JOURNAL) // ?
-            capabilities |= QDriveInfo::SupportsJournaling;
+            capabilities |= QVolumeInfo::SupportsJournaling;
         if (fileSystemFlags & FILE_SUPPORTS_SPARSE_FILES)
-            capabilities |= QDriveInfo::SupportsSparseFiles;
+            capabilities |= QVolumeInfo::SupportsSparseFiles;
         if (fileSystemFlags & FILE_CASE_SENSITIVE_SEARCH)
-            capabilities |= QDriveInfo::SupportsCaseSensitiveNames;
+            capabilities |= QVolumeInfo::SupportsCaseSensitiveNames;
         if (fileSystemFlags & FILE_CASE_PRESERVED_NAMES)
-            capabilities |= QDriveInfo::SupportsCasePreservedNames;
+            capabilities |= QVolumeInfo::SupportsCasePreservedNames;
     }
 
     ::SetErrorMode(oldmode);
 }
 
-void QDriveInfoPrivate::getDiskFreeSpace()
+void QVolumeInfoPrivate::getDiskFreeSpace()
 {
     const UINT oldmode = ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 
@@ -220,29 +220,29 @@ void QDriveInfoPrivate::getDiskFreeSpace()
     ::SetErrorMode(oldmode);
 }
 
-QList<QDriveInfo> QDriveInfoPrivate::drives()
+QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
 {
-    QList<QDriveInfo> drives;
+    QList<QVolumeInfo> volumes;
 
     char driveName[] = "A:/";
     quint32 driveBits = quint32(::GetLogicalDrives()) & 0x3ffffff;
     while (driveBits) {
         if (driveBits & 1) {
-            QDriveInfoPrivate *data = new QDriveInfoPrivate;
+            QVolumeInfoPrivate *data = new QVolumeInfoPrivate;
             data->rootPath = QString::fromLatin1(driveName);
             data->setCachedFlag(CachedRootPathFlag);
-            QDriveInfo drive(*data);
+            QVolumeInfo drive(*data);
             if (!drive.rootPath().isEmpty()) // drive exists, but not mounted
-                drives.append(drive);
+                volumes.append(drive);
         }
         driveName[0]++;
         driveBits = driveBits >> 1;
     }
 
-    return drives;
+    return volumes;
 }
 
-QDriveInfo QDriveInfoPrivate::rootDrive()
+QVolumeInfo QVolumeInfoPrivate::rootVolume()
 {
     DWORD dwBufferSize = 128;
     QVarLengthArray<wchar_t, 128> profilesDirectory(dwBufferSize);
@@ -253,9 +253,9 @@ QDriveInfo QDriveInfoPrivate::rootDrive()
         ok = ::GetProfilesDirectory(profilesDirectory.data(), &dwBufferSize);
     } while (!ok && GetLastError() == ERROR_INSUFFICIENT_BUFFER);
     if (ok)
-        return QDriveInfo(QString::fromWCharArray(profilesDirectory.data(), profilesDirectory.size()));
+        return QVolumeInfo(QString::fromWCharArray(profilesDirectory.data(), profilesDirectory.size()));
 
-    return QDriveInfo();
+    return QVolumeInfo();
 }
 
 QT_END_NAMESPACE

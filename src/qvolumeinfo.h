@@ -40,8 +40,8 @@
 **
 ****************************************************************************/
 
-#ifndef QDRIVEINFO_H
-#define QDRIVEINFO_H
+#ifndef QVOLUMEINFO_H
+#define QVOLUMEINFO_H
 
 #include <QtCore/QByteArray>
 #include <QtCore/QList>
@@ -50,18 +50,18 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDriveInfoPrivate;
-class QDriveInfo
+class QVolumeInfoPrivate;
+class QVolumeInfo
 {
 public:
-    enum DriveType {
-        UnknownDrive = 0,
-        InternalDrive,
-        RemovableDrive,
-        RemoteDrive,
-        OpticalDrive,
-        InternalFlashDrive,
-        RamDrive
+    enum VolumeType {
+        UnknownVolume = 0,
+        InternalVolume,
+        RemovableVolume,
+        RemoteVolume,
+        OpticalVolume,
+        InternalFlashVolume,
+        RamVolume
     };
 
     enum Capability {
@@ -75,15 +75,15 @@ public:
     };
     Q_DECLARE_FLAGS(Capabilities, Capability)
 
-    QDriveInfo();
-    explicit QDriveInfo(const QString &path);
-    QDriveInfo(const QDriveInfo &other);
-    ~QDriveInfo();
+    QVolumeInfo();
+    explicit QVolumeInfo(const QString &path);
+    QVolumeInfo(const QVolumeInfo &other);
+    ~QVolumeInfo();
 
-    QDriveInfo &operator=(const QDriveInfo &other);
+    QVolumeInfo &operator=(const QVolumeInfo &other);
 
-    bool operator==(const QDriveInfo &other) const;
-    inline bool operator!=(const QDriveInfo &other) const;
+    bool operator==(const QVolumeInfo &other) const;
+    inline bool operator!=(const QVolumeInfo &other) const;
 
     void setPath(const QString &path);
 
@@ -101,35 +101,35 @@ public:
     bool isReady() const;
     bool isValid() const;
 
-    DriveType type() const;
+    VolumeType type() const;
 
     Capabilities capabilities() const;
     inline bool hasCapability(Capability capability) const;
 
     void refresh();
 
-    static QList<QDriveInfo> drives();
-    static QDriveInfo rootDrive();
+    static QList<QVolumeInfo> volumes();
+    static QVolumeInfo rootVolume();
 
 protected:
-    explicit QDriveInfo(QDriveInfoPrivate &dd);
+    explicit QVolumeInfo(QVolumeInfoPrivate &dd);
 
 private:
-    friend class QDriveInfoPrivate;
-    QSharedDataPointer<QDriveInfoPrivate> d;
+    friend class QVolumeInfoPrivate;
+    QSharedDataPointer<QVolumeInfoPrivate> d;
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QDriveInfo::Capabilities)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QVolumeInfo::Capabilities)
 
-inline bool QDriveInfo::operator!=(const QDriveInfo &other) const
+inline bool QVolumeInfo::operator!=(const QVolumeInfo &other) const
 { return !(operator==(other)); }
 
-inline bool QDriveInfo::isRoot() const
-{ return *this == QDriveInfo::rootDrive(); }
+inline bool QVolumeInfo::isRoot() const
+{ return *this == QVolumeInfo::rootVolume(); }
 
-inline bool QDriveInfo::hasCapability(QDriveInfo::Capability capability) const
+inline bool QVolumeInfo::hasCapability(QVolumeInfo::Capability capability) const
 { return (capabilities() & capability) != 0; }
 
 QT_END_NAMESPACE
 
-#endif // QDRIVEINFO_H
+#endif // QVOLUMEINFO_H

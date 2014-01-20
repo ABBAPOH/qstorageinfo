@@ -39,40 +39,21 @@
 **
 ****************************************************************************/
 
-#ifndef DRIVEMODEL_H
-#define DRIVEMODEL_H
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QHeaderView>
+#include <QtWidgets/QTreeView>
 
-#include <QAbstractTableModel>
-#include <QDriveInfo>
+#include "volumemodel.h"
 
-class DriveModel : public QAbstractTableModel
+int main(int argc, char *argv[])
 {
-    Q_OBJECT
-public:
-    enum Column {
-        ColumnRootPath = 0,
-        ColumnName,
-        ColumnDevice,
-        ColumnFileSystemName,
-        ColumnType,
-        ColumnCapabilities,
-        ColumnTotal,
-        ColumnFree,
-        ColumnAvailable,
-        CoulmnIsReady,
-        ColumnCount
-    };
+    QApplication a(argc, argv);
 
-    explicit DriveModel(QObject *parent = 0);
+    QTreeView view;
+    view.setModel(new VolumeModel(&view));
+    view.resize(640, 480);
+    view.setSelectionBehavior(QAbstractItemView::SelectRows);
+    view.show();
 
-    int columnCount(const QModelIndex &parent) const;
-    int rowCount(const QModelIndex &parent) const;
-
-    QVariant data(const QModelIndex &index, int role) const;
-    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
-
-private:
-    QList<QDriveInfo> m_drives;
-};
-
-#endif // DRIVEMODEL_H
+    return a.exec();
+}

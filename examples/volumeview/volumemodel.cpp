@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "drivemodel.h"
+#include "volumemodel.h"
 
 #include <QDir>
 #include <qmath.h>
@@ -49,7 +49,7 @@ static QString sizeToString(qint64 size)
     static const char *const strings[] = { "b", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
 
     if (size <= 0)
-        return DriveModel::tr("0 b");
+        return VolumeModel::tr("0 b");
 
     double power = log((double)size)/log(1024.0);
     int intPower = (int)power;
@@ -57,109 +57,109 @@ static QString sizeToString(qint64 size)
 
     double normSize = size / pow(1024.0, intPower);
     //: this should expand to "1.23 GB"
-    return DriveModel::tr("%1 %2").arg(normSize, 0, 'f', intPower > 0 ? 2 : 0).arg(strings[intPower]);
+    return VolumeModel::tr("%1 %2").arg(normSize, 0, 'f', intPower > 0 ? 2 : 0).arg(strings[intPower]);
 }
 
-static QString capabilityToString(QDriveInfo::Capability capability)
+static QString capabilityToString(QVolumeInfo::Capability capability)
 {
     switch (capability) {
-    case QDriveInfo::SupportsSymbolicLinks:
-        return DriveModel::tr("SupportsSymbolicLinks");
-    case QDriveInfo::SupportsHardLinks:
-        return DriveModel::tr("SupportsHardLinks");
-    case QDriveInfo::SupportsCaseSensitiveNames:
-        return DriveModel::tr("SupportsCaseSensitiveNames");
-    case QDriveInfo::SupportsCasePreservedNames:
-        return DriveModel::tr("SupportsCasePreservedNames");
-    case QDriveInfo::SupportsJournaling:
-        return DriveModel::tr("SupportsJournaling");
-    case QDriveInfo::SupportsSparseFiles:
-        return DriveModel::tr("SupportsSparseFiles");
-    case QDriveInfo::SupportsPersistentIDs:
-        return DriveModel::tr("SupportsPersistentIDs");
+    case QVolumeInfo::SupportsSymbolicLinks:
+        return VolumeModel::tr("SupportsSymbolicLinks");
+    case QVolumeInfo::SupportsHardLinks:
+        return VolumeModel::tr("SupportsHardLinks");
+    case QVolumeInfo::SupportsCaseSensitiveNames:
+        return VolumeModel::tr("SupportsCaseSensitiveNames");
+    case QVolumeInfo::SupportsCasePreservedNames:
+        return VolumeModel::tr("SupportsCasePreservedNames");
+    case QVolumeInfo::SupportsJournaling:
+        return VolumeModel::tr("SupportsJournaling");
+    case QVolumeInfo::SupportsSparseFiles:
+        return VolumeModel::tr("SupportsSparseFiles");
+    case QVolumeInfo::SupportsPersistentIDs:
+        return VolumeModel::tr("SupportsPersistentIDs");
     }
     return QString();
 }
 
-static QString typeToString(QDriveInfo::DriveType type)
+static QString typeToString(QVolumeInfo::VolumeType type)
 {
     switch (type) {
-    case QDriveInfo::UnknownDrive:
-        return DriveModel::tr("Unknown");
-    case QDriveInfo::InternalDrive:
-        return DriveModel::tr("Internal");
-    case QDriveInfo::RemovableDrive:
-        return DriveModel::tr("Removable");
-    case QDriveInfo::RemoteDrive:
-        return DriveModel::tr("Remote");
-    case QDriveInfo::OpticalDrive:
-        return DriveModel::tr("Cdrom");
-    case QDriveInfo::InternalFlashDrive:
-        return DriveModel::tr("Internal flash");
-    case QDriveInfo::RamDrive:
-        return DriveModel::tr("ram flash");
+    case QVolumeInfo::UnknownVolume:
+        return VolumeModel::tr("Unknown");
+    case QVolumeInfo::InternalVolume:
+        return VolumeModel::tr("Internal");
+    case QVolumeInfo::RemovableVolume:
+        return VolumeModel::tr("Removable");
+    case QVolumeInfo::RemoteVolume:
+        return VolumeModel::tr("Remote");
+    case QVolumeInfo::OpticalVolume:
+        return VolumeModel::tr("Cdrom");
+    case QVolumeInfo::InternalFlashVolume:
+        return VolumeModel::tr("Internal flash");
+    case QVolumeInfo::RamVolume:
+        return VolumeModel::tr("ram flash");
     default:
         break;
     }
     return QString();
 }
 
-static QString capabilitiesToString(QDriveInfo::Capabilities capabilities)
+static QString capabilitiesToString(QVolumeInfo::Capabilities capabilities)
 {
     QStringList result;
-    for (int i = 1; i != QDriveInfo::SupportsPersistentIDs << 1; i = i << 1) {
+    for (int i = 1; i != QVolumeInfo::SupportsPersistentIDs << 1; i = i << 1) {
         if (capabilities & i)
-            result.append(capabilityToString(QDriveInfo::Capability(i)));
+            result.append(capabilityToString(QVolumeInfo::Capability(i)));
     }
     return result.join(" | ");
 }
 
-DriveModel::DriveModel(QObject *parent) :
+VolumeModel::VolumeModel(QObject *parent) :
     QAbstractTableModel(parent),
-    m_drives(QDriveInfo::drives())
+    m_volumes(QVolumeInfo::volumes())
 {
 }
 
-int DriveModel::columnCount(const QModelIndex &/*parent*/) const
+int VolumeModel::columnCount(const QModelIndex &/*parent*/) const
 {
     return ColumnCount;
 }
 
-int DriveModel::rowCount(const QModelIndex &parent) const
+int VolumeModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
-    return m_drives.count();
+    return m_volumes.count();
 }
 
-QVariant DriveModel::data(const QModelIndex &index, int role) const
+QVariant VolumeModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
 
     if (role == Qt::DisplayRole) {
-        const QDriveInfo &drive = m_drives.at(index.row());
+        const QVolumeInfo &volume = m_volumes.at(index.row());
         switch (index.column()) {
         case ColumnRootPath:
-            return QDir::toNativeSeparators(drive.rootPath());
+            return QDir::toNativeSeparators(volume.rootPath());
         case ColumnName:
-            return drive.name();
+            return volume.name();
         case ColumnDevice:
-            return drive.device();
+            return volume.device();
         case ColumnFileSystemName:
-            return drive.fileSystemName();
+            return volume.fileSystemName();
         case ColumnType:
-            return typeToString(drive.type());
+            return typeToString(volume.type());
         case ColumnCapabilities:
-            return capabilitiesToString(drive.capabilities());
+            return capabilitiesToString(volume.capabilities());
         case ColumnTotal:
-            return sizeToString(drive.bytesTotal());
+            return sizeToString(volume.bytesTotal());
         case ColumnFree:
-            return sizeToString(drive.bytesFree());
+            return sizeToString(volume.bytesFree());
         case ColumnAvailable:
-            return sizeToString(drive.bytesAvailable());
+            return sizeToString(volume.bytesAvailable());
         case CoulmnIsReady:
-            return drive.isReady();
+            return volume.isReady();
         default:
             break;
         }
@@ -168,7 +168,7 @@ QVariant DriveModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-QVariant DriveModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant VolumeModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (orientation != Qt::Horizontal)
         return QVariant();

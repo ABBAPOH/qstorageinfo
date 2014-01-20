@@ -40,8 +40,8 @@
 **
 ****************************************************************************/
 
-#ifndef QDRIVEINFO_P_H
-#define QDRIVEINFO_P_H
+#ifndef QVOLUMEINFO_P_H
+#define QVOLUMEINFO_P_H
 
 //
 //  W A R N I N G
@@ -54,20 +54,20 @@
 // We mean it.
 //
 
-#include "qdriveinfo.h"
+#include "qvolumeinfo.h"
 
 #include <QtCore/QExplicitlySharedDataPointer>
 #include <QtCore/QFile>
 
 QT_BEGIN_NAMESPACE
 
-class QDriveInfoPrivate : public QSharedData
+class QVolumeInfoPrivate : public QSharedData
 {
 public:
 
-    inline QDriveInfoPrivate() : QSharedData(),
+    inline QVolumeInfoPrivate() : QSharedData(),
         bytesTotal(0), bytesFree(0), bytesAvailable(0),
-        type(QDriveInfo::UnknownDrive),
+        type(QVolumeInfo::UnknownVolume),
         readOnly(false), ready(false), valid(false),
         cachedFlags(0)
     {}
@@ -97,7 +97,7 @@ public:
         bytesFree = 0;
         bytesAvailable = 0;
 
-        type = QDriveInfo::UnknownDrive;
+        type = QVolumeInfo::UnknownVolume;
         readOnly = false;
         ready = false;
         valid = false;
@@ -113,10 +113,10 @@ public:
     void initRootPath();
     void doStat(uint requiredFlags);
 
-    static QList<QDriveInfo> drives();
-    static QDriveInfo rootDrive();
+    static QList<QVolumeInfo> volumes();
+    static QVolumeInfo rootVolume();
 
-    static inline void ensureCached(const QDriveInfo *q, uint flags);
+    static inline void ensureCached(const QVolumeInfo *q, uint flags);
 
 protected:
 #if defined(Q_OS_WIN)
@@ -141,7 +141,7 @@ public:
     qint64 bytesFree;
     qint64 bytesAvailable;
 
-    QDriveInfo::Capabilities capabilities;
+    QVolumeInfo::Capabilities capabilities;
 
     ushort type : 8;
     ushort readOnly : 1;
@@ -154,4 +154,4 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QDRIVEINFO_P_H
+#endif // QVOLUMEINFO_P_H

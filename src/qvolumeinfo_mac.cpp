@@ -40,7 +40,7 @@
 **
 ****************************************************************************/
 
-#include "qdriveinfo_p.h"
+#include "qvolumeinfo_p.h"
 
 #include <CoreServices/CoreServices.h>
 #include <CoreFoundation/CoreFoundation.h>
@@ -57,7 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
-void QDriveInfoPrivate::initRootPath()
+void QVolumeInfoPrivate::initRootPath()
 {
     rootPath = QFileInfo(rootPath).canonicalFilePath();
 
@@ -67,9 +67,9 @@ void QDriveInfoPrivate::initRootPath()
     getUrlProperties(true);
 }
 
-static inline QDriveInfo::DriveType determineType(const QByteArray &device)
+static inline QVolumeInfo::VolumeType determineType(const QByteArray &device)
 {
-    QDriveInfo::DriveType drivetype = QDriveInfo::UnknownDrive;
+    QVolumeInfo::VolumeType volumeType = QVolumeInfo::UnknownVolume;
 
     DASessionRef sessionRef;
     DADiskRef diskRef;
@@ -77,19 +77,19 @@ static inline QDriveInfo::DriveType determineType(const QByteArray &device)
 
     sessionRef = DASessionCreate(NULL);
     if (sessionRef == NULL)
-        return QDriveInfo::UnknownDrive;
+        return QVolumeInfo::UnknownVolume;
 
     diskRef = DADiskCreateFromBSDName(NULL, sessionRef, device.constData());
     if (diskRef == NULL) {
         CFRelease(sessionRef);
-        return QDriveInfo::UnknownDrive;
+        return QVolumeInfo::UnknownVolume;
     }
 
     descriptionDictionary = DADiskCopyDescription(diskRef);
     if (descriptionDictionary == NULL) {
         CFRelease(diskRef);
         CFRelease(sessionRef);
-        return QDriveInfo::RemoteDrive;
+        return QVolumeInfo::RemoteVolume;
     }
 
     CFBooleanRef boolRef;
@@ -99,13 +99,13 @@ static inline QDriveInfo::DriveType determineType(const QByteArray &device)
         CFRelease(descriptionDictionary);
         CFRelease(diskRef);
         CFRelease(sessionRef);
-        return QDriveInfo::RemoteDrive;
+        return QVolumeInfo::RemoteVolume;
     }
 
     boolRef = (CFBooleanRef)CFDictionaryGetValue(descriptionDictionary,
                                                  kDADiskDescriptionMediaRemovableKey);
     if (boolRef)
-        drivetype = CFBooleanGetValue(boolRef) ? QDriveInfo::RemovableDrive : QDriveInfo::InternalDrive;
+        volumeType = CFBooleanGetValue(boolRef) ? QVolumeInfo::RemovableVolume : QVolumeInfo::InternalVolume;
 
     DADiskRef wholeDisk;
     wholeDisk = DADiskCopyWholeDisk(diskRef);
@@ -115,7 +115,7 @@ static inline QDriveInfo::DriveType determineType(const QByteArray &device)
         if (mediaService) {
             if (IOObjectConformsTo(mediaService, kIOCDMediaClass)
                     || IOObjectConformsTo(mediaService, kIODVDMediaClass)) {
-                drivetype = QDriveInfo::OpticalDrive;
+                volumeType = QVolumeInfo::OpticalVolume;
             }
             IOObjectRelease(mediaService);
         }
@@ -126,16 +126,16 @@ static inline QDriveInfo::DriveType determineType(const QByteArray &device)
     CFRelease(diskRef);
     CFRelease(sessionRef);
 
-    return drivetype;
+    return volumeType;
 }
 
-void QDriveInfoPrivate::doStat(uint requiredFlags)
+void QVolumeInfoPrivate::doStat(uint requiredFlags)
 {
     if (getCachedFlag(requiredFlags))
         return;
 
     if (!getCachedFlag(CachedValidFlag))
-        requiredFlags |= CachedValidFlag; // force drive validation
+        requiredFlags |= CachedValidFlag; // force volume validation
 
     if (!getCachedFlag(CachedRootPathFlag | CachedValidFlag | CachedReadyFlag)) {
         initRootPath();
@@ -172,7 +172,7 @@ void QDriveInfoPrivate::doStat(uint requiredFlags)
     }
 }
 
-void QDriveInfoPrivate::getPosixInfo()
+void QVolumeInfoPrivate::getPosixInfo()
 {
     QT_STATFSBUF statfs_buf;
     int result = QT_STATFS(QFile::encodeName(rootPath).constData(), &statfs_buf);
@@ -204,7 +204,7 @@ static inline bool CFDictionaryGetBool(CFDictionaryRef dictionary, const void *k
     return CFBooleanGetValue((CFBooleanRef)CFDictionaryGetValue(dictionary, key));
 }
 
-void QDriveInfoPrivate::getUrlProperties(bool initRootPath)
+void QVolumeInfoPrivate::getUrlProperties(bool initRootPath)
 {
     const void *rootPathKey[] = { kCFURLVolumeURLKey };
     const void *propertyKeys[] = { // kCFURLVolumeNameKey, // 10.7
@@ -269,24 +269,24 @@ void QDriveInfoPrivate::getUrlProperties(bool initRootPath)
 
     capabilities = 0;
     if (CFDictionaryGetBool(map, kCFURLVolumeSupportsPersistentIDsKey))
-        capabilities |= QDriveInfo::SupportsPersistentIDs;
+        capabilities |= QVolumeInfo::SupportsPersistentIDs;
     if (CFDictionaryGetBool(map, kCFURLVolumeSupportsSymbolicLinksKey))
-        capabilities |= QDriveInfo::SupportsSymbolicLinks;
+        capabilities |= QVolumeInfo::SupportsSymbolicLinks;
     if (CFDictionaryGetBool(map, kCFURLVolumeSupportsHardLinksKey))
-        capabilities |= QDriveInfo::SupportsHardLinks;
+        capabilities |= QVolumeInfo::SupportsHardLinks;
     if (CFDictionaryGetBool(map, kCFURLVolumeSupportsJournalingKey))
-        capabilities |= QDriveInfo::SupportsJournaling;
+        capabilities |= QVolumeInfo::SupportsJournaling;
     if (CFDictionaryGetBool(map, kCFURLVolumeSupportsSparseFilesKey))
-        capabilities |= QDriveInfo::SupportsSparseFiles;
+        capabilities |= QVolumeInfo::SupportsSparseFiles;
     if (CFDictionaryGetBool(map, kCFURLVolumeSupportsCaseSensitiveNamesKey))
-        capabilities |= QDriveInfo::SupportsCaseSensitiveNames;
+        capabilities |= QVolumeInfo::SupportsCaseSensitiveNames;
     if (CFDictionaryGetBool(map, kCFURLVolumeSupportsCasePreservedNamesKey))
-        capabilities |= QDriveInfo::SupportsCasePreservedNames;
+        capabilities |= QVolumeInfo::SupportsCasePreservedNames;
 
     CFRelease(map);
 }
 
-void QDriveInfoPrivate::getLabel()
+void QVolumeInfoPrivate::getLabel()
 {
     // deprecated since 10.8
     FSRef ref;
@@ -310,9 +310,9 @@ void QDriveInfoPrivate::getLabel()
         name = QCFString(FSCreateStringFromHFSUniStr(NULL, &volumeName));
 }
 
-QList<QDriveInfo> QDriveInfoPrivate::drives()
+QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
 {
-    QList<QDriveInfo> drives;
+    QList<QVolumeInfo> volumes;
 
     CFURLEnumeratorRef enumerator;
     enumerator = CFURLEnumeratorCreateForMountedVolumes(NULL,
@@ -327,20 +327,20 @@ QList<QDriveInfo> QDriveInfoPrivate::drives()
         if (result == kCFURLEnumeratorSuccess) {
             QCFString urlString = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);
 
-            QDriveInfoPrivate *data = new QDriveInfoPrivate;
+            QVolumeInfoPrivate *data = new QVolumeInfoPrivate;
             data->rootPath = urlString;
             data->setCachedFlag(CachedRootPathFlag);
-            drives.append(QDriveInfo(*data));
+            volumes.append(QVolumeInfo(*data));
         }
     } while (result != kCFURLEnumeratorEnd);
 
     CFRelease(enumerator);
-    return drives;
+    return volumes;
 }
 
-QDriveInfo QDriveInfoPrivate::rootDrive()
+QVolumeInfo QVolumeInfoPrivate::rootVolume()
 {
-    return QDriveInfo(QStringLiteral("/"));
+    return QVolumeInfo(QStringLiteral("/"));
 }
 
 QT_END_NAMESPACE

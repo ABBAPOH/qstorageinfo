@@ -39,21 +39,40 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QHeaderView>
-#include <QtWidgets/QTreeView>
+#ifndef VOLUMEMODEL_H
+#define VOLUMEMODEL_H
 
-#include "drivemodel.h"
+#include <QAbstractTableModel>
+#include <QVolumeInfo>
 
-int main(int argc, char *argv[])
+class VolumeModel : public QAbstractTableModel
 {
-    QApplication a(argc, argv);
+    Q_OBJECT
+public:
+    enum Column {
+        ColumnRootPath = 0,
+        ColumnName,
+        ColumnDevice,
+        ColumnFileSystemName,
+        ColumnType,
+        ColumnCapabilities,
+        ColumnTotal,
+        ColumnFree,
+        ColumnAvailable,
+        CoulmnIsReady,
+        ColumnCount
+    };
 
-    QTreeView view;
-    view.setModel(new DriveModel(&view));
-    view.resize(640, 480);
-    view.setSelectionBehavior(QAbstractItemView::SelectRows);
-    view.show();
+    explicit VolumeModel(QObject *parent = 0);
 
-    return a.exec();
-}
+    int columnCount(const QModelIndex &parent) const;
+    int rowCount(const QModelIndex &parent) const;
+
+    QVariant data(const QModelIndex &index, int role) const;
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+
+private:
+    QList<QVolumeInfo> m_volumes;
+};
+
+#endif // VOLUMEMODEL_H

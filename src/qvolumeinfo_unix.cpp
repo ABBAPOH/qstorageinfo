@@ -40,7 +40,7 @@
 **
 ****************************************************************************/
 
-#include "qdriveinfo_p.h"
+#include "qvolumeinfo_p.h"
 
 #include <QtCore/QDirIterator>
 #include <QtCore/QFileInfo>
@@ -105,11 +105,11 @@ static bool isPseudoFs(const QString &mountDir, const QByteArray &type)
     return false;
 }
 
-class DriveIterator
+class VolumeIterator
 {
 public:
-    DriveIterator();
-    ~DriveIterator();
+    VolumeIterator();
+    ~VolumeIterator();
 
     bool isValid() const;
     bool next();
@@ -132,37 +132,37 @@ private:
 
 #if defined(Q_OS_BSD4)
 
-inline DriveIterator::DriveIterator():
+inline VolumeIterator::VolumeIterator():
     count(getmntinfo(&stat_buf, 0)),
     i(-1)
 {
 }
 
-inline DriveIterator::~DriveIterator()
+inline VolumeIterator::~VolumeIterator()
 {
 }
 
-inline bool DriveIterator::isValid() const
+inline bool VolumeIterator::isValid() const
 {
     return count != -1;
 }
 
-inline bool DriveIterator::next()
+inline bool VolumeIterator::next()
 {
     return ++i < count;
 }
 
-inline QString DriveIterator::rootPath() const
+inline QString VolumeIterator::rootPath() const
 {
     return QFile::decodeName(stat_buf[i].f_mntonname);
 }
 
-inline QByteArray DriveIterator::fileSystemName() const
+inline QByteArray VolumeIterator::fileSystemName() const
 {
     return QByteArray(stat_buf[i].f_fstypename);
 }
 
-inline QByteArray DriveIterator::device() const
+inline QByteArray VolumeIterator::device() const
 {
     return QByteArray(stat_buf[i].f_mntfromname);
 }
@@ -171,38 +171,38 @@ inline QByteArray DriveIterator::device() const
 
 static const char pathMounted[] = "/etc/mtab";
 
-inline DriveIterator::DriveIterator():
+inline VolumeIterator::VolumeIterator():
     fp(::setmntent(pathMounted, "r"))
 {
 }
 
-inline DriveIterator::~DriveIterator()
+inline VolumeIterator::~VolumeIterator()
 {
     if (fp)
         ::endmntent(fp);
 }
 
-inline bool DriveIterator::isValid() const
+inline bool VolumeIterator::isValid() const
 {
     return fp != 0;
 }
 
-inline bool DriveIterator::next()
+inline bool VolumeIterator::next()
 {
     return (mnt = ::getmntent(fp));
 }
 
-inline QString DriveIterator::rootPath() const
+inline QString VolumeIterator::rootPath() const
 {
     return QFile::decodeName(mnt->mnt_dir);
 }
 
-inline QByteArray DriveIterator::fileSystemName() const
+inline QByteArray VolumeIterator::fileSystemName() const
 {
     return QByteArray(mnt->mnt_type);
 }
 
-inline QByteArray DriveIterator::device() const
+inline QByteArray VolumeIterator::device() const
 {
     return QByteArray(mnt->mnt_fsname);
 }
@@ -211,86 +211,86 @@ inline QByteArray DriveIterator::device() const
 
 static const char pathMounted[] = "/etc/mnttab";
 
-inline DriveIterator::DriveIterator():
+inline VolumeIterator::VolumeIterator():
     fp(::fopen(pathMounted, "r"))
 {
 }
 
-inline DriveIterator::~DriveIterator()
+inline VolumeIterator::~VolumeIterator()
 {
     if (fp)
         ::fclose(fp);
 }
 
-inline bool DriveIterator::isValid() const
+inline bool VolumeIterator::isValid() const
 {
     return fp != 0;
 }
 
-inline bool DriveIterator::next()
+inline bool VolumeIterator::next()
 {
     return (getmntent(fp, &mnt) == 0);
 }
 
-inline QString DriveIterator::rootPath() const
+inline QString VolumeIterator::rootPath() const
 {
     return QFile::decodeName(mnt->mnt_mountp);
 }
 
-inline QByteArray DriveIterator::fileSystemName() const
+inline QByteArray VolumeIterator::fileSystemName() const
 {
     return QByteArray(mnt->mnt_fstype);
 }
 
-inline QByteArray DriveIterator::device() const
+inline QByteArray VolumeIterator::device() const
 {
     return QByteArray(mnt->mnt_mntopts);
 }
 
 #else // no information available
 
-inline DriveIterator::DriveIterator()
+inline VolumeIterator::VolumeIterator()
 {
 }
 
-inline DriveIterator::~DriveIterator()
+inline VolumeIterator::~VolumeIterator()
 {
 }
 
-inline bool DriveIterator::isValid() const
-{
-    return false;
-}
-
-inline bool DriveIterator::next()
+inline bool VolumeIterator::isValid() const
 {
     return false;
 }
 
-inline QString DriveIterator::rootPath() const
+inline bool VolumeIterator::next()
+{
+    return false;
+}
+
+inline QString VolumeIterator::rootPath() const
 {
     return QString();
 }
 
-inline QByteArray DriveIterator::fileSystemName() const
+inline QByteArray VolumeIterator::fileSystemName() const
 {
     return QByteArray();
 }
 
-inline QByteArray DriveIterator::device() const
+inline QByteArray VolumeIterator::device() const
 {
     return QByteArray();
 }
 #endif
 
-void QDriveInfoPrivate::initRootPath()
+void QVolumeInfoPrivate::initRootPath()
 {
     rootPath = QFileInfo(rootPath).canonicalFilePath();
 
     if (rootPath.isEmpty())
         return;
 
-    DriveIterator it;
+    VolumeIterator it;
     if (!it.isValid()) {
         rootPath = QStringLiteral("/");
         return;
@@ -315,7 +315,7 @@ void QDriveInfoPrivate::initRootPath()
     }
 }
 
-static inline QDriveInfo::DriveType determineType(const QByteArray &device)
+static inline QVolumeInfo::VolumeType determineType(const QByteArray &device)
 {
     QString dmFile;
     if (device.contains("mapper")) {
@@ -328,7 +328,7 @@ static inline QDriveInfo::DriveType determineType(const QByteArray &device)
         dmFile = QString::fromLatin1(device).section(QLatin1Char('/'), 2, 3);
         if (dmFile.startsWith(QStringLiteral("mmc"))) {
             // assume this dev is removable sd/mmc card.
-            return QDriveInfo::RemovableDrive;
+            return QVolumeInfo::RemovableVolume;
         }
 
         if (dmFile.length() > 3) {
@@ -346,14 +346,14 @@ static inline QDriveInfo::DriveType determineType(const QByteArray &device)
             QTextStream sysinfo(&file); // ### can we get rid of QTextStream ?
             const QString line = sysinfo.readAll();
             if (line.contains(QLatin1Char('1')))
-                return QDriveInfo::RemovableDrive;
+                return QVolumeInfo::RemovableVolume;
         }
 
         if (device.startsWith("/dev"))
-            return QDriveInfo::InternalDrive;
+            return QVolumeInfo::InternalVolume;
     }
 
-    return QDriveInfo::UnknownDrive;
+    return QVolumeInfo::UnknownVolume;
 }
 
 // Unfortunately, I don't know other way to get labels without root privileges.
@@ -377,7 +377,7 @@ static inline QString getName(const QByteArray &device)
     return QString();
 }
 
-void QDriveInfoPrivate::doStat(uint requiredFlags)
+void QVolumeInfoPrivate::doStat(uint requiredFlags)
 {
     if (getCachedFlag(requiredFlags))
         return;
@@ -394,7 +394,7 @@ void QDriveInfoPrivate::doStat(uint requiredFlags)
         return;
 
     if (!getCachedFlag(CachedValidFlag))
-        requiredFlags |= CachedValidFlag; // force drive validation
+        requiredFlags |= CachedValidFlag; // force volume validation
 
 
     uint bitmask = 0;
@@ -424,7 +424,7 @@ void QDriveInfoPrivate::doStat(uint requiredFlags)
     bitmask = CachedTypeFlag;
     if (requiredFlags & bitmask) {
         type = determineType(device);
-        if (type == QDriveInfo::UnknownDrive) {
+        if (type == QVolumeInfo::UnknownVolume) {
             // test for UNC shares
             if (rootPath.startsWith(QStringLiteral("//"))
                     || fileSystemName == "nfs"
@@ -432,14 +432,14 @@ void QDriveInfoPrivate::doStat(uint requiredFlags)
                     || fileSystemName == "autofs"
                     || fileSystemName == "subfs"
                     || fileSystemName.startsWith("smb")) {
-                type = QDriveInfo::RemoteDrive;
+                type = QVolumeInfo::RemoteVolume;
             }
         }
         setCachedFlag(bitmask);
     }
 }
 
-void QDriveInfoPrivate::getVolumeInfo()
+void QVolumeInfoPrivate::getVolumeInfo()
 {
     QT_STATFSBUF statfs_buf;
     int result;
@@ -456,7 +456,7 @@ void QDriveInfoPrivate::getVolumeInfo()
     }
 }
 
-void QDriveInfoPrivate::getCapabilities()
+void QVolumeInfoPrivate::getCapabilities()
 {
     uint flags = 0;
 
@@ -468,26 +468,26 @@ void QDriveInfoPrivate::getCapabilities()
             || fileSystem == "jfs"
             || fileSystem == "reiserfs"
             || fileSystem == "hfsplus")
-        flags = QDriveInfo::SupportsSymbolicLinks
-                | QDriveInfo::SupportsHardLinks
-                | QDriveInfo::SupportsCaseSensitiveNames
-                | QDriveInfo::SupportsCasePreservedNames
-                | QDriveInfo::SupportsJournaling
-                | QDriveInfo::SupportsSparseFiles;
+        flags = QVolumeInfo::SupportsSymbolicLinks
+                | QVolumeInfo::SupportsHardLinks
+                | QVolumeInfo::SupportsCaseSensitiveNames
+                | QVolumeInfo::SupportsCasePreservedNames
+                | QVolumeInfo::SupportsJournaling
+                | QVolumeInfo::SupportsSparseFiles;
     else if (fileSystem == "ext2"
              || fileSystem == "btrfs"
              || fileSystem == "reiser4"
              || fileSystem == "zfs")
-        flags = QDriveInfo::SupportsSymbolicLinks
-                | QDriveInfo::SupportsHardLinks
-                | QDriveInfo::SupportsCaseSensitiveNames
-                | QDriveInfo::SupportsCasePreservedNames
-                | QDriveInfo::SupportsSparseFiles;
+        flags = QVolumeInfo::SupportsSymbolicLinks
+                | QVolumeInfo::SupportsHardLinks
+                | QVolumeInfo::SupportsCaseSensitiveNames
+                | QVolumeInfo::SupportsCasePreservedNames
+                | QVolumeInfo::SupportsSparseFiles;
     else if (fileSystem == "ntfs-3g"
              || fileSystem.contains("fuse.ntfs")
              || fileSystem.contains("fuseblk.ntfs")
              || fileSystem == "fuseblk")
-        flags = QDriveInfo::SupportsSparseFiles;
+        flags = QVolumeInfo::SupportsSparseFiles;
     else if (fileSystem == "fat32"
              || fileSystem == "vfat"
              || fileSystem == "fat16"
@@ -495,11 +495,11 @@ void QDriveInfoPrivate::getCapabilities()
              || fileSystem == "msdos")
         flags = 0;
     else if (fileSystem == "exfat")
-        flags = QDriveInfo::SupportsCasePreservedNames;
+        flags = QVolumeInfo::SupportsCasePreservedNames;
     else if (fileSystem == "hfs")
-        flags = QDriveInfo::SupportsSymbolicLinks
-                | QDriveInfo::SupportsCasePreservedNames
-                | QDriveInfo::SupportsSparseFiles;
+        flags = QVolumeInfo::SupportsSymbolicLinks
+                | QVolumeInfo::SupportsCasePreservedNames
+                | QVolumeInfo::SupportsSparseFiles;
     else if (fileSystem == "nfs"
              || fileSystem == "cifs"
              || fileSystem.startsWith("smb")
@@ -507,16 +507,16 @@ void QDriveInfoPrivate::getCapabilities()
              || fileSystem == "subfs")
         flags = 0;
 
-    capabilities = QDriveInfo::Capabilities(flags);
+    capabilities = QVolumeInfo::Capabilities(flags);
 }
 
-QList<QDriveInfo> QDriveInfoPrivate::drives()
+QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
 {
-    DriveIterator it;
+    VolumeIterator it;
     if (!it.isValid())
-        return QList<QDriveInfo>() << rootDrive();
+        return QList<QVolumeInfo>() << rootVolume();
 
-    QList<QDriveInfo> drives;
+    QList<QVolumeInfo> volumes;
 
     while (it.next()) {
         const QString mountDir = it.rootPath();
@@ -524,22 +524,22 @@ QList<QDriveInfo> QDriveInfoPrivate::drives()
         if (isPseudoFs(mountDir, fsName))
             continue;
 
-        QDriveInfoPrivate *data = new QDriveInfoPrivate;
+        QVolumeInfoPrivate *data = new QVolumeInfoPrivate;
         data->rootPath = mountDir;
         data->device = QByteArray(it.device());
         data->fileSystemName = fsName;
         data->setCachedFlag(CachedRootPathFlag |
                             CachedFileSystemNameFlag |
                             CachedDeviceFlag);
-        drives.append(QDriveInfo(*data));
+        volumes.append(QVolumeInfo(*data));
     }
 
-    return drives;
+    return volumes;
 }
 
-QDriveInfo QDriveInfoPrivate::rootDrive()
+QVolumeInfo QVolumeInfoPrivate::rootVolume()
 {
-    return QDriveInfo(QStringLiteral("/"));
+    return QVolumeInfo(QStringLiteral("/"));
 }
 
 QT_END_NAMESPACE
