@@ -85,7 +85,7 @@ void QVolumeInfoPrivate::ensureCached(const QVolumeInfo *q, uint flags)
 
     \value UnknownVolume          Volume type cannot be determined.
     \value InternalVolume         Is an internal mass storage Volume like a hard drive.
-    \value RemovableVolume        Is a removable disk like flash disk or MMC.
+    \value RemovableVolume        Is a removable disk like flash disk.
     \value RemoteVolume           Is a network Volume.
     \value OpticalVolume          Is a CD ROM or DVD Volume.
     \value InternalFlashVolume    Is an internal flash disk, or phone memory.
