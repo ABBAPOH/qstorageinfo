@@ -91,6 +91,7 @@ public:
     QByteArray device() const;
     QByteArray fileSystemName() const;
     QString name() const;
+    QString displayName() const;
 
     qint64 bytesTotal() const;
     qint64 bytesFree() const;

@@ -316,6 +316,24 @@ QString QVolumeInfo::name() const
 }
 
 /*!
+    Returns non-empty name of a volume.
+
+    First, tries if name() is not empty, then checks volume's device(), then
+    fallbacks to rootPath().
+*/
+QString QVolumeInfo::displayName() const
+{
+    QVolumeInfoPrivate::ensureCached(this, QVolumeInfoPrivate::CachedNameFlag
+                                     | QVolumeInfoPrivate::CachedDeviceFlag
+                                     | QVolumeInfoPrivate::CachedRootPathFlag);
+    if (!d->name.isEmpty())
+        return d->name;
+    if (!d->device.isEmpty())
+        return QString::fromUtf8(d->device);
+    return d->rootPath;
+}
+
+/*!
     \fn bool QVolumeInfo::isRoot() const
 
     Returns true if this QVolumeInfo represents the system root volume; false otherwise.
