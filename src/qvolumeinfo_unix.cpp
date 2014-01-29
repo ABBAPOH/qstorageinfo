@@ -46,6 +46,8 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QTextStream>
 
+#include <QtCore/private/qcore_unix_p.h>
+
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/statvfs.h>
@@ -57,8 +59,6 @@
 #elif defined(Q_OS_SOLARIS)
 #  include <sys/mnttab.h>
 #endif
-
-#include <QtCore/private/qcore_unix_p.h>
 
 #ifdef Q_OS_BSD4
 #  define QT_STATFSBUF struct statvfs
