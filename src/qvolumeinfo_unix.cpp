@@ -467,45 +467,46 @@ void QVolumeInfoPrivate::getCapabilities()
             || fileSystem == "xfs"
             || fileSystem == "jfs"
             || fileSystem == "reiserfs"
-            || fileSystem == "hfsplus")
+            || fileSystem == "hfsplus") {
         flags = QVolumeInfo::SupportsSymbolicLinks
                 | QVolumeInfo::SupportsHardLinks
                 | QVolumeInfo::SupportsCaseSensitiveNames
                 | QVolumeInfo::SupportsCasePreservedNames
                 | QVolumeInfo::SupportsJournaling
                 | QVolumeInfo::SupportsSparseFiles;
-    else if (fileSystem == "ext2"
+    } else if (fileSystem == "ext2"
              || fileSystem == "btrfs"
              || fileSystem == "reiser4"
-             || fileSystem == "zfs")
+             || fileSystem == "zfs") {
         flags = QVolumeInfo::SupportsSymbolicLinks
                 | QVolumeInfo::SupportsHardLinks
                 | QVolumeInfo::SupportsCaseSensitiveNames
                 | QVolumeInfo::SupportsCasePreservedNames
                 | QVolumeInfo::SupportsSparseFiles;
-    else if (fileSystem == "ntfs-3g"
+    } else if (fileSystem == "ntfs-3g"
              || fileSystem.contains("fuse.ntfs")
              || fileSystem.contains("fuseblk.ntfs")
-             || fileSystem == "fuseblk")
+             || fileSystem == "fuseblk") {
         flags = QVolumeInfo::SupportsSparseFiles;
-    else if (fileSystem == "fat32"
+    } else if (fileSystem == "fat32"
              || fileSystem == "vfat"
              || fileSystem == "fat16"
              || fileSystem == "fat12"
-             || fileSystem == "msdos")
+             || fileSystem == "msdos") {
         flags = 0;
-    else if (fileSystem == "exfat")
+    } else if (fileSystem == "exfat") {
         flags = QVolumeInfo::SupportsCasePreservedNames;
-    else if (fileSystem == "hfs")
+    } else if (fileSystem == "hfs") {
         flags = QVolumeInfo::SupportsSymbolicLinks
                 | QVolumeInfo::SupportsCasePreservedNames
                 | QVolumeInfo::SupportsSparseFiles;
-    else if (fileSystem == "nfs"
+    } else if (fileSystem == "nfs"
              || fileSystem == "cifs"
              || fileSystem.startsWith("smb")
              || fileSystem == "autofs"
-             || fileSystem == "subfs")
+             || fileSystem == "subfs") {
         flags = 0;
+    }
 
     capabilities = QVolumeInfo::Capabilities(flags);
 }
