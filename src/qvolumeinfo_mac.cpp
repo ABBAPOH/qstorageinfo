@@ -42,6 +42,9 @@
 
 #include "qvolumeinfo_p.h"
 
+#include <QtCore/QFileInfo>
+#include <QtCore/private/qcore_mac_p.h>
+
 #include <CoreServices/CoreServices.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreFoundation/CFURLEnumerator.h>
@@ -49,8 +52,6 @@
 #include <IOKit/storage/IODVDMedia.h>
 
 #include <sys/mount.h>
-#include <QtCore/QFileInfo>
-#include <QtCore/private/qcore_mac_p.h>
 
 #define QT_STATFSBUF struct statfs
 #define QT_STATFS    ::statfs
