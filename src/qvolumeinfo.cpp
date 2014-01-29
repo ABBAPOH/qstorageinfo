@@ -324,8 +324,8 @@ QString QVolumeInfo::name() const
 QString QVolumeInfo::displayName() const
 {
     QVolumeInfoPrivate::ensureCached(this, QVolumeInfoPrivate::CachedNameFlag
-                                     | QVolumeInfoPrivate::CachedDeviceFlag
-                                     | QVolumeInfoPrivate::CachedRootPathFlag);
+                                           | QVolumeInfoPrivate::CachedDeviceFlag
+                                           | QVolumeInfoPrivate::CachedRootPathFlag);
     if (!d->name.isEmpty())
         return d->name;
     if (!d->device.isEmpty())
