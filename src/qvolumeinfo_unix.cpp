@@ -487,14 +487,15 @@ void QVolumeInfoPrivate::getCapabilities()
              || fileSystem.contains("fuse.ntfs")
              || fileSystem.contains("fuseblk.ntfs")
              || fileSystem == "fuseblk") {
-        flags = QVolumeInfo::SupportsSparseFiles;
-    } else if (fileSystem == "fat32"
-             || fileSystem == "vfat"
+        flags = QVolumeInfo::SupportsSparseFiles
+                | QVolumeInfo::SupportsCasePreservedNames;
+    } else if (fileSystem == "vfat"
              || fileSystem == "fat16"
              || fileSystem == "fat12"
              || fileSystem == "msdos") {
         flags = 0;
-    } else if (fileSystem == "exfat") {
+    } else if (fileSystem == "fat32"
+             || fileSystem == "exfat") {
         flags = QVolumeInfo::SupportsCasePreservedNames;
     } else if (fileSystem == "hfs") {
         flags = QVolumeInfo::SupportsSymbolicLinks
