@@ -207,20 +207,21 @@ static inline bool CFDictionaryGetBool(CFDictionaryRef dictionary, const void *k
 
 void QVolumeInfoPrivate::getUrlProperties(bool initRootPath)
 {
-    const void *rootPathKey[] = { kCFURLVolumeURLKey };
-    const void *propertyKeys[] = { // kCFURLVolumeNameKey, // 10.7
-                                   // kCFURLVolumeLocalizedNameKey, // 10.7
-                                   kCFURLVolumeTotalCapacityKey,
-                                   kCFURLVolumeAvailableCapacityKey,
-                                   kCFURLVolumeSupportsPersistentIDsKey,
-                                   kCFURLVolumeSupportsSymbolicLinksKey,
-                                   kCFURLVolumeSupportsHardLinksKey,
-                                   kCFURLVolumeSupportsJournalingKey,
-                                   kCFURLVolumeSupportsSparseFilesKey,
-                                   kCFURLVolumeSupportsCaseSensitiveNamesKey,
-                                   kCFURLVolumeSupportsCasePreservedNamesKey,
-                                   // kCFURLVolumeIsReadOnlyKey // 10.7
-                                 };
+    static const void *rootPathKey[] = { kCFURLVolumeURLKey };
+    static const void *propertyKeys[] = {
+        // kCFURLVolumeNameKey, // 10.7
+        // kCFURLVolumeLocalizedNameKey, // 10.7
+        kCFURLVolumeTotalCapacityKey,
+        kCFURLVolumeAvailableCapacityKey,
+        kCFURLVolumeSupportsPersistentIDsKey,
+        kCFURLVolumeSupportsSymbolicLinksKey,
+        kCFURLVolumeSupportsHardLinksKey,
+        kCFURLVolumeSupportsJournalingKey,
+        kCFURLVolumeSupportsSparseFilesKey,
+        kCFURLVolumeSupportsCaseSensitiveNamesKey,
+        kCFURLVolumeSupportsCasePreservedNamesKey,
+        // kCFURLVolumeIsReadOnlyKey // 10.7
+    };
     size_t size = (initRootPath ? sizeof(rootPathKey) : sizeof(propertyKeys) ) / sizeof(void*);
     CFArrayRef keys = CFArrayCreate(kCFAllocatorDefault,
                                     initRootPath ? rootPathKey : propertyKeys,
