@@ -81,7 +81,9 @@ static inline QByteArray getDevice(QVolumeInfo::VolumeType type, const QString &
     const QString path = QDir::toNativeSeparators(rootPath);
     if (type != QVolumeInfo::RemoteVolume) {
         wchar_t deviceBuffer[MAX_PATH + 1];
-        if (::GetVolumeNameForVolumeMountPoint(reinterpret_cast<const wchar_t *>(path.utf16()), deviceBuffer, MAX_PATH))
+        if (::GetVolumeNameForVolumeMountPoint(reinterpret_cast<const wchar_t *>(path.utf16()),
+                                               deviceBuffer,
+                                               MAX_PATH))
             return QString::fromWCharArray(deviceBuffer).toLatin1();
     } else {
         wchar_t buffer[1024];
