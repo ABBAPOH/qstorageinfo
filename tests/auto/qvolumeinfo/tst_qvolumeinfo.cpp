@@ -129,13 +129,7 @@ void tst_QVolumeInfo::testCurrentVolume()
     QVERIFY(volume.isReady());
     QVERIFY(appPath.startsWith(volume.rootPath(), Qt::CaseInsensitive));
     QVERIFY(volume.type() != QVolumeInfo::UnknownVolume);
-#ifndef Q_OS_WIN
     QVERIFY(!volume.device().isEmpty());
-#else
-    // remote volumes have no device on Windows
-    if (volume.type() != QVolumeInfo::RemoteVolume)
-        QVERIFY(!volume.device().isEmpty());
-#endif
     QVERIFY(!volume.fileSystemName().isEmpty());
     QVERIFY(volume.bytesTotal() > 0);
     QVERIFY(volume.bytesFree() > 0);

@@ -76,12 +76,24 @@ void QVolumeInfoPrivate::initRootPath()
         rootPath = QDir::fromNativeSeparators(QString::fromWCharArray(buffer));
 }
 
-static inline QByteArray getDevice(const QString &rootPath)
+static inline QByteArray getDevice(QVolumeInfo::VolumeType type, const QString &rootPath)
 {
     const QString path = QDir::toNativeSeparators(rootPath);
-    wchar_t deviceBuffer[MAX_PATH + 1];
-    if (::GetVolumeNameForVolumeMountPoint(reinterpret_cast<const wchar_t *>(path.utf16()), deviceBuffer, MAX_PATH))
-        return QString::fromWCharArray(deviceBuffer).toLatin1();
+    if (type != QVolumeInfo::RemoteVolume) {
+        wchar_t deviceBuffer[MAX_PATH + 1];
+        if (::GetVolumeNameForVolumeMountPoint(reinterpret_cast<const wchar_t *>(path.utf16()), deviceBuffer, MAX_PATH))
+            return QString::fromWCharArray(deviceBuffer).toLatin1();
+    } else {
+        wchar_t buffer[1024];
+        UNIVERSAL_NAME_INFO *remoteNameInfo = reinterpret_cast<UNIVERSAL_NAME_INFO *>(buffer);
+        DWORD bufferLength = 1024;
+        if (::WNetGetUniversalName(reinterpret_cast<const wchar_t *>(path.utf16()),
+                                   UNIVERSAL_NAME_INFO_LEVEL,
+                                   remoteNameInfo,
+                                   &bufferLength) == NO_ERROR) {
+            return QString::fromWCharArray(remoteNameInfo->lpUniversalName).toUtf8();
+        }
+    }
 
     return QByteArray();
 }
@@ -143,21 +155,16 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
             return;
     }
 
-    bitmask = CachedDeviceFlag;
+    bitmask = CachedDeviceFlag | CachedTypeFlag;
     if (requiredFlags & bitmask) {
-        device = getDevice(rootPath);
+        type = determineType(rootPath);
+        device = getDevice(QVolumeInfo::VolumeType(type), rootPath);
         setCachedFlag(bitmask);
     }
 
     bitmask = CachedBytesTotalFlag | CachedBytesFreeFlag | CachedBytesAvailableFlag;
     if (requiredFlags & bitmask) {
         getDiskFreeSpace();
-        setCachedFlag(bitmask);
-    }
-
-    bitmask = CachedTypeFlag;
-    if (requiredFlags & bitmask) {
-        type = determineType(rootPath);
         setCachedFlag(bitmask);
     }
 }
