@@ -50,19 +50,25 @@
 
 #include <errno.h>
 #include <sys/stat.h>
-#include <sys/statvfs.h>
+#include <sys/vfs.h>
 
 #if defined(Q_OS_BSD4)
 #  include <sys/mount.h>
 #elif defined(Q_OS_LINUX)
 #  include <mntent.h>
+#elif defined(Q_OS_ANDROID)
+#  include <sys/mount.h>
+#  include <mntent.h>
 #elif defined(Q_OS_SOLARIS)
 #  include <sys/mnttab.h>
 #endif
 
-#ifdef Q_OS_BSD4
+#if defined(Q_OS_BSD4)
 #  define QT_STATFSBUF struct statvfs
 #  define QT_STATFS    ::statvfs
+#elif defined(Q_OS_ANDROID)
+#  define QT_STATFS    ::statfs
+#  define QT_STATFSBUF struct statfs
 #else
 #  if defined(QT_LARGEFILE_SUPPORT)
 #    define QT_STATFSBUF struct statvfs64
@@ -172,14 +178,23 @@ inline QByteArray VolumeIterator::device() const
 static const char pathMounted[] = "/etc/mtab";
 
 inline VolumeIterator::VolumeIterator():
+#if defined(Q_OS_ANDROID)
+    fp(::fopen(pathMounted, "r"))
+#else
     fp(::setmntent(pathMounted, "r"))
+#endif
 {
 }
 
 inline VolumeIterator::~VolumeIterator()
 {
+#if defined(Q_OS_ANDROID)
+    if (fp)
+        ::fclose(fp);
+#else
     if (fp)
         ::endmntent(fp);
+#endif
 }
 
 inline bool VolumeIterator::isValid() const
@@ -452,7 +467,11 @@ void QVolumeInfoPrivate::getVolumeInfo()
         bytesFree = statfs_buf.f_bfree * statfs_buf.f_bsize;
         bytesAvailable = statfs_buf.f_bavail * statfs_buf.f_bsize;
 
+#if defined(Q_OS_ANDROID)
+        readOnly = (statfs_buf.f_flags & 1 /* MS_RDONLY */) != 0;
+#else
         readOnly = (statfs_buf.f_flag & ST_RDONLY) != 0;
+#endif
     }
 }
 
