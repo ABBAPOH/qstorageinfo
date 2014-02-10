@@ -43,6 +43,11 @@ DynamicLibrary {
         condition: qbs.targetOS.contains("windows")
         files: "qvolumeinfo_win.cpp"
     }
+    Group {
+        name: "winrt"
+        condition: qbs.targetOS.contains("winrt")
+        files: "qvolumeinfo_winrt.cpp"
+    }
 
     Group {
         fileTagsFilter: product.type
