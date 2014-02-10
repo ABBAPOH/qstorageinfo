@@ -163,6 +163,29 @@ QVariant VolumeModel::data(const QModelIndex &index, int role) const
         default:
             break;
         }
+    } else if (role == Qt::ToolTipRole) {
+        const QVolumeInfo &volume = m_volumes.at(index.row());
+        return tr("Root path : %1\n"
+                  "Name: %2\n"
+                  "Device: %3\n"
+                  "FileSystem: %4\n"
+                  "Type: %5\n"
+                  "Capabilities: %6\n"
+                  "Total size: %7\n"
+                  "Free size: %8\n"
+                  "Available size: %9\n"
+                  "Is Ready: %10"
+                  ).
+                arg(QDir::toNativeSeparators(volume.rootPath())).
+                arg(volume.name()).
+                arg(QString::fromUtf8(volume.device())).
+                arg(QString::fromUtf8(volume.fileSystemName())).
+                arg(typeToString(volume.type())).
+                arg(capabilitiesToString(volume.capabilities())).
+                arg(sizeToString(volume.bytesTotal())).
+                arg(sizeToString(volume.bytesFree())).
+                arg(sizeToString(volume.bytesAvailable())).
+                arg(volume.isReady() ? tr("true") : tr("false"));
     }
 
     return QVariant();
