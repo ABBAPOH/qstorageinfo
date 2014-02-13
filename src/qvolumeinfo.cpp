@@ -282,9 +282,9 @@ QByteArray QVolumeInfo::fileSystemName() const
 /*!
     Returns the device for this volume.
 
-    The result of this function is platform-dependent and usually should not be used. However,
-    you can retrieve this value for some platform-specific purposes. By example, you can get device
-    on Unix and try to read from it manually.
+    The result of this function is platform-dependent - you can use value, returned by this
+    function, for some platform-specific purposes. For example, you can get device on Unix and try
+    to read from it manually.
 
     For example, on Unix filesystems (including Mac OS), this returns the devpath like '/dev/sda0'
     for local volumes. On Windows, returns the UNC path starting with \\\\?\\ for local volumes
@@ -316,10 +316,7 @@ QString QVolumeInfo::name() const
 }
 
 /*!
-    Returns non-empty name of a volume.
-
-    First, tries if name() is not empty, then checks volume's device(), then
-    fallbacks to rootPath().
+    Returns the volume's name, if available, or the device's path if not.
 */
 QString QVolumeInfo::displayName() const
 {
@@ -328,8 +325,6 @@ QString QVolumeInfo::displayName() const
                                            | QVolumeInfoPrivate::CachedRootPathFlag);
     if (!d->name.isEmpty())
         return d->name;
-    if (!d->device.isEmpty())
-        return QString::fromUtf8(d->device);
     return d->rootPath;
 }
 
