@@ -118,7 +118,8 @@ static inline QVolumeInfo::VolumeTypeFlags determineType(const QByteArray &devic
         if (mediaService) {
             if (IOObjectConformsTo(mediaService, kIOCDMediaClass)
                     || IOObjectConformsTo(mediaService, kIODVDMediaClass)) {
-                volumeType |= QVolumeInfo::RemovableVolume | QVolumeInfo::OpticalVolume;
+                volumeType |= QVolumeInfo::VolumeTypeFlags(QVolumeInfo::RemovableVolume
+                                                           | QVolumeInfo::OpticalVolume);
             }
             IOObjectRelease(mediaService);
         }
