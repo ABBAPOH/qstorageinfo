@@ -332,8 +332,8 @@ QString QVolumeInfo::displayName() const
 
     Returns true if this QVolumeInfo represents the system root volume; false otherwise.
 
-    On Unix filesystems, the root volume is a volume mounted at "/", on Windows the root volume is a
-    volume where OS is installed.
+    On Unix filesystems, the root volume is a volume mounted at "/", on Windows the root volume is
+    the volume where OS is installed.
 
     \sa rootVolume()
 */
