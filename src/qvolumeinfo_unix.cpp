@@ -91,22 +91,35 @@ static bool isPseudoFs(const QString &mountDir, const QByteArray &type)
     if (mountDir.startsWith(QStringLiteral("/dev"))
             || mountDir.startsWith(QStringLiteral("/proc")))
         return true;
-    if (type == "rootfs"
-            || type == "none"
-            || type == "proc"
-            || type == "tmpfs"
-            || type == "sysfs"
-            || type == "usbfs"
+    if (type == "anon_inodefs"
+            || type == "autofs"
+            || type == "bdev"
+            || type == "binfmt_misc"
             || type == "cgroup"
             || type == "cpuset"
-            || type == "rpc_pipefs"
-            || type == "devpts"
-            || type == "securityfs"
             || type == "debugfs"
+            || type == "devpts"
+            || type == "devtmpfs"
+            || type == "efivarfs"
+            || type == "fuse"
+            || type == "fuseblk"
             || type == "fusectl"
             || type == "fuse.gvfsd-fuse"
-            || type == "binfmt_misc"
-            || type.startsWith("fuse.vmware"))
+            || type.startsWith("fuse.vmware")
+            || type == "hugetlbfs"
+            || type == "mqueue"
+            || type == "none"
+            || type == "pipefs"
+            || type == "proc"
+            || type == "pstore"
+            || type == "ramfs"
+            || type == "rootfs"
+            || type == "rpc_pipefs"
+            || type == "securityfs"
+            || type == "sockfs"
+            || type == "sysfs"
+            || type == "tmpfs"
+            || type == "usbfs")
         return true;
 
     return false;
