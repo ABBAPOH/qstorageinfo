@@ -410,8 +410,8 @@ void QVolumeInfo::refresh()
 }
 
 /*!
-    Returns list of QVolumeInfo's that corresponds to the list of currently mounted filesystems
-    filtered using \a typeFlags.
+    Returns volumes that corresponds to the list of currently mounted filesystems filtered with \a
+    typeFlags.
 
     On Windows, this returns volumes presented in 'My Computer' folder. On Unix operation systems,
     returns list of all mounted filesystems (except for Mac, where devfs is ignored).
