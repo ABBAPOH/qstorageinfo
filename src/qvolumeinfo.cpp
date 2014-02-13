@@ -372,10 +372,6 @@ bool QVolumeInfo::isValid() const
 /*!
     Returns the type of the filesystem (i.e. remote volume, removable and so on).
 
-    The following example prints the type of a volume.
-
-    \snippet code/src_corelib_io_qvolumeinfo.cpp 3
-
     \sa QVolumeInfo::VolumeTypeFlag
 */
 QVolumeInfo::VolumeTypeFlags QVolumeInfo::typeFlags() const
