@@ -143,7 +143,8 @@ private:
     int i;
 #elif defined(Q_OS_LINUX)
     FILE *fp;
-    struct mntent *mnt;
+    struct mntent mnt;
+    char buffer[3*PATH_MAX];
 #elif defined(Q_OS_SOLARIS)
     FILE *fp;
     struct mnttab mnt;
@@ -192,8 +193,9 @@ inline QByteArray QVolumeIterator::device() const
 static const char pathMounted[] = "/etc/mnttab";
 
 inline QVolumeIterator::QVolumeIterator()
-    : fp(::fopen(pathMounted, "r"))
 {
+    const int fd = qt_safe_open(pathMounted, O_RDONLY);
+    fp = ::fdopen(fd, "r");
 }
 
 inline QVolumeIterator::~QVolumeIterator()
@@ -227,14 +229,15 @@ inline QByteArray QVolumeIterator::device() const
     return QByteArray(mnt->mnt_mntopts);
 }
 
-#else defined(Q_OS_LINUX)
+#else
 
 static const char pathMounted[] = "/etc/mtab";
 
 inline QVolumeIterator::QVolumeIterator()
 {
 #if defined(Q_OS_ANDROID)
-    fp = ::fopen(pathMounted, "r");
+    const int fd = qt_safe_open(pathMounted, O_RDONLY);
+    fp = ::fdopen(fd, "r");
 #else
     fp = ::setmntent(pathMounted, "r");
 #endif
@@ -258,22 +261,22 @@ inline bool QVolumeIterator::isValid() const
 
 inline bool QVolumeIterator::next()
 {
-    return (mnt = ::getmntent(fp));
+    return ::getmntent_r(fp, &mnt, buffer, sizeof(buffer)) != 0;
 }
 
 inline QString QVolumeIterator::rootPath() const
 {
-    return QFile::decodeName(mnt->mnt_dir);
+    return QFile::decodeName(mnt.mnt_dir);
 }
 
 inline QByteArray QVolumeIterator::fileSystemName() const
 {
-    return QByteArray(mnt->mnt_type);
+    return QByteArray(mnt.mnt_type);
 }
 
 inline QByteArray QVolumeIterator::device() const
 {
-    return QByteArray(mnt->mnt_fsname);
+    return QByteArray(mnt.mnt_fsname);
 }
 
 #endif
