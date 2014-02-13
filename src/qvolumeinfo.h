@@ -67,6 +67,17 @@ public:
     };
     Q_DECLARE_FLAGS(VolumeTypeFlags, VolumeTypeFlag)
 
+    enum Capability {
+        SupportsSymbolicLinks = 0x01,
+        SupportsHardLinks = 0x02,
+        SupportsCaseSensitiveNames = 0x04,
+        SupportsCasePreservedNames = 0x08,
+        SupportsJournaling = 0x10,
+        SupportsSparseFiles = 0x20,
+        SupportsPersistentIDs = 0x40
+    };
+    Q_DECLARE_FLAGS(Capabilities, Capability)
+
     QVolumeInfo();
     explicit QVolumeInfo(const QString &path);
     QVolumeInfo(const QVolumeInfo &other);
@@ -96,6 +107,9 @@ public:
 
     VolumeTypeFlags typeFlags() const;
 
+    Capabilities capabilities() const;
+    inline bool hasCapability(Capability capability) const;
+
     void refresh();
 
     static QList<QVolumeInfo> volumes(VolumeTypeFlags typeFlags = AllVolumes);
@@ -109,11 +123,16 @@ private:
     QSharedDataPointer<QVolumeInfoPrivate> d;
 };
 
+Q_DECLARE_OPERATORS_FOR_FLAGS(QVolumeInfo::Capabilities)
+
 inline bool QVolumeInfo::operator!=(const QVolumeInfo &other) const
 { return !(operator==(other)); }
 
 inline bool QVolumeInfo::isRoot() const
 { return *this == QVolumeInfo::rootVolume(); }
+
+inline bool QVolumeInfo::hasCapability(QVolumeInfo::Capability capability) const
+{ return (capabilities() & capability) != 0; }
 
 QT_END_NAMESPACE
 

@@ -83,7 +83,8 @@ public:
         CachedTypeFlag = 0x100,
         CachedReadOnlyFlag = 0x200,
         CachedReadyFlag = 0x400,
-        CachedValidFlag = 0x800
+        CachedValidFlag = 0x800,
+        CachedCapabilitiesFlag = 0x1000
     };
 
     inline void clear()
@@ -127,6 +128,7 @@ protected:
     void getLabel();
 #elif defined(Q_OS_UNIX)
     void getVolumeInfo();
+    void getCapabilities();
 #endif
 
 public:
@@ -138,6 +140,8 @@ public:
     qint64 bytesTotal;
     qint64 bytesFree;
     qint64 bytesAvailable;
+
+    QVolumeInfo::Capabilities capabilities;
 
     ushort typeFlags : 8;
     ushort readOnly : 1;

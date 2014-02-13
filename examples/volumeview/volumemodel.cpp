@@ -60,6 +60,27 @@ static QString sizeToString(qint64 size)
     return VolumeModel::tr("%1 %2").arg(normSize, 0, 'f', intPower > 0 ? 2 : 0).arg(strings[intPower]);
 }
 
+static QString capabilityToString(QVolumeInfo::Capability capability)
+{
+    switch (capability) {
+    case QVolumeInfo::SupportsSymbolicLinks:
+        return VolumeModel::tr("SupportsSymbolicLinks");
+    case QVolumeInfo::SupportsHardLinks:
+        return VolumeModel::tr("SupportsHardLinks");
+    case QVolumeInfo::SupportsCaseSensitiveNames:
+        return VolumeModel::tr("SupportsCaseSensitiveNames");
+    case QVolumeInfo::SupportsCasePreservedNames:
+        return VolumeModel::tr("SupportsCasePreservedNames");
+    case QVolumeInfo::SupportsJournaling:
+        return VolumeModel::tr("SupportsJournaling");
+    case QVolumeInfo::SupportsSparseFiles:
+        return VolumeModel::tr("SupportsSparseFiles");
+    case QVolumeInfo::SupportsPersistentIDs:
+        return VolumeModel::tr("SupportsPersistentIDs");
+    }
+    return QString();
+}
+
 static QString typeToString(QVolumeInfo::VolumeTypeFlag type)
 {
     switch (type) {
@@ -79,6 +100,16 @@ static QString typeToString(QVolumeInfo::VolumeTypeFlag type)
         break;
     }
     return QString();
+}
+
+static QString capabilitiesToString(QVolumeInfo::Capabilities capabilities)
+{
+    QStringList result;
+    for (int i = 1; i != QVolumeInfo::SupportsPersistentIDs << 1; i = i << 1) {
+        if (capabilities & i)
+            result.append(capabilityToString(QVolumeInfo::Capability(i)));
+    }
+    return result.join(" | ");
 }
 
 static QString typesToString(QVolumeInfo::VolumeTypeFlags typeFlags)
@@ -127,6 +158,8 @@ QVariant VolumeModel::data(const QModelIndex &index, int role) const
             return volume.fileSystemName();
         case ColumnType:
             return typesToString(volume.typeFlags());
+        case ColumnCapabilities:
+            return capabilitiesToString(volume.capabilities());
         case ColumnTotal:
             return sizeToString(volume.bytesTotal());
         case ColumnFree:
@@ -145,16 +178,18 @@ QVariant VolumeModel::data(const QModelIndex &index, int role) const
                   "Device: %3\n"
                   "FileSystem: %4\n"
                   "Type: %5\n"
-                  "Total size: %6\n"
-                  "Free size: %7\n"
-                  "Available size: %7\n"
-                  "Is Ready: %9"
+                  "Capabilities: %6\n"
+                  "Total size: %7\n"
+                  "Free size: %8\n"
+                  "Available size: %9\n"
+                  "Is Ready: %10"
                   ).
                 arg(QDir::toNativeSeparators(volume.rootPath())).
                 arg(volume.name()).
                 arg(QString::fromUtf8(volume.device())).
                 arg(QString::fromUtf8(volume.fileSystemName())).
                 arg(typesToString(volume.typeFlags())).
+                arg(capabilitiesToString(volume.capabilities())).
                 arg(sizeToString(volume.bytesTotal())).
                 arg(sizeToString(volume.bytesFree())).
                 arg(sizeToString(volume.bytesAvailable())).
@@ -183,6 +218,8 @@ QVariant VolumeModel::headerData(int section, Qt::Orientation orientation, int r
         return tr("File system");
     case ColumnType:
         return tr("Type");
+    case ColumnCapabilities:
+        return tr("ColumnCapabilities");
     case ColumnTotal:
         return tr("Total");
     case ColumnFree:

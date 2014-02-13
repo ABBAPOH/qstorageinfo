@@ -199,6 +199,22 @@ void QVolumeInfoPrivate::getVolumeInfo()
         name = QString::fromWCharArray(nameBuf);
 
         readOnly = (fileSystemFlags & FILE_READ_ONLY_VOLUME) != 0;
+
+        capabilities = 0;
+        if (fileSystemFlags & FILE_SUPPORTS_OBJECT_IDS) // ?
+            capabilities |= QVolumeInfo::SupportsPersistentIDs;
+        if (fileSystemName.toLower() == "ntfs") // ###
+            capabilities |= QVolumeInfo::SupportsSymbolicLinks;
+        if (fileSystemFlags & FILE_SUPPORTS_HARD_LINKS)
+            capabilities |= QVolumeInfo::SupportsHardLinks;
+        if (fileSystemFlags & FILE_SUPPORTS_USN_JOURNAL) // ?
+            capabilities |= QVolumeInfo::SupportsJournaling;
+        if (fileSystemFlags & FILE_SUPPORTS_SPARSE_FILES)
+            capabilities |= QVolumeInfo::SupportsSparseFiles;
+        if (fileSystemFlags & FILE_CASE_SENSITIVE_SEARCH)
+            capabilities |= QVolumeInfo::SupportsCaseSensitiveNames;
+        if (fileSystemFlags & FILE_CASE_PRESERVED_NAMES)
+            capabilities |= QVolumeInfo::SupportsCasePreservedNames;
     }
 
     ::SetErrorMode(oldmode);

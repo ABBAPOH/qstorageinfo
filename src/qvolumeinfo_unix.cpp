@@ -356,6 +356,9 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
     if (getCachedFlag(requiredFlags))
         return;
 
+    if (requiredFlags & CachedCapabilitiesFlag) // force fs name
+        requiredFlags |= CachedFileSystemNameFlag;
+
     if (!getCachedFlag(CachedRootPathFlag | CachedDeviceFlag | CachedFileSystemNameFlag)) {
         initRootPath();
         setCachedFlag(CachedRootPathFlag | CachedDeviceFlag | CachedFileSystemNameFlag);
@@ -385,6 +388,12 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
         setCachedFlag(bitmask);
     }
 
+    bitmask = CachedCapabilitiesFlag;
+    if (requiredFlags & bitmask) {
+        getCapabilities();
+        setCachedFlag(bitmask);
+    }
+
     bitmask = CachedTypeFlag;
     if (requiredFlags & bitmask) {
         typeFlags = determineType(device, fileSystemName);
@@ -411,6 +420,62 @@ void QVolumeInfoPrivate::getVolumeInfo()
         readOnly = (statfs_buf.f_flag & ST_RDONLY) != 0;
 #endif
     }
+}
+
+void QVolumeInfoPrivate::getCapabilities()
+{
+    uint flags = 0;
+
+    const QByteArray fileSystem = fileSystemName.toLower();
+    if (fileSystem == "btrfs"
+        || fileSystem == "ext3"
+        || fileSystem == "ext3cow"
+        || fileSystem == "ext4"
+        || fileSystem == "jfs"
+        || fileSystem == "hfsplus"
+        || fileSystem == "reiserfs"
+        || fileSystem == "reiser4"
+        || fileSystem == "xfs") {
+        flags = QVolumeInfo::SupportsSymbolicLinks
+                | QVolumeInfo::SupportsHardLinks
+                | QVolumeInfo::SupportsCaseSensitiveNames
+                | QVolumeInfo::SupportsCasePreservedNames
+                | QVolumeInfo::SupportsJournaling
+                | QVolumeInfo::SupportsSparseFiles;
+    } else if (fileSystem == "ext2"
+               || fileSystem == "zfs") {
+        flags = QVolumeInfo::SupportsSymbolicLinks
+                | QVolumeInfo::SupportsHardLinks
+                | QVolumeInfo::SupportsCaseSensitiveNames
+                | QVolumeInfo::SupportsCasePreservedNames
+                | QVolumeInfo::SupportsSparseFiles;
+    } else if (fileSystem.contains("fuse.ntfs")
+               || fileSystem == "fuseblk"
+               || fileSystem.contains("fuseblk.ntfs")
+               || fileSystem == "ntfs-3g") {
+        flags = QVolumeInfo::SupportsSparseFiles
+                | QVolumeInfo::SupportsCasePreservedNames;
+    } else if (fileSystem == "fat16"
+               || fileSystem == "fat12"
+               || fileSystem == "msdos"
+               || fileSystem == "vfat") {
+        flags = 0;
+    } else if (fileSystem == "exfat"
+               || fileSystem == "fat32") {
+        flags = QVolumeInfo::SupportsCasePreservedNames;
+    } else if (fileSystem == "hfs") {
+        flags = QVolumeInfo::SupportsSymbolicLinks
+                | QVolumeInfo::SupportsCasePreservedNames
+                | QVolumeInfo::SupportsSparseFiles;
+    } else if (fileSystem == "autofs"
+               || fileSystem == "cifs"
+               || fileSystem == "nfs"
+               || fileSystem.startsWith("smb")
+               || fileSystem == "subfs") {
+        flags = 0;
+    }
+
+    capabilities = QVolumeInfo::Capabilities(flags);
 }
 
 QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
