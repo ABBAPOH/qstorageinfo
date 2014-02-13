@@ -89,7 +89,7 @@ void QVolumeInfoPrivate::ensureCached(const QVolumeInfo *q, uint flags)
     \value RemoteVolume           Is a network Volume.
     \value OpticalVolume          Is a CD ROM or DVD Volume.
     \value RamVolume              Is a virtual Volume made in RAM.
-    \value VolumeTypeMask         Includes all types
+    \value AllVolumes             Includes all types
 */
 
 /*!
@@ -427,7 +427,7 @@ void QVolumeInfo::refresh()
 */
 QList<QVolumeInfo> QVolumeInfo::volumes(VolumeTypeFlags typeFlags)
 {
-    if (typeFlags == VolumeTypeMask)
+    if (typeFlags == AllVolumes)
         return QVolumeInfoPrivate::volumes();
 
     QList<QVolumeInfo> result;
