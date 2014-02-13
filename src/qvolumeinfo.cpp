@@ -80,7 +80,7 @@ void QVolumeInfoPrivate::ensureCached(const QVolumeInfo *q, uint flags)
 */
 
 /*!
-    \enum QVolumeInfo::VolumeType
+    \enum QVolumeInfo::VolumeTypeFlag
     This enum describes the type of a volume
 
     \value UnknownVolume          Volume type cannot be determined.
@@ -414,10 +414,13 @@ void QVolumeInfo::refresh()
 }
 
 /*!
-    Returns list of QVolumeInfo's that corresponds to the list of currently mounted filesystems.
+    Returns list of QVolumeInfo's that corresponds to the list of currently mounted filesystems
+    filtered using \a typeFlags.
 
     On Windows, this returns volumes presented in 'My Computer' folder. On Unix operation systems,
     returns list of all mounted filesystems (except for Mac, where devfs is ignored).
+
+    By default, returns all currently mounted filesystems.
 
     The example shows how to retrieve all volumes present in the system and skip read-only volumes.
 
