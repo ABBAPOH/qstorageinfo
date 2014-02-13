@@ -167,8 +167,7 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
 
     bitmask = CachedBytesTotalFlag
               | CachedBytesFreeFlag
-              | CachedBytesAvailableFlag
-              | CachedCapabilitiesFlag;
+              | CachedBytesAvailableFlag;
     if (requiredFlags & bitmask) {
         getUrlProperties();
         setCachedFlag(bitmask);
@@ -209,11 +208,6 @@ static inline QString CFDictionaryGetQString(CFDictionaryRef dictionary, const v
     return QCFString::toQString((CFStringRef)CFDictionaryGetValue(dictionary, key));
 }
 
-static inline bool CFDictionaryGetBool(CFDictionaryRef dictionary, const void *key)
-{
-    return CFBooleanGetValue((CFBooleanRef)CFDictionaryGetValue(dictionary, key));
-}
-
 void QVolumeInfoPrivate::getUrlProperties(bool initRootPath)
 {
     static const void *rootPathKey[] = { kCFURLVolumeURLKey };
@@ -222,13 +216,6 @@ void QVolumeInfoPrivate::getUrlProperties(bool initRootPath)
         // kCFURLVolumeLocalizedNameKey, // 10.7
         kCFURLVolumeTotalCapacityKey,
         kCFURLVolumeAvailableCapacityKey,
-        kCFURLVolumeSupportsPersistentIDsKey,
-        kCFURLVolumeSupportsSymbolicLinksKey,
-        kCFURLVolumeSupportsHardLinksKey,
-        kCFURLVolumeSupportsJournalingKey,
-        kCFURLVolumeSupportsSparseFilesKey,
-        kCFURLVolumeSupportsCaseSensitiveNamesKey,
-        kCFURLVolumeSupportsCasePreservedNamesKey,
         // kCFURLVolumeIsReadOnlyKey // 10.7
     };
     size_t size = (initRootPath ? sizeof(rootPathKey) : sizeof(propertyKeys) ) / sizeof(void*);
@@ -277,22 +264,6 @@ void QVolumeInfoPrivate::getUrlProperties(bool initRootPath)
     bytesTotal = CFDictionaryGetInt64(map, kCFURLVolumeTotalCapacityKey);
     bytesAvailable = CFDictionaryGetInt64(map, kCFURLVolumeAvailableCapacityKey);
     bytesFree = bytesAvailable;
-
-    capabilities = 0;
-    if (CFDictionaryGetBool(map, kCFURLVolumeSupportsPersistentIDsKey))
-        capabilities |= QVolumeInfo::SupportsPersistentIDs;
-    if (CFDictionaryGetBool(map, kCFURLVolumeSupportsSymbolicLinksKey))
-        capabilities |= QVolumeInfo::SupportsSymbolicLinks;
-    if (CFDictionaryGetBool(map, kCFURLVolumeSupportsHardLinksKey))
-        capabilities |= QVolumeInfo::SupportsHardLinks;
-    if (CFDictionaryGetBool(map, kCFURLVolumeSupportsJournalingKey))
-        capabilities |= QVolumeInfo::SupportsJournaling;
-    if (CFDictionaryGetBool(map, kCFURLVolumeSupportsSparseFilesKey))
-        capabilities |= QVolumeInfo::SupportsSparseFiles;
-    if (CFDictionaryGetBool(map, kCFURLVolumeSupportsCaseSensitiveNamesKey))
-        capabilities |= QVolumeInfo::SupportsCaseSensitiveNames;
-    if (CFDictionaryGetBool(map, kCFURLVolumeSupportsCasePreservedNamesKey))
-        capabilities |= QVolumeInfo::SupportsCasePreservedNames;
 
     CFRelease(map);
 }

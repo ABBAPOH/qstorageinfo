@@ -93,20 +93,6 @@ void QVolumeInfoPrivate::ensureCached(const QVolumeInfo *q, uint flags)
 */
 
 /*!
-    \enum QVolumeInfo::Capability
-    This enum describes the capabilities provided by filesystem represented by
-    the QVolumeInfo object.
-
-    \value SupportsSymbolicLinks Whether the filesystem supports symbolic links.
-    \value SupportsHardLinks Whether the filesystem supports hard links.
-    \value SupportsCaseSensitiveNames Whether the filesystem supports case-sensitive names.
-    \value SupportsCasePreservedNames Whether the filesystem supports case-preserved names.
-    \value SupportsJournaling Whether the filesystem supports journaling.
-    \value SupportsSparseFiles Whether the filesystem supports sparse files.
-    \value SupportsPersistentIDs Whether the filesystem supports persistent IDs.
-*/
-
-/*!
     Constructs an empty QVolumeInfo object.
 
     This object is not ready for use, invalid and all its parameters are empty.
@@ -379,21 +365,6 @@ QVolumeInfo::VolumeTypeFlags QVolumeInfo::typeFlags() const
     QVolumeInfoPrivate::ensureCached(this, QVolumeInfoPrivate::CachedTypeFlag);
     return QVolumeInfo::VolumeTypeFlags(d->typeFlags);
 }
-
-/*!
-    Returns the flags supported by volume's filesystem.
-*/
-QVolumeInfo::Capabilities QVolumeInfo::capabilities() const
-{
-    QVolumeInfoPrivate::ensureCached(this, QVolumeInfoPrivate::CachedCapabilitiesFlag);
-    return d->capabilities;
-}
-
-/*!
-    \fn bool QVolumeInfo::hasCapability(QVolumeInfo::Capability capability) const
-
-    Returns true if volume's filesystem supports specified \a capability.
-*/
 
 /*!
     Resets QVolumeInfo's internal cache.
