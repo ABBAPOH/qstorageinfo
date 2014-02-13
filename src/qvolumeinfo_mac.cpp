@@ -45,11 +45,12 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/private/qcore_mac_p.h>
 
-#include <CoreServices/CoreServices.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreFoundation/CFURLEnumerator.h>
+#if !defined(Q_OS_IOS)
 #include <IOKit/storage/IOCDMedia.h>
 #include <IOKit/storage/IODVDMedia.h>
+#endif
 
 #include <sys/mount.h>
 
@@ -72,6 +73,7 @@ static inline QVolumeInfo::VolumeType determineType(const QByteArray &device)
 {
     QVolumeInfo::VolumeType volumeType = QVolumeInfo::UnknownVolume;
 
+#if !defined(Q_OS_IOS)
     DASessionRef sessionRef;
     DADiskRef diskRef;
     CFDictionaryRef descriptionDictionary;
@@ -126,6 +128,9 @@ static inline QVolumeInfo::VolumeType determineType(const QByteArray &device)
     CFRelease(descriptionDictionary);
     CFRelease(diskRef);
     CFRelease(sessionRef);
+#else
+    Q_UNUSED(device);
+#endif
 
     return volumeType;
 }
@@ -290,6 +295,7 @@ void QVolumeInfoPrivate::getUrlProperties(bool initRootPath)
 
 void QVolumeInfoPrivate::getLabel()
 {
+#if !defined(Q_OS_IOS)
     // deprecated since 10.8
     FSRef ref;
     FSPathMakeRef((UInt8*)QFile::encodeName(rootPath).constData(), &ref, 0);
@@ -310,6 +316,7 @@ void QVolumeInfoPrivate::getLabel()
                                   0);
     if (error == noErr)
         name = QCFString(FSCreateStringFromHFSUniStr(NULL, &volumeName));
+#endif
 }
 
 QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
