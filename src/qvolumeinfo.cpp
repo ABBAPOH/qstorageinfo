@@ -89,6 +89,7 @@ void QVolumeInfoPrivate::ensureCached(const QVolumeInfo *q, uint flags)
     \value RemoteVolume           Is a network Volume.
     \value OpticalVolume          Is a CD ROM or DVD Volume.
     \value RamVolume              Is a virtual Volume made in RAM.
+    \value VolumeTypeMask         Includes all types
 */
 
 /*!
