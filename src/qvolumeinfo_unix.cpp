@@ -313,43 +313,20 @@ void QVolumeInfoPrivate::initRootPath()
     }
 }
 
-static inline QVolumeInfo::VolumeTypeFlags determineType(const QByteArray &device)
+static inline QVolumeInfo::VolumeTypeFlags determineType(const QByteArray &device, const QByteArray &fileSystemName)
 {
-    QString dmFile;
-    if (device.contains("mapper")) {
-        QT_STATBUF stat_buf;
-        int result;
-        EINTR_LOOP(result, QT_STAT(device.constData(), &stat_buf));
-        if (result == 0)
-            dmFile = QStringLiteral("dm-") + QString::number(stat_buf.st_rdev & 0377);
-    } else {
-        dmFile = QString::fromLatin1(device).section(QLatin1Char('/'), 2, 3);
-        if (dmFile.startsWith(QStringLiteral("mmc"))) {
-            // assume this dev is removable sd/mmc card.
-            return QVolumeInfo::RemovableVolume;
-        }
-
-        if (dmFile.length() > 3) {
-            // if device has number, we need the 'parent' device
-            dmFile.chop(1);
-            if (dmFile.endsWith(QStringLiteral("p")))
-                dmFile.chop(1); // get rid of partition number
-        }
+    // test for UNC shares
+    if (device.startsWith("//")
+            || fileSystemName == "nfs"
+            || fileSystemName == "cifs"
+            || fileSystemName == "autofs"
+            || fileSystemName == "subfs"
+            || fileSystemName.startsWith("smb")) {
+        return QVolumeInfo::RemoteVolume;
     }
-    if (!dmFile.isEmpty()) {
-        dmFile = QStringLiteral("/sys/block/") + dmFile + QStringLiteral("/removable");
 
-        QFile file(dmFile);
-        if (file.open(QIODevice::ReadOnly)) {
-            QTextStream sysinfo(&file); // ### can we get rid of QTextStream ?
-            const QString line = sysinfo.readAll();
-            if (line.contains(QLatin1Char('1')))
-                return QVolumeInfo::RemovableVolume;
-        }
-
-        if (device.startsWith("/dev"))
-            return QVolumeInfo::InternalVolume;
-    }
+    if (device.startsWith("/dev"))
+        return QVolumeInfo::InternalVolume;
 
     return QVolumeInfo::UnknownVolume;
 }
@@ -418,18 +395,7 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
 
     bitmask = CachedTypeFlag;
     if (requiredFlags & bitmask) {
-        typeFlags = determineType(device);
-        if (typeFlags == QVolumeInfo::UnknownVolume) {
-            // test for UNC shares
-            if (rootPath.startsWith(QStringLiteral("//"))
-                    || fileSystemName == "nfs"
-                    || fileSystemName == "cifs"
-                    || fileSystemName == "autofs"
-                    || fileSystemName == "subfs"
-                    || fileSystemName.startsWith("smb")) {
-                typeFlags = QVolumeInfo::RemoteVolume;
-            }
-        }
+        typeFlags = determineType(device, fileSystemName);
         setCachedFlag(bitmask);
     }
 }
