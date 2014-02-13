@@ -56,11 +56,13 @@ class QVolumeInfo
 public:
     enum VolumeType {
         UnknownVolume = 0,
+
         InternalVolume,
         RemovableVolume,
         RemoteVolume,
+
         OpticalVolume,
-        InternalFlashVolume,
+        FlashVolume,
         RamVolume
     };
 

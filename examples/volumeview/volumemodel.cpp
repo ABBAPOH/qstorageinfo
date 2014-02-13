@@ -94,7 +94,7 @@ static QString typeToString(QVolumeInfo::VolumeType type)
         return VolumeModel::tr("Remote");
     case QVolumeInfo::OpticalVolume:
         return VolumeModel::tr("Cdrom");
-    case QVolumeInfo::InternalFlashVolume:
+    case QVolumeInfo::FlashVolume:
         return VolumeModel::tr("Internal flash");
     case QVolumeInfo::RamVolume:
         return VolumeModel::tr("ram flash");
