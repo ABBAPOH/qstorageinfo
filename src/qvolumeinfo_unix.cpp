@@ -463,13 +463,15 @@ void QVolumeInfoPrivate::getCapabilities()
     uint flags = 0;
 
     const QByteArray fileSystem = fileSystemName.toLower();
-    if (fileSystem == "ext4"
+    if (fileSystem == "btrfs"
             || fileSystem == "ext3"
             || fileSystem == "ext3cow"
-            || fileSystem == "xfs"
+            || fileSystem == "ext4"
             || fileSystem == "jfs"
+            || fileSystem == "hfsplus"
             || fileSystem == "reiserfs"
-            || fileSystem == "hfsplus") {
+            || fileSystem == "reiser4"
+            || fileSystem == "xfs") {
         flags = QVolumeInfo::SupportsSymbolicLinks
                 | QVolumeInfo::SupportsHardLinks
                 | QVolumeInfo::SupportsCaseSensitiveNames
@@ -477,37 +479,36 @@ void QVolumeInfoPrivate::getCapabilities()
                 | QVolumeInfo::SupportsJournaling
                 | QVolumeInfo::SupportsSparseFiles;
     } else if (fileSystem == "ext2"
-             || fileSystem == "btrfs"
-             || fileSystem == "reiser4"
-             || fileSystem == "zfs") {
+               || fileSystem == "zfs") {
         flags = QVolumeInfo::SupportsSymbolicLinks
                 | QVolumeInfo::SupportsHardLinks
                 | QVolumeInfo::SupportsCaseSensitiveNames
                 | QVolumeInfo::SupportsCasePreservedNames
                 | QVolumeInfo::SupportsSparseFiles;
-    } else if (fileSystem == "ntfs-3g"
-             || fileSystem.contains("fuse.ntfs")
-             || fileSystem.contains("fuseblk.ntfs")
-             || fileSystem == "fuseblk") {
+    } else if (fileSystem.contains("fuse.ntfs")
+               || fileSystem == "fuseblk"
+               || fileSystem.contains("fuseblk.ntfs")
+               || fileSystem == "ntfs-3g"
+               ) {
         flags = QVolumeInfo::SupportsSparseFiles
                 | QVolumeInfo::SupportsCasePreservedNames;
-    } else if (fileSystem == "vfat"
-             || fileSystem == "fat16"
-             || fileSystem == "fat12"
-             || fileSystem == "msdos") {
+    } else if (fileSystem == "fat16"
+               || fileSystem == "fat12"
+               || fileSystem == "msdos"
+               || fileSystem == "vfat") {
         flags = 0;
-    } else if (fileSystem == "fat32"
-             || fileSystem == "exfat") {
+    } else if (fileSystem == "exfat"
+               || fileSystem == "fat32") {
         flags = QVolumeInfo::SupportsCasePreservedNames;
     } else if (fileSystem == "hfs") {
         flags = QVolumeInfo::SupportsSymbolicLinks
                 | QVolumeInfo::SupportsCasePreservedNames
                 | QVolumeInfo::SupportsSparseFiles;
-    } else if (fileSystem == "nfs"
-             || fileSystem == "cifs"
-             || fileSystem.startsWith("smb")
-             || fileSystem == "autofs"
-             || fileSystem == "subfs") {
+    } else if (fileSystem == "autofs"
+               || fileSystem == "cifs"
+               || fileSystem == "nfs"
+               || fileSystem.startsWith("smb")
+               || fileSystem == "subfs") {
         flags = 0;
     }
 
