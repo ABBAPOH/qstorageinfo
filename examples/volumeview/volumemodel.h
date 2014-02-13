@@ -54,7 +54,6 @@ public:
         ColumnName,
         ColumnDevice,
         ColumnFileSystemName,
-        ColumnType,
         ColumnTotal,
         ColumnFree,
         ColumnAvailable,

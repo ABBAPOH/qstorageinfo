@@ -60,37 +60,6 @@ static QString sizeToString(qint64 size)
     return VolumeModel::tr("%1 %2").arg(normSize, 0, 'f', intPower > 0 ? 2 : 0).arg(strings[intPower]);
 }
 
-static QString typeToString(QVolumeInfo::VolumeTypeFlag type)
-{
-    switch (type) {
-    case QVolumeInfo::UnknownVolume:
-        return VolumeModel::tr("Unknown");
-    case QVolumeInfo::InternalVolume:
-        return VolumeModel::tr("Internal");
-    case QVolumeInfo::RemovableVolume:
-        return VolumeModel::tr("Removable");
-    case QVolumeInfo::RemoteVolume:
-        return VolumeModel::tr("Remote");
-    case QVolumeInfo::OpticalVolume:
-        return VolumeModel::tr("Cdrom");
-    case QVolumeInfo::RamVolume:
-        return VolumeModel::tr("RAM flash");
-    default:
-        break;
-    }
-    return QString();
-}
-
-static QString typesToString(QVolumeInfo::VolumeTypeFlags typeFlags)
-{
-    QStringList result;
-    for (int i = 1; i != QVolumeInfo::RamVolume << 1; i = i << 1) {
-        if (typeFlags & i)
-            result.append(typeToString(QVolumeInfo::VolumeTypeFlag(i)));
-    }
-    return result.join(" | ");
-}
-
 VolumeModel::VolumeModel(QObject *parent) :
     QAbstractTableModel(parent),
     m_volumes(QVolumeInfo::volumes())
@@ -125,8 +94,6 @@ QVariant VolumeModel::data(const QModelIndex &index, int role) const
             return volume.device();
         case ColumnFileSystemName:
             return volume.fileSystemName();
-        case ColumnType:
-            return typesToString(volume.typeFlags());
         case ColumnTotal:
             return sizeToString(volume.bytesTotal());
         case ColumnFree:
@@ -144,17 +111,15 @@ QVariant VolumeModel::data(const QModelIndex &index, int role) const
                   "Name: %2\n"
                   "Device: %3\n"
                   "FileSystem: %4\n"
-                  "Type: %5\n"
-                  "Total size: %6\n"
-                  "Free size: %7\n"
+                  "Total size: %5\n"
+                  "Free size: %6\n"
                   "Available size: %7\n"
-                  "Is Ready: %9"
+                  "Is Ready: %8"
                   ).
                 arg(QDir::toNativeSeparators(volume.rootPath())).
                 arg(volume.name()).
                 arg(QString::fromUtf8(volume.device())).
                 arg(QString::fromUtf8(volume.fileSystemName())).
-                arg(typesToString(volume.typeFlags())).
                 arg(sizeToString(volume.bytesTotal())).
                 arg(sizeToString(volume.bytesFree())).
                 arg(sizeToString(volume.bytesAvailable())).
@@ -181,8 +146,6 @@ QVariant VolumeModel::headerData(int section, Qt::Orientation orientation, int r
         return tr("Device");
     case ColumnFileSystemName:
         return tr("File system");
-    case ColumnType:
-        return tr("Type");
     case ColumnTotal:
         return tr("Total");
     case ColumnFree:

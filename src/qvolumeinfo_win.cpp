@@ -76,10 +76,15 @@ void QVolumeInfoPrivate::initRootPath()
         rootPath = QDir::fromNativeSeparators(QString::fromWCharArray(buffer));
 }
 
-static inline QByteArray getDevice(QVolumeInfo::VolumeTypeFlags typeFlags, const QString &rootPath)
+static inline QByteArray getDevice(const QString &rootPath)
 {
+#if !defined(Q_OS_WINCE)
+    UINT type = ::GetDriveType(reinterpret_cast<const wchar_t *>(rootPath.utf16()));
+#else
+    UINT type = 0;
+#endif
     const QString path = QDir::toNativeSeparators(rootPath);
-    if (!(typeFlags & QVolumeInfo::RemoteVolume)) {
+    if (type != DRIVE_REMOTE) {
         wchar_t deviceBuffer[MAX_PATH + 1];
         if (::GetVolumeNameForVolumeMountPoint(reinterpret_cast<const wchar_t *>(path.utf16()),
                                                deviceBuffer,
@@ -99,33 +104,6 @@ static inline QByteArray getDevice(QVolumeInfo::VolumeTypeFlags typeFlags, const
     }
 
     return QByteArray();
-}
-
-static inline QVolumeInfo::VolumeTypeFlags determineType(const QString &rootPath)
-{
-#if !defined(Q_OS_WINCE)
-    UINT result = ::GetDriveType(reinterpret_cast<const wchar_t *>(rootPath.utf16()));
-    switch (result) {
-    case DRIVE_REMOVABLE:
-        return QVolumeInfo::RemovableVolume;
-    case DRIVE_FIXED:
-        return QVolumeInfo::InternalVolume;
-    case DRIVE_REMOTE:
-        return QVolumeInfo::RemoteVolume;
-    case DRIVE_CDROM:
-        return QVolumeInfo::RemovableVolume | QVolumeInfo::OpticalVolume;
-    case DRIVE_RAMDISK:
-        return QVolumeInfo::InternalVolume | QVolumeInfo::RamVolume;
-    case DRIVE_UNKNOWN:
-    case DRIVE_NO_ROOT_DIR:
-    // fall through
-    default:
-        break;
-    };
-#else
-    Q_UNUSED(rootPath)
-#endif
-    return QVolumeInfo::UnknownVolume;
 }
 
 void QVolumeInfoPrivate::doStat(uint requiredFlags)
@@ -161,10 +139,9 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
             return;
     }
 
-    bitmask = CachedDeviceFlag | CachedTypeFlag;
+    bitmask = CachedDeviceFlag;
     if (requiredFlags & bitmask) {
-        typeFlags = determineType(rootPath);
-        device = getDevice(QVolumeInfo::VolumeTypeFlags(typeFlags), rootPath);
+        device = getDevice(rootPath);
         setCachedFlag(bitmask);
     }
 

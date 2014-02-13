@@ -67,7 +67,6 @@ public:
 
     inline QVolumeInfoPrivate() : QSharedData(),
         bytesTotal(0), bytesFree(0), bytesAvailable(0),
-        typeFlags(QVolumeInfo::UnknownVolume),
         readOnly(false), ready(false), valid(false),
         cachedFlags(0)
     {}
@@ -80,10 +79,9 @@ public:
         CachedBytesTotalFlag = 0x010,
         CachedBytesFreeFlag = 0x020,
         CachedBytesAvailableFlag = 0x040,
-        CachedTypeFlag = 0x100,
-        CachedReadOnlyFlag = 0x200,
-        CachedReadyFlag = 0x400,
-        CachedValidFlag = 0x800
+        CachedReadOnlyFlag = 0x100,
+        CachedReadyFlag = 0x200,
+        CachedValidFlag = 0x400
     };
 
     inline void clear()
@@ -96,7 +94,6 @@ public:
         bytesFree = 0;
         bytesAvailable = 0;
 
-        typeFlags = QVolumeInfo::UnknownVolume;
         readOnly = false;
         ready = false;
         valid = false;
@@ -139,7 +136,6 @@ public:
     qint64 bytesFree;
     qint64 bytesAvailable;
 
-    ushort typeFlags : 8;
     ushort readOnly : 1;
     ushort ready : 1;
     ushort valid : 1;

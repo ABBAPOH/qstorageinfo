@@ -63,7 +63,7 @@ void QVolumeInfoPrivate::ensureCached(const QVolumeInfo *q, uint flags)
     \ingroup shared
 
     Allows retrieving information about the volume's space, its mount point,
-    label, filesystem name and type.
+    label, filesystem name.
 
     You can create an instance of QVolumeInfo passing the path to the volume's
     mount point as the constructor parameter, or you can set it using
@@ -77,19 +77,6 @@ void QVolumeInfoPrivate::ensureCached(const QVolumeInfo *q, uint flags)
     volume of the system and prints information about it.
 
     \snippet code/src_corelib_io_qvolumeinfo.cpp 2
-*/
-
-/*!
-    \enum QVolumeInfo::VolumeTypeFlag
-    This enum describes the type of a volume
-
-    \value UnknownVolume          Volume type cannot be determined.
-    \value InternalVolume         Is an internal mass storage Volume like a hard drive.
-    \value RemovableVolume        Is a removable disk like flash disk.
-    \value RemoteVolume           Is a network Volume.
-    \value OpticalVolume          Is a CD ROM or DVD Volume.
-    \value RamVolume              Is a virtual Volume made in RAM.
-    \value AllVolumes             Includes all types
 */
 
 /*!
@@ -356,17 +343,6 @@ bool QVolumeInfo::isValid() const
 }
 
 /*!
-    Returns the type of the filesystem (i.e. remote volume, removable and so on).
-
-    \sa QVolumeInfo::VolumeTypeFlag
-*/
-QVolumeInfo::VolumeTypeFlags QVolumeInfo::typeFlags() const
-{
-    QVolumeInfoPrivate::ensureCached(this, QVolumeInfoPrivate::CachedTypeFlag);
-    return QVolumeInfo::VolumeTypeFlags(d->typeFlags);
-}
-
-/*!
     Resets QVolumeInfo's internal cache.
 
     QVolumeInfo caches information about volumes to speed up performance. Some information can be
@@ -381,8 +357,7 @@ void QVolumeInfo::refresh()
 }
 
 /*!
-    Returns volumes that corresponds to the list of currently mounted filesystems filtered with \a
-    typeFlags.
+    Returns volumes that corresponds to the list of currently mounted filesystems.
 
     On Windows, this returns volumes presented in 'My Computer' folder. On Unix operation systems,
     returns list of all mounted filesystems (except for Mac, where devfs is ignored).
@@ -395,17 +370,9 @@ void QVolumeInfo::refresh()
 
     \sa rootVolume()
 */
-QList<QVolumeInfo> QVolumeInfo::volumes(VolumeTypeFlags typeFlags)
+QList<QVolumeInfo> QVolumeInfo::volumes()
 {
-    if (typeFlags == AllVolumes)
-        return QVolumeInfoPrivate::volumes();
-
-    QList<QVolumeInfo> result;
-    foreach (const QVolumeInfo &info, QVolumeInfoPrivate::volumes()) {
-        if (info.typeFlags() & typeFlags)
-            result.append(info);
-    }
-    return result;
+    return QVolumeInfoPrivate::volumes();
 }
 
 Q_GLOBAL_STATIC_WITH_ARGS(QVolumeInfo, theRootVolume, (QVolumeInfoPrivate::rootVolume()))

@@ -54,19 +54,6 @@ class QVolumeInfoPrivate;
 class QVolumeInfo
 {
 public:
-    enum VolumeTypeFlag {
-        UnknownVolume = 0,
-
-        InternalVolume = 0x01,
-        RemovableVolume = 0x02,
-        RemoteVolume = 0x04,
-
-        OpticalVolume = 0x10,
-        RamVolume = 0x20,
-        AllVolumes = 0x3f
-    };
-    Q_DECLARE_FLAGS(VolumeTypeFlags, VolumeTypeFlag)
-
     QVolumeInfo();
     explicit QVolumeInfo(const QString &path);
     QVolumeInfo(const QVolumeInfo &other);
@@ -94,11 +81,9 @@ public:
     bool isReady() const;
     bool isValid() const;
 
-    VolumeTypeFlags typeFlags() const;
-
     void refresh();
 
-    static QList<QVolumeInfo> volumes(VolumeTypeFlags typeFlags = AllVolumes);
+    static QList<QVolumeInfo> volumes();
     static QVolumeInfo rootVolume();
 
 protected:

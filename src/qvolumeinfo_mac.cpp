@@ -47,10 +47,6 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreFoundation/CFURLEnumerator.h>
-#if !defined(Q_OS_IOS)
-#include <IOKit/storage/IOCDMedia.h>
-#include <IOKit/storage/IODVDMedia.h>
-#endif
 
 #include <sys/mount.h>
 
@@ -67,73 +63,6 @@ void QVolumeInfoPrivate::initRootPath()
         return;
 
     getUrlProperties(true);
-}
-
-static inline QVolumeInfo::VolumeTypeFlags determineType(const QByteArray &device)
-{
-    QVolumeInfo::VolumeTypeFlags volumeType = QVolumeInfo::UnknownVolume;
-
-#if !defined(Q_OS_IOS)
-    DASessionRef sessionRef;
-    DADiskRef diskRef;
-    CFDictionaryRef descriptionDictionary;
-
-    sessionRef = DASessionCreate(NULL);
-    if (sessionRef == NULL)
-        return QVolumeInfo::UnknownVolume;
-
-    diskRef = DADiskCreateFromBSDName(NULL, sessionRef, device.constData());
-    if (diskRef == NULL) {
-        CFRelease(sessionRef);
-        return QVolumeInfo::UnknownVolume;
-    }
-
-    descriptionDictionary = DADiskCopyDescription(diskRef);
-    if (descriptionDictionary == NULL) {
-        CFRelease(diskRef);
-        CFRelease(sessionRef);
-        return QVolumeInfo::RemoteVolume;
-    }
-
-    CFBooleanRef boolRef;
-    boolRef = (CFBooleanRef)CFDictionaryGetValue(descriptionDictionary,
-                                                 kDADiskDescriptionVolumeNetworkKey);
-    if (boolRef && CFBooleanGetValue(boolRef)){
-        CFRelease(descriptionDictionary);
-        CFRelease(diskRef);
-        CFRelease(sessionRef);
-        return QVolumeInfo::RemoteVolume;
-    }
-
-    boolRef = (CFBooleanRef)CFDictionaryGetValue(descriptionDictionary,
-                                                 kDADiskDescriptionMediaRemovableKey);
-    if (boolRef)
-        volumeType |= CFBooleanGetValue(boolRef) ? QVolumeInfo::RemovableVolume : QVolumeInfo::InternalVolume;
-
-    DADiskRef wholeDisk;
-    wholeDisk = DADiskCopyWholeDisk(diskRef);
-    if (wholeDisk) {
-        io_service_t mediaService;
-        mediaService = DADiskCopyIOMedia(wholeDisk);
-        if (mediaService) {
-            if (IOObjectConformsTo(mediaService, kIOCDMediaClass)
-                    || IOObjectConformsTo(mediaService, kIODVDMediaClass)) {
-                volumeType |= QVolumeInfo::VolumeTypeFlags(QVolumeInfo::RemovableVolume
-                                                           | QVolumeInfo::OpticalVolume);
-            }
-            IOObjectRelease(mediaService);
-        }
-        CFRelease(wholeDisk);
-    }
-
-    CFRelease(descriptionDictionary);
-    CFRelease(diskRef);
-    CFRelease(sessionRef);
-#else
-    Q_UNUSED(device);
-#endif
-
-    return volumeType;
 }
 
 void QVolumeInfoPrivate::doStat(uint requiredFlags)
@@ -170,12 +99,6 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
               | CachedBytesAvailableFlag;
     if (requiredFlags & bitmask) {
         getUrlProperties();
-        setCachedFlag(bitmask);
-    }
-
-    bitmask = CachedTypeFlag;
-    if (requiredFlags & bitmask) {
-        typeFlags = determineType(device);
         setCachedFlag(bitmask);
     }
 }

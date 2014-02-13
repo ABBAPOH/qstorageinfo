@@ -315,24 +315,6 @@ void QVolumeInfoPrivate::initRootPath()
     }
 }
 
-static inline QVolumeInfo::VolumeTypeFlags determineType(const QByteArray &device, const QByteArray &fileSystemName)
-{
-    // test for UNC shares
-    if (device.startsWith("//")
-        || fileSystemName == "nfs"
-        || fileSystemName == "cifs"
-        || fileSystemName == "autofs"
-        || fileSystemName == "subfs"
-        || fileSystemName.startsWith("smb")) {
-        return QVolumeInfo::RemoteVolume;
-    }
-
-    if (device.startsWith("/dev"))
-        return QVolumeInfo::InternalVolume;
-
-    return QVolumeInfo::UnknownVolume;
-}
-
 // TODO: use udev to determine info.
 static inline QString getName(const QByteArray &device)
 {
@@ -382,12 +364,6 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
     bitmask = CachedNameFlag;
     if (requiredFlags & bitmask) {
         name = getName(device);
-        setCachedFlag(bitmask);
-    }
-
-    bitmask = CachedTypeFlag;
-    if (requiredFlags & bitmask) {
-        typeFlags = determineType(device, fileSystemName);
         setCachedFlag(bitmask);
     }
 }
