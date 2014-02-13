@@ -11,6 +11,11 @@ Product {
 
     cpp.includePaths: "../../../include"
 
+    Properties {
+        condition: qbs.targetOS.contains("unix") && !qbs.targetOS.contains("osx")
+        cpp.rpaths: [ "$ORIGIN/../lib" + project.lib_suffix ]
+    }
+
     files: "tst_qvolumeinfo.cpp"
 
     Group {
