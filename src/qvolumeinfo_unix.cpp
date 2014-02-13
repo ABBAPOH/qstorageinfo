@@ -227,7 +227,7 @@ inline QByteArray QVolumeIterator::device() const
     return QByteArray(mnt->mnt_mntopts);
 }
 
-#elif defined(Q_OS_LINUX)
+#else defined(Q_OS_LINUX)
 
 static const char pathMounted[] = "/etc/mtab";
 
@@ -276,40 +276,6 @@ inline QByteArray QVolumeIterator::device() const
     return QByteArray(mnt->mnt_fsname);
 }
 
-#else // no information available
-
-inline QVolumeIterator::QVolumeIterator()
-{
-}
-
-inline QVolumeIterator::~QVolumeIterator()
-{
-}
-
-inline bool QVolumeIterator::isValid() const
-{
-    return false;
-}
-
-inline bool QVolumeIterator::next()
-{
-    return false;
-}
-
-inline QString QVolumeIterator::rootPath() const
-{
-    return QString();
-}
-
-inline QByteArray QVolumeIterator::fileSystemName() const
-{
-    return QByteArray();
-}
-
-inline QByteArray QVolumeIterator::device() const
-{
-    return QByteArray();
-}
 #endif
 
 void QVolumeInfoPrivate::initRootPath()
