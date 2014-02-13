@@ -56,6 +56,7 @@
 #  include <sys/mount.h>
 #elif defined(Q_OS_LINUX)
 #  include <mntent.h>
+#  include <sys/statvfs.h>
 #elif defined(Q_OS_ANDROID)
 #  include <sys/mount.h>
 #  include <mntent.h>
