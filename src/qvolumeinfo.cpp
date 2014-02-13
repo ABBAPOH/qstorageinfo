@@ -429,9 +429,17 @@ void QVolumeInfo::refresh()
 
     \sa rootVolume()
 */
-QList<QVolumeInfo> QVolumeInfo::volumes()
+QList<QVolumeInfo> QVolumeInfo::volumes(VolumeTypeFlags typeFlags)
 {
-    return QVolumeInfoPrivate::volumes();
+    if (typeFlags == VolumeTypeMask)
+        return QVolumeInfoPrivate::volumes();
+
+    QList<QVolumeInfo> result;
+    foreach (const QVolumeInfo &info, QVolumeInfoPrivate::volumes()) {
+        if (info.typeFlags() & typeFlags)
+            result.append(info);
+    }
+    return result;
 }
 
 Q_GLOBAL_STATIC_WITH_ARGS(QVolumeInfo, theRootVolume, (QVolumeInfoPrivate::rootVolume()))

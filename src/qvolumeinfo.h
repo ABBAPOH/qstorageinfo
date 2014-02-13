@@ -62,7 +62,8 @@ public:
         RemoteVolume = 0x04,
 
         OpticalVolume = 0x10,
-        RamVolume = 0x20
+        RamVolume = 0x20,
+        VolumeTypeMask = 0x3f
     };
     Q_DECLARE_FLAGS(VolumeTypeFlags, VolumeTypeFlag)
 
@@ -111,7 +112,7 @@ public:
 
     void refresh();
 
-    static QList<QVolumeInfo> volumes();
+    static QList<QVolumeInfo> volumes(VolumeTypeFlags typeFlags = VolumeTypeMask);
     static QVolumeInfo rootVolume();
 
 protected:
