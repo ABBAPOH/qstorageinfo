@@ -443,7 +443,7 @@ void QVolumeInfoPrivate::getCapabilities()
                 | QVolumeInfo::SupportsJournaling
                 | QVolumeInfo::SupportsSparseFiles;
     } else if (fileSystem == "ext2"
-           || fileSystem == "zfs") {
+               || fileSystem == "zfs") {
         flags = QVolumeInfo::SupportsSymbolicLinks
                 | QVolumeInfo::SupportsHardLinks
                 | QVolumeInfo::SupportsCaseSensitiveNames
