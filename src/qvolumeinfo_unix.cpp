@@ -313,7 +313,7 @@ void QVolumeInfoPrivate::initRootPath()
     }
 }
 
-static inline QVolumeInfo::VolumeType determineType(const QByteArray &device)
+static inline QVolumeInfo::VolumeTypeFlags determineType(const QByteArray &device)
 {
     QString dmFile;
     if (device.contains("mapper")) {
@@ -418,8 +418,8 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
 
     bitmask = CachedTypeFlag;
     if (requiredFlags & bitmask) {
-        type = determineType(device);
-        if (type == QVolumeInfo::UnknownVolume) {
+        typeFlags = determineType(device);
+        if (typeFlags == QVolumeInfo::UnknownVolume) {
             // test for UNC shares
             if (rootPath.startsWith(QStringLiteral("//"))
                     || fileSystemName == "nfs"
@@ -427,7 +427,7 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
                     || fileSystemName == "autofs"
                     || fileSystemName == "subfs"
                     || fileSystemName.startsWith("smb")) {
-                type = QVolumeInfo::RemoteVolume;
+                typeFlags = QVolumeInfo::RemoteVolume;
             }
         }
         setCachedFlag(bitmask);

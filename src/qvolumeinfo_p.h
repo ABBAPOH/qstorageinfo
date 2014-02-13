@@ -67,7 +67,7 @@ public:
 
     inline QVolumeInfoPrivate() : QSharedData(),
         bytesTotal(0), bytesFree(0), bytesAvailable(0),
-        type(QVolumeInfo::UnknownVolume),
+        typeFlags(QVolumeInfo::UnknownVolume),
         readOnly(false), ready(false), valid(false),
         cachedFlags(0)
     {}
@@ -97,7 +97,7 @@ public:
         bytesFree = 0;
         bytesAvailable = 0;
 
-        type = QVolumeInfo::UnknownVolume;
+        typeFlags = QVolumeInfo::UnknownVolume;
         readOnly = false;
         ready = false;
         valid = false;
@@ -143,7 +143,7 @@ public:
 
     QVolumeInfo::Capabilities capabilities;
 
-    ushort type : 8;
+    ushort typeFlags : 8;
     ushort readOnly : 1;
     ushort ready : 1;
     ushort valid : 1;

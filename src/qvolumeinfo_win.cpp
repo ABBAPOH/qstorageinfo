@@ -76,10 +76,10 @@ void QVolumeInfoPrivate::initRootPath()
         rootPath = QDir::fromNativeSeparators(QString::fromWCharArray(buffer));
 }
 
-static inline QByteArray getDevice(QVolumeInfo::VolumeType type, const QString &rootPath)
+static inline QByteArray getDevice(QVolumeInfo::VolumeTypeFlags typeFlags, const QString &rootPath)
 {
     const QString path = QDir::toNativeSeparators(rootPath);
-    if (type != QVolumeInfo::RemoteVolume) {
+    if (!(typeFlags & QVolumeInfo::RemoteVolume)) {
         wchar_t deviceBuffer[MAX_PATH + 1];
         if (::GetVolumeNameForVolumeMountPoint(reinterpret_cast<const wchar_t *>(path.utf16()),
                                                deviceBuffer,
@@ -100,7 +100,7 @@ static inline QByteArray getDevice(QVolumeInfo::VolumeType type, const QString &
     return QByteArray();
 }
 
-static inline QVolumeInfo::VolumeType determineType(const QString &rootPath)
+static inline QVolumeInfo::VolumeTypeFlags determineType(const QString &rootPath)
 {
 #if !defined(Q_OS_WINCE)
     UINT result = ::GetDriveType(reinterpret_cast<const wchar_t *>(rootPath.utf16()));
@@ -112,9 +112,9 @@ static inline QVolumeInfo::VolumeType determineType(const QString &rootPath)
     case DRIVE_REMOTE:
         return QVolumeInfo::RemoteVolume;
     case DRIVE_CDROM:
-        return QVolumeInfo::OpticalVolume;
+        return QVolumeInfo::RemovableVolume | QVolumeInfo::OpticalVolume;
     case DRIVE_RAMDISK:
-        return QVolumeInfo::RamVolume;
+        return QVolumeInfo::InternalVolume | QVolumeInfo::RamVolume;
     case DRIVE_UNKNOWN:
     case DRIVE_NO_ROOT_DIR:
     // fall through
@@ -159,8 +159,8 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
 
     bitmask = CachedDeviceFlag | CachedTypeFlag;
     if (requiredFlags & bitmask) {
-        type = determineType(rootPath);
-        device = getDevice(QVolumeInfo::VolumeType(type), rootPath);
+        typeFlags = determineType(rootPath);
+        device = getDevice(QVolumeInfo::VolumeTypeFlags(typeFlags), rootPath);
         setCachedFlag(bitmask);
     }
 

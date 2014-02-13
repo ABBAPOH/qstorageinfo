@@ -69,9 +69,9 @@ void QVolumeInfoPrivate::initRootPath()
     getUrlProperties(true);
 }
 
-static inline QVolumeInfo::VolumeType determineType(const QByteArray &device)
+static inline QVolumeInfo::VolumeTypeFlags determineType(const QByteArray &device)
 {
-    QVolumeInfo::VolumeType volumeType = QVolumeInfo::UnknownVolume;
+    QVolumeInfo::VolumeTypeFlags volumeType = QVolumeInfo::UnknownVolume;
 
 #if !defined(Q_OS_IOS)
     DASessionRef sessionRef;
@@ -108,7 +108,7 @@ static inline QVolumeInfo::VolumeType determineType(const QByteArray &device)
     boolRef = (CFBooleanRef)CFDictionaryGetValue(descriptionDictionary,
                                                  kDADiskDescriptionMediaRemovableKey);
     if (boolRef)
-        volumeType = CFBooleanGetValue(boolRef) ? QVolumeInfo::RemovableVolume : QVolumeInfo::InternalVolume;
+        volumeType |= CFBooleanGetValue(boolRef) ? QVolumeInfo::RemovableVolume : QVolumeInfo::InternalVolume;
 
     DADiskRef wholeDisk;
     wholeDisk = DADiskCopyWholeDisk(diskRef);
@@ -118,7 +118,7 @@ static inline QVolumeInfo::VolumeType determineType(const QByteArray &device)
         if (mediaService) {
             if (IOObjectConformsTo(mediaService, kIOCDMediaClass)
                     || IOObjectConformsTo(mediaService, kIODVDMediaClass)) {
-                volumeType = QVolumeInfo::OpticalVolume;
+                volumeType |= QVolumeInfo::RemovableVolume | QVolumeInfo::OpticalVolume;
             }
             IOObjectRelease(mediaService);
         }
@@ -173,7 +173,7 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
 
     bitmask = CachedTypeFlag;
     if (requiredFlags & bitmask) {
-        type = determineType(device);
+        typeFlags = determineType(device);
         setCachedFlag(bitmask);
     }
 }

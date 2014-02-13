@@ -54,17 +54,17 @@ class QVolumeInfoPrivate;
 class QVolumeInfo
 {
 public:
-    enum VolumeType {
+    enum VolumeTypeFlag {
         UnknownVolume = 0,
 
-        InternalVolume,
-        RemovableVolume,
-        RemoteVolume,
+        InternalVolume = 0x01,
+        RemovableVolume = 0x02,
+        RemoteVolume = 0x04,
 
-        OpticalVolume,
-        FlashVolume,
-        RamVolume
+        OpticalVolume = 0x10,
+        RamVolume = 0x20
     };
+    Q_DECLARE_FLAGS(VolumeTypeFlags, VolumeTypeFlag)
 
     enum Capability {
         SupportsSymbolicLinks = 0x01,
@@ -104,7 +104,7 @@ public:
     bool isReady() const;
     bool isValid() const;
 
-    VolumeType type() const;
+    VolumeTypeFlags typeFlags() const;
 
     Capabilities capabilities() const;
     inline bool hasCapability(Capability capability) const;

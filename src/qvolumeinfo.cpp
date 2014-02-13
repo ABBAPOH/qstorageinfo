@@ -88,7 +88,6 @@ void QVolumeInfoPrivate::ensureCached(const QVolumeInfo *q, uint flags)
     \value RemovableVolume        Is a removable disk like flash disk.
     \value RemoteVolume           Is a network Volume.
     \value OpticalVolume          Is a CD ROM or DVD Volume.
-    \value InternalFlashVolume    Is an internal flash disk, or phone memory.
     \value RamVolume              Is a virtual Volume made in RAM.
 */
 
@@ -381,12 +380,12 @@ bool QVolumeInfo::isValid() const
 
     \snippet code/src_corelib_io_qvolumeinfo.cpp 3
 
-    \sa QVolumeInfo::VolumeType
+    \sa QVolumeInfo::VolumeTypeFlag
 */
-QVolumeInfo::VolumeType QVolumeInfo::type() const
+QVolumeInfo::VolumeTypeFlags QVolumeInfo::typeFlags() const
 {
     QVolumeInfoPrivate::ensureCached(this, QVolumeInfoPrivate::CachedTypeFlag);
-    return QVolumeInfo::VolumeType(d->type);
+    return QVolumeInfo::VolumeTypeFlags(d->typeFlags);
 }
 
 /*!

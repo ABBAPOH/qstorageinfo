@@ -81,7 +81,7 @@ static QString capabilityToString(QVolumeInfo::Capability capability)
     return QString();
 }
 
-static QString typeToString(QVolumeInfo::VolumeType type)
+static QString typeToString(QVolumeInfo::VolumeTypeFlag type)
 {
     switch (type) {
     case QVolumeInfo::UnknownVolume:
@@ -94,10 +94,8 @@ static QString typeToString(QVolumeInfo::VolumeType type)
         return VolumeModel::tr("Remote");
     case QVolumeInfo::OpticalVolume:
         return VolumeModel::tr("Cdrom");
-    case QVolumeInfo::FlashVolume:
-        return VolumeModel::tr("Internal flash");
     case QVolumeInfo::RamVolume:
-        return VolumeModel::tr("ram flash");
+        return VolumeModel::tr("RAM flash");
     default:
         break;
     }
@@ -110,6 +108,16 @@ static QString capabilitiesToString(QVolumeInfo::Capabilities capabilities)
     for (int i = 1; i != QVolumeInfo::SupportsPersistentIDs << 1; i = i << 1) {
         if (capabilities & i)
             result.append(capabilityToString(QVolumeInfo::Capability(i)));
+    }
+    return result.join(" | ");
+}
+
+static QString typesToString(QVolumeInfo::VolumeTypeFlags typeFlags)
+{
+    QStringList result;
+    for (int i = 1; i != QVolumeInfo::RamVolume << 1; i = i << 1) {
+        if (typeFlags & i)
+            result.append(typeToString(QVolumeInfo::VolumeTypeFlag(i)));
     }
     return result.join(" | ");
 }
@@ -149,7 +157,7 @@ QVariant VolumeModel::data(const QModelIndex &index, int role) const
         case ColumnFileSystemName:
             return volume.fileSystemName();
         case ColumnType:
-            return typeToString(volume.type());
+            return typesToString(volume.typeFlags());
         case ColumnCapabilities:
             return capabilitiesToString(volume.capabilities());
         case ColumnTotal:
@@ -180,7 +188,7 @@ QVariant VolumeModel::data(const QModelIndex &index, int role) const
                 arg(volume.name()).
                 arg(QString::fromUtf8(volume.device())).
                 arg(QString::fromUtf8(volume.fileSystemName())).
-                arg(typeToString(volume.type())).
+                arg(typesToString(volume.typeFlags())).
                 arg(capabilitiesToString(volume.capabilities())).
                 arg(sizeToString(volume.bytesTotal())).
                 arg(sizeToString(volume.bytesFree())).
