@@ -231,13 +231,13 @@ inline QByteArray QVolumeIterator::device() const
 
 static const char pathMounted[] = "/etc/mtab";
 
-inline QVolumeIterator::QVolumeIterator():
-#if defined(Q_OS_ANDROID)
-    fp(::fopen(pathMounted, "r"))
-#else
-    fp(::setmntent(pathMounted, "r"))
-#endif
+inline QVolumeIterator::QVolumeIterator()
 {
+#if defined(Q_OS_ANDROID)
+    fp = ::fopen(pathMounted, "r");
+#else
+    fp = ::setmntent(pathMounted, "r");
+#endif
 }
 
 inline QVolumeIterator::~QVolumeIterator()
