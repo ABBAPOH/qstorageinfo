@@ -354,10 +354,7 @@ static inline QVolumeInfo::VolumeType determineType(const QByteArray &device)
     return QVolumeInfo::UnknownVolume;
 }
 
-// Unfortunately, I don't know other way to get labels without root privileges.
-// Maybe libudev can provide this information. TODO: explore it
-// If we have udev installed in the system, proper symlinks are created by it,
-// so we don't need to link to libudev.
+// TODO: use udev to determine info.
 static inline QString getName(const QByteArray &device)
 {
 #ifdef Q_OS_LINUX
