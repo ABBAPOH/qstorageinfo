@@ -89,8 +89,9 @@ static bool isPseudoFs(const QString &mountDir, const QByteArray &type)
     if (type.startsWith('/'))
         return false;
     if (mountDir.startsWith(QStringLiteral("/dev"))
-            || mountDir.startsWith(QStringLiteral("/proc")))
+            || mountDir.startsWith(QStringLiteral("/proc"))) {
         return true;
+    }
     if (type == "anon_inodefs"
             || type == "autofs"
             || type == "bdev"
@@ -119,8 +120,9 @@ static bool isPseudoFs(const QString &mountDir, const QByteArray &type)
             || type == "sockfs"
             || type == "sysfs"
             || type == "tmpfs"
-            || type == "usbfs")
+            || type == "usbfs") {
         return true;
+    }
 
     return false;
 }
@@ -368,7 +370,6 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
     if (!getCachedFlag(CachedValidFlag))
         requiredFlags |= CachedValidFlag; // force volume validation
 
-
     uint bitmask = 0;
 
     bitmask = CachedBytesTotalFlag | CachedBytesFreeFlag | CachedBytesAvailableFlag
@@ -451,8 +452,7 @@ void QVolumeInfoPrivate::getCapabilities()
     } else if (fileSystem.contains("fuse.ntfs")
                || fileSystem == "fuseblk"
                || fileSystem.contains("fuseblk.ntfs")
-               || fileSystem == "ntfs-3g"
-               ) {
+               || fileSystem == "ntfs-3g") {
         flags = QVolumeInfo::SupportsSparseFiles
                 | QVolumeInfo::SupportsCasePreservedNames;
     } else if (fileSystem == "fat16"

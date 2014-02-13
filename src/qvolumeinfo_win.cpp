@@ -83,8 +83,9 @@ static inline QByteArray getDevice(QVolumeInfo::VolumeTypeFlags typeFlags, const
         wchar_t deviceBuffer[MAX_PATH + 1];
         if (::GetVolumeNameForVolumeMountPoint(reinterpret_cast<const wchar_t *>(path.utf16()),
                                                deviceBuffer,
-                                               MAX_PATH))
+                                               MAX_PATH)) {
             return QString::fromWCharArray(deviceBuffer).toLatin1();
+        }
     } else {
         wchar_t buffer[1024];
         UNIVERSAL_NAME_INFO *remoteNameInfo = reinterpret_cast<UNIVERSAL_NAME_INFO *>(buffer);
@@ -145,8 +146,11 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
 
     uint bitmask = 0;
 
-    bitmask = CachedFileSystemNameFlag | CachedNameFlag
-            | CachedReadOnlyFlag | CachedReadyFlag | CachedValidFlag;
+    bitmask = CachedFileSystemNameFlag
+              | CachedNameFlag
+              | CachedReadOnlyFlag
+              | CachedReadyFlag
+              | CachedValidFlag;
     if (requiredFlags & bitmask) {
         getVolumeInfo();
         if (valid && !ready)

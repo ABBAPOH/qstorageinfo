@@ -165,8 +165,10 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
         setCachedFlag(bitmask);
     }
 
-    bitmask = CachedBytesTotalFlag | CachedBytesFreeFlag | CachedBytesAvailableFlag
-            | CachedCapabilitiesFlag;
+    bitmask = CachedBytesTotalFlag
+              | CachedBytesFreeFlag
+              | CachedBytesAvailableFlag
+              | CachedCapabilitiesFlag;
     if (requiredFlags & bitmask) {
         getUrlProperties();
         setCachedFlag(bitmask);
@@ -193,11 +195,12 @@ void QVolumeInfoPrivate::getPosixInfo()
 static inline qint64 CFDictionaryGetInt64(CFDictionaryRef dictionary, const void *key)
 {
     CFNumberRef cfNumber = (CFNumberRef)CFDictionaryGetValue(dictionary, key);
-    Q_ASSERT(cfNumber);
+    if (!cfNumber)
+        return -1;
     qint64 result;
     bool ok = CFNumberGetValue(cfNumber, kCFNumberSInt64Type, &result);
-    Q_ASSERT(ok);
-    Q_UNUSED(ok);
+    if (!ok)
+        return -1;
     return result;
 }
 
@@ -299,7 +302,7 @@ void QVolumeInfoPrivate::getLabel()
 #if !defined(Q_OS_IOS)
     // deprecated since 10.8
     FSRef ref;
-    FSPathMakeRef((UInt8*)QFile::encodeName(rootPath).constData(), &ref, 0);
+    FSPathMakeRef(reinterpret_cast<const UInt8*>(QFile::encodeName(rootPath).constData()), &ref, 0);
 
     // deprecated since 10.8
     FSCatalogInfo catalogInfo;
