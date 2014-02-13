@@ -282,10 +282,6 @@ QByteArray QVolumeInfo::fileSystemName() const
 /*!
     Returns the device for this volume.
 
-    The result of this function is platform-dependent - you can use value, returned by this
-    function, for some platform-specific purposes. For example, you can get device on Unix and try
-    to read from it manually.
-
     For example, on Unix filesystems (including Mac OS), this returns the devpath like '/dev/sda0'
     for local volumes. On Windows, returns the UNC path starting with \\\\?\\ for local volumes
     (i.e. volume GUID).
