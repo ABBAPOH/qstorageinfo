@@ -152,9 +152,9 @@ private:
 
 #if defined(Q_OS_BSD4)
 
-inline QVolumeIterator::QVolumeIterator():
-    count(getmntinfo(&stat_buf, 0)),
-    i(-1)
+inline QVolumeIterator::QVolumeIterator()
+    : count(getmntinfo(&stat_buf, 0)),
+      i(-1)
 {
 }
 
@@ -185,6 +185,46 @@ inline QByteArray QVolumeIterator::fileSystemName() const
 inline QByteArray QVolumeIterator::device() const
 {
     return QByteArray(stat_buf[i].f_mntfromname);
+}
+
+#elif defined(Q_OS_SOLARIS)
+
+static const char pathMounted[] = "/etc/mnttab";
+
+inline QVolumeIterator::QVolumeIterator()
+    : fp(::fopen(pathMounted, "r"))
+{
+}
+
+inline QVolumeIterator::~QVolumeIterator()
+{
+    if (fp)
+        ::fclose(fp);
+}
+
+inline bool QVolumeIterator::isValid() const
+{
+    return fp != 0;
+}
+
+inline bool QVolumeIterator::next()
+{
+    return (getmntent(fp, &mnt) == 0);
+}
+
+inline QString QVolumeIterator::rootPath() const
+{
+    return QFile::decodeName(mnt->mnt_mountp);
+}
+
+inline QByteArray QVolumeIterator::fileSystemName() const
+{
+    return QByteArray(mnt->mnt_fstype);
+}
+
+inline QByteArray QVolumeIterator::device() const
+{
+    return QByteArray(mnt->mnt_mntopts);
 }
 
 #elif defined(Q_OS_LINUX)
@@ -234,46 +274,6 @@ inline QByteArray QVolumeIterator::fileSystemName() const
 inline QByteArray QVolumeIterator::device() const
 {
     return QByteArray(mnt->mnt_fsname);
-}
-
-#elif defined(Q_OS_SOLARIS)
-
-static const char pathMounted[] = "/etc/mnttab";
-
-inline QVolumeIterator::QVolumeIterator():
-    fp(::fopen(pathMounted, "r"))
-{
-}
-
-inline QVolumeIterator::~QVolumeIterator()
-{
-    if (fp)
-        ::fclose(fp);
-}
-
-inline bool QVolumeIterator::isValid() const
-{
-    return fp != 0;
-}
-
-inline bool QVolumeIterator::next()
-{
-    return (getmntent(fp, &mnt) == 0);
-}
-
-inline QString QVolumeIterator::rootPath() const
-{
-    return QFile::decodeName(mnt->mnt_mountp);
-}
-
-inline QByteArray QVolumeIterator::fileSystemName() const
-{
-    return QByteArray(mnt->mnt_fstype);
-}
-
-inline QByteArray QVolumeIterator::device() const
-{
-    return QByteArray(mnt->mnt_mntopts);
 }
 
 #else // no information available
