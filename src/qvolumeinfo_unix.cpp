@@ -89,38 +89,38 @@ static bool isPseudoFs(const QString &mountDir, const QByteArray &type)
     if (type.startsWith('/'))
         return false;
     if (mountDir.startsWith(QStringLiteral("/dev"))
-            || mountDir.startsWith(QStringLiteral("/proc"))) {
+        || mountDir.startsWith(QStringLiteral("/proc"))) {
         return true;
     }
     if (type == "anon_inodefs"
-            || type == "autofs"
-            || type == "bdev"
-            || type == "binfmt_misc"
-            || type == "cgroup"
-            || type == "cpuset"
-            || type == "debugfs"
-            || type == "devpts"
-            || type == "devtmpfs"
-            || type == "efivarfs"
-            || type == "fuse"
-            || type == "fuseblk"
-            || type == "fusectl"
-            || type == "fuse.gvfsd-fuse"
-            || type.startsWith("fuse.vmware")
-            || type == "hugetlbfs"
-            || type == "mqueue"
-            || type == "none"
-            || type == "pipefs"
-            || type == "proc"
-            || type == "pstore"
-            || type == "ramfs"
-            || type == "rootfs"
-            || type == "rpc_pipefs"
-            || type == "securityfs"
-            || type == "sockfs"
-            || type == "sysfs"
-            || type == "tmpfs"
-            || type == "usbfs") {
+        || type == "autofs"
+        || type == "bdev"
+        || type == "binfmt_misc"
+        || type == "cgroup"
+        || type == "cpuset"
+        || type == "debugfs"
+        || type == "devpts"
+        || type == "devtmpfs"
+        || type == "efivarfs"
+        || type == "fuse"
+        || type == "fuseblk"
+        || type == "fusectl"
+        || type == "fuse.gvfsd-fuse"
+        || type.startsWith("fuse.vmware")
+        || type == "hugetlbfs"
+        || type == "mqueue"
+        || type == "none"
+        || type == "pipefs"
+        || type == "proc"
+        || type == "pstore"
+        || type == "ramfs"
+        || type == "rootfs"
+        || type == "rpc_pipefs"
+        || type == "securityfs"
+        || type == "sockfs"
+        || type == "sysfs"
+        || type == "tmpfs"
+        || type == "usbfs") {
         return true;
     }
 
@@ -319,11 +319,11 @@ static inline QVolumeInfo::VolumeTypeFlags determineType(const QByteArray &devic
 {
     // test for UNC shares
     if (device.startsWith("//")
-            || fileSystemName == "nfs"
-            || fileSystemName == "cifs"
-            || fileSystemName == "autofs"
-            || fileSystemName == "subfs"
-            || fileSystemName.startsWith("smb")) {
+        || fileSystemName == "nfs"
+        || fileSystemName == "cifs"
+        || fileSystemName == "autofs"
+        || fileSystemName == "subfs"
+        || fileSystemName.startsWith("smb")) {
         return QVolumeInfo::RemoteVolume;
     }
 
@@ -428,14 +428,14 @@ void QVolumeInfoPrivate::getCapabilities()
 
     const QByteArray fileSystem = fileSystemName.toLower();
     if (fileSystem == "btrfs"
-            || fileSystem == "ext3"
-            || fileSystem == "ext3cow"
-            || fileSystem == "ext4"
-            || fileSystem == "jfs"
-            || fileSystem == "hfsplus"
-            || fileSystem == "reiserfs"
-            || fileSystem == "reiser4"
-            || fileSystem == "xfs") {
+        || fileSystem == "ext3"
+        || fileSystem == "ext3cow"
+        || fileSystem == "ext4"
+        || fileSystem == "jfs"
+        || fileSystem == "hfsplus"
+        || fileSystem == "reiserfs"
+        || fileSystem == "reiser4"
+        || fileSystem == "xfs") {
         flags = QVolumeInfo::SupportsSymbolicLinks
                 | QVolumeInfo::SupportsHardLinks
                 | QVolumeInfo::SupportsCaseSensitiveNames
@@ -443,7 +443,7 @@ void QVolumeInfoPrivate::getCapabilities()
                 | QVolumeInfo::SupportsJournaling
                 | QVolumeInfo::SupportsSparseFiles;
     } else if (fileSystem == "ext2"
-               || fileSystem == "zfs") {
+           || fileSystem == "zfs") {
         flags = QVolumeInfo::SupportsSymbolicLinks
                 | QVolumeInfo::SupportsHardLinks
                 | QVolumeInfo::SupportsCaseSensitiveNames
