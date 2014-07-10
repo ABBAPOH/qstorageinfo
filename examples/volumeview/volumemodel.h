@@ -53,7 +53,7 @@ public:
         ColumnRootPath = 0,
         ColumnName,
         ColumnDevice,
-        ColumnFileSystemName,
+        ColumnFileSystemType,
         ColumnTotal,
         ColumnFree,
         ColumnAvailable,

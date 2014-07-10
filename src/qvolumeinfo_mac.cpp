@@ -1,6 +1,5 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2014 Ivan Komissarov
 ** Contact: http://www.qt-project.org/legal
 **
@@ -42,7 +41,7 @@
 
 #include "qvolumeinfo_p.h"
 
-#include <QtCore/QFileInfo>
+#include <QtCore/qfileinfo.h>
 #include <QtCore/private/qcore_mac_p.h>
 
 #include <CoreFoundation/CoreFoundation.h>
@@ -81,22 +80,20 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
     if (rootPath.isEmpty() || (getCachedFlag(CachedValidFlag) && !valid))
         return;
 
-    if (!getCachedFlag(CachedNameFlag)) {
+    if (!getCachedFlag(CachedLabelFlag)) {
         getLabel();
-        setCachedFlag(CachedNameFlag);
+        setCachedFlag(CachedLabelFlag);
     }
 
-    uint bitmask = 0;
+    uint bitmask;
 
-    bitmask = CachedDeviceFlag | CachedReadOnlyFlag | CachedFileSystemNameFlag;
+    bitmask = CachedDeviceFlag | CachedReadOnlyFlag | CachedFileSystemTypeFlag;
     if (requiredFlags & bitmask) {
         getPosixInfo();
         setCachedFlag(bitmask);
     }
 
-    bitmask = CachedBytesTotalFlag
-              | CachedBytesFreeFlag
-              | CachedBytesAvailableFlag;
+    bitmask = CachedBytesTotalFlag | CachedBytesFreeFlag | CachedBytesAvailableFlag;
     if (requiredFlags & bitmask) {
         getUrlProperties();
         setCachedFlag(bitmask);
@@ -110,7 +107,7 @@ void QVolumeInfoPrivate::getPosixInfo()
     if (result == 0) {
         device = QByteArray(statfs_buf.f_mntfromname);
         readOnly = (statfs_buf.f_flags & MNT_RDONLY) != 0;
-        fileSystemName = statfs_buf.f_fstypename;
+        fileSystemType = statfs_buf.f_fstypename;
     }
 }
 
@@ -126,11 +123,6 @@ static inline qint64 CFDictionaryGetInt64(CFDictionaryRef dictionary, const void
     return result;
 }
 
-static inline QString CFDictionaryGetQString(CFDictionaryRef dictionary, const void *key)
-{
-    return QCFString::toQString((CFStringRef)CFDictionaryGetValue(dictionary, key));
-}
-
 void QVolumeInfoPrivate::getUrlProperties(bool initRootPath)
 {
     static const void *rootPathKey[] = { kCFURLVolumeURLKey };
@@ -142,10 +134,10 @@ void QVolumeInfoPrivate::getUrlProperties(bool initRootPath)
         // kCFURLVolumeIsReadOnlyKey // 10.7
     };
     size_t size = (initRootPath ? sizeof(rootPathKey) : sizeof(propertyKeys) ) / sizeof(void*);
-    CFArrayRef keys = CFArrayCreate(kCFAllocatorDefault,
-                                    initRootPath ? rootPathKey : propertyKeys,
-                                    size,
-                                    0);
+    QCFType<CFArrayRef> keys = CFArrayCreate(kCFAllocatorDefault,
+                                             initRootPath ? rootPathKey : propertyKeys,
+                                             size,
+                                             0);
 
     if (!keys)
         return;
@@ -154,19 +146,15 @@ void QVolumeInfoPrivate::getUrlProperties(bool initRootPath)
     if (initRootPath)
         rootPath.clear();
 
-    CFURLRef url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
-                                                 cfPath,
-                                                 kCFURLPOSIXPathStyle,
-                                                 true);
-    if (!url) {
-        CFRelease(keys);
+    QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
+                                                          cfPath,
+                                                          kCFURLPOSIXPathStyle,
+                                                          true);
+    if (!url)
         return;
-    }
 
     CFErrorRef error;
-    CFDictionaryRef map = CFURLCopyResourcePropertiesForKeys(url, keys, &error);
-    CFRelease(url);
-    CFRelease(keys);
+    QCFType<CFDictionaryRef> map = CFURLCopyResourcePropertiesForKeys(url, keys, &error);
 
     if (!map)
         return;
@@ -180,15 +168,12 @@ void QVolumeInfoPrivate::getUrlProperties(bool initRootPath)
         valid = true;
         ready = true;
 
-        CFRelease(map);
         return;
     }
 
     bytesTotal = CFDictionaryGetInt64(map, kCFURLVolumeTotalCapacityKey);
     bytesAvailable = CFDictionaryGetInt64(map, kCFURLVolumeAvailableCapacityKey);
     bytesFree = bytesAvailable;
-
-    CFRelease(map);
 }
 
 void QVolumeInfoPrivate::getLabel()
@@ -221,7 +206,7 @@ QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
 {
     QList<QVolumeInfo> volumes;
 
-    CFURLEnumeratorRef enumerator;
+    QCFType<CFURLEnumeratorRef> enumerator;
     enumerator = CFURLEnumeratorCreateForMountedVolumes(NULL,
                                                         kCFURLEnumeratorSkipInvisibles,
                                                         NULL);
@@ -241,7 +226,6 @@ QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
         }
     } while (result != kCFURLEnumeratorEnd);
 
-    CFRelease(enumerator);
     return volumes;
 }
 

@@ -92,8 +92,8 @@ QVariant VolumeModel::data(const QModelIndex &index, int role) const
             return volume.name();
         case ColumnDevice:
             return volume.device();
-        case ColumnFileSystemName:
-            return volume.fileSystemName();
+        case ColumnFileSystemType:
+            return volume.fileSystemType();
         case ColumnTotal:
             return sizeToString(volume.bytesTotal());
         case ColumnFree:
@@ -119,7 +119,7 @@ QVariant VolumeModel::data(const QModelIndex &index, int role) const
                 arg(QDir::toNativeSeparators(volume.rootPath())).
                 arg(volume.name()).
                 arg(QString::fromUtf8(volume.device())).
-                arg(QString::fromUtf8(volume.fileSystemName())).
+                arg(QString::fromUtf8(volume.fileSystemType())).
                 arg(sizeToString(volume.bytesTotal())).
                 arg(sizeToString(volume.bytesFree())).
                 arg(sizeToString(volume.bytesAvailable())).
@@ -144,7 +144,7 @@ QVariant VolumeModel::headerData(int section, Qt::Orientation orientation, int r
         return tr("Name");
     case ColumnDevice:
         return tr("Device");
-    case ColumnFileSystemName:
+    case ColumnFileSystemType:
         return tr("File system");
     case ColumnTotal:
         return tr("Total");

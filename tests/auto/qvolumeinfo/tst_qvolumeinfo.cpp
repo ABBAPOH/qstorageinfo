@@ -70,7 +70,7 @@ void tst_QVolumeInfo::testInvalidVolume()
     QVERIFY(volume.rootPath().isEmpty());
     QVERIFY(!volume.isRoot());
     QVERIFY(volume.device().isEmpty());
-    QVERIFY(volume.fileSystemName().isEmpty());
+    QVERIFY(volume.fileSystemType().isEmpty());
     QVERIFY(volume.bytesTotal() == 0);
     QVERIFY(volume.bytesFree() == 0);
     QVERIFY(volume.bytesAvailable() == 0);
@@ -113,7 +113,7 @@ void tst_QVolumeInfo::testRootVolume()
     QCOMPARE(volume.rootPath(), QDir::rootPath());
     QVERIFY(volume.isRoot());
     QVERIFY(!volume.device().isEmpty());
-    QVERIFY(!volume.fileSystemName().isEmpty());
+    QVERIFY(!volume.fileSystemType().isEmpty());
     QVERIFY(volume.bytesTotal() > 0);
     QVERIFY(volume.bytesFree() > 0);
     QVERIFY(volume.bytesAvailable() > 0);
@@ -127,7 +127,7 @@ void tst_QVolumeInfo::testCurrentVolume()
     QVERIFY(volume.isReady());
     QVERIFY(appPath.startsWith(volume.rootPath(), Qt::CaseInsensitive));
     QVERIFY(!volume.device().isEmpty());
-    QVERIFY(!volume.fileSystemName().isEmpty());
+    QVERIFY(!volume.fileSystemType().isEmpty());
     QVERIFY(volume.bytesTotal() > 0);
     QVERIFY(volume.bytesFree() > 0);
     QVERIFY(volume.bytesAvailable() > 0);
@@ -152,7 +152,7 @@ void tst_QVolumeInfo::testVolumeList()
         QVERIFY(!volume.isRoot());
 #ifndef Q_OS_WIN
         QVERIFY(!volume.device().isEmpty());
-        QVERIFY(!volume.fileSystemName().isEmpty());
+        QVERIFY(!volume.fileSystemType().isEmpty());
 #endif
     }
 }

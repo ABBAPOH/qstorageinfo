@@ -1,6 +1,5 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2014 Ivan Komissarov
 ** Contact: http://www.qt-project.org/legal
 **
@@ -42,7 +41,7 @@
 
 #include "qvolumeinfo_p.h"
 
-#include <QtCore/QFileInfo>
+#include <QtCore/qfileinfo.h>
 
 QT_BEGIN_NAMESPACE
 

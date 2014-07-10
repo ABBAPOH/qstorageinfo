@@ -1,6 +1,5 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2014 Ivan Komissarov
 ** Contact: http://www.qt-project.org/legal
 **
@@ -43,10 +42,10 @@
 #ifndef QVOLUMEINFO_H
 #define QVOLUMEINFO_H
 
-#include <QtCore/QByteArray>
-#include <QtCore/QList>
-#include <QtCore/QString>
-#include <QtCore/QSharedDataPointer>
+#include <QtCore/qbytearray.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qshareddata.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -68,7 +67,7 @@ public:
 
     QString rootPath() const;
     QByteArray device() const;
-    QByteArray fileSystemName() const;
+    QByteArray fileSystemType() const;
     QString name() const;
     QString displayName() const;
 

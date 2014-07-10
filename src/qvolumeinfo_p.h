@@ -1,6 +1,5 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2014 Ivan Komissarov
 ** Contact: http://www.qt-project.org/legal
 **
@@ -56,9 +55,6 @@
 
 #include "qvolumeinfo.h"
 
-#include <QtCore/QExplicitlySharedDataPointer>
-#include <QtCore/QFile>
-
 QT_BEGIN_NAMESPACE
 
 class QVolumeInfoPrivate : public QSharedData
@@ -74,8 +70,8 @@ public:
     enum CachedFlags {
         CachedRootPathFlag = 0x001,
         CachedDeviceFlag = 0x002,
-        CachedFileSystemNameFlag = 0x004,
-        CachedNameFlag = 0x008,
+        CachedFileSystemTypeFlag = 0x004,
+        CachedLabelFlag = 0x008,
         CachedBytesTotalFlag = 0x010,
         CachedBytesFreeFlag = 0x020,
         CachedBytesAvailableFlag = 0x040,
@@ -87,7 +83,7 @@ public:
     inline void clear()
     {
         device.clear();
-        fileSystemName.clear();
+        fileSystemType.clear();
         name.clear();
 
         bytesTotal = 0;
@@ -102,7 +98,7 @@ public:
     }
 
     inline bool getCachedFlag(uint c) const
-    { return !((cachedFlags & c) ^ c); }
+    { return !!(cachedFlags & c); }
     inline void setCachedFlag(uint c)
     { cachedFlags |= c; }
 
@@ -129,7 +125,7 @@ protected:
 public:
     QString rootPath;
     QByteArray device;
-    QByteArray fileSystemName;
+    QByteArray fileSystemType;
     QString name;
 
     qint64 bytesTotal;

@@ -1,6 +1,5 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2014 Ivan Komissarov
 ** Contact: http://www.qt-project.org/legal
 **
@@ -42,9 +41,9 @@
 
 #include "qvolumeinfo_p.h"
 
-#include <QtCore/QDir>
-#include <QtCore/QFileInfo>
-#include <QtCore/QVarLengthArray>
+#include <QtCore/qdir.h>
+#include <QtCore/qfileinfo.h>
+#include <QtCore/qvarlengtharray.h>
 
 #include <userenv.h>
 
@@ -78,20 +77,10 @@ void QVolumeInfoPrivate::initRootPath()
 
 static inline QByteArray getDevice(const QString &rootPath)
 {
-#if !defined(Q_OS_WINCE)
-    UINT type = ::GetDriveType(reinterpret_cast<const wchar_t *>(rootPath.utf16()));
-#else
-    UINT type = 0;
-#endif
     const QString path = QDir::toNativeSeparators(rootPath);
-    if (type != DRIVE_REMOTE) {
-        wchar_t deviceBuffer[MAX_PATH + 1];
-        if (::GetVolumeNameForVolumeMountPoint(reinterpret_cast<const wchar_t *>(path.utf16()),
-                                               deviceBuffer,
-                                               MAX_PATH)) {
-            return QString::fromWCharArray(deviceBuffer).toLatin1();
-        }
-    } else {
+#if !defined(Q_OS_WINCE)
+    UINT type = ::GetDriveType(reinterpret_cast<const wchar_t *>(path.utf16()));
+    if (type == DRIVE_REMOTE) {
         wchar_t buffer[1024];
         UNIVERSAL_NAME_INFO *remoteNameInfo = reinterpret_cast<UNIVERSAL_NAME_INFO *>(buffer);
         DWORD bufferLength = 1024;
@@ -101,8 +90,16 @@ static inline QByteArray getDevice(const QString &rootPath)
                                    &bufferLength) == NO_ERROR) {
             return QString::fromWCharArray(remoteNameInfo->lpUniversalName).toUtf8();
         }
+        return QByteArray();
     }
+#endif
 
+    wchar_t deviceBuffer[MAX_PATH + 1];
+    if (::GetVolumeNameForVolumeMountPoint(reinterpret_cast<const wchar_t *>(path.utf16()),
+                                           deviceBuffer,
+                                           MAX_PATH)) {
+        return QString::fromWCharArray(deviceBuffer).toLatin1();
+    }
     return QByteArray();
 }
 
@@ -122,10 +119,10 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
     if (!getCachedFlag(CachedValidFlag))
         requiredFlags |= CachedValidFlag; // force volume validation
 
-    uint bitmask = 0;
+    uint bitmask;
 
-    bitmask = CachedFileSystemNameFlag
-              | CachedNameFlag
+    bitmask = CachedFileSystemTypeFlag
+              | CachedLabelFlag
               | CachedReadOnlyFlag
               | CachedReadyFlag
               | CachedValidFlag;
@@ -159,12 +156,12 @@ void QVolumeInfoPrivate::getVolumeInfo()
     const QString path = QDir::toNativeSeparators(rootPath);
     wchar_t nameBuf[MAX_PATH + 1];
     DWORD fileSystemFlags = 0;
-    wchar_t fileSystemNameBuf[MAX_PATH + 1];
+    wchar_t fileSystemTypeBuf[MAX_PATH + 1];
     const bool result = ::GetVolumeInformation(reinterpret_cast<const wchar_t *>(path.utf16()),
                                                nameBuf, MAX_PATH,
                                                0, 0,
                                                &fileSystemFlags,
-                                               fileSystemNameBuf, MAX_PATH);
+                                               fileSystemTypeBuf, MAX_PATH);
     if (!result) {
         ready = false;
         valid = ::GetLastError() == ERROR_NOT_READY;
@@ -172,7 +169,7 @@ void QVolumeInfoPrivate::getVolumeInfo()
         ready = true;
         valid = true;
 
-        fileSystemName = QString::fromWCharArray(fileSystemNameBuf).toLatin1();
+        fileSystemType = QString::fromWCharArray(fileSystemTypeBuf).toLatin1();
         name = QString::fromWCharArray(nameBuf);
 
         readOnly = (fileSystemFlags & FILE_READ_ONLY_VOLUME) != 0;

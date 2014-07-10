@@ -1,6 +1,5 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2014 Ivan Komissarov
 ** Contact: http://www.qt-project.org/legal
 **
@@ -42,9 +41,9 @@
 
 #include "qvolumeinfo_p.h"
 
-#include <QtCore/QDirIterator>
-#include <QtCore/QFileInfo>
-#include <QtCore/QTextStream>
+#include <QtCore/qdiriterator.h>
+#include <QtCore/qfileinfo.h>
+#include <QtCore/qtextstream.h>
 
 #include <QtCore/private/qcore_unix_p.h>
 
@@ -82,47 +81,20 @@
 
 QT_BEGIN_NAMESPACE
 
-static const char pathDiskByLabel[] = "/dev/disk/by-label";
-
 static bool isPseudoFs(const QString &mountDir, const QByteArray &type)
 {
     if (type.startsWith('/'))
         return false;
     if (mountDir.startsWith(QStringLiteral("/dev"))
-        || mountDir.startsWith(QStringLiteral("/proc"))) {
+        || mountDir.startsWith(QStringLiteral("/proc"))
+        || mountDir.startsWith(QStringLiteral("/run"))
+        || mountDir.startsWith(QStringLiteral("/sys"))) {
         return true;
     }
-    if (type == "anon_inodefs"
-        || type == "autofs"
-        || type == "bdev"
-        || type == "binfmt_misc"
-        || type == "cgroup"
-        || type == "cpuset"
-        || type == "debugfs"
-        || type == "devpts"
-        || type == "devtmpfs"
-        || type == "efivarfs"
-        || type == "fuse"
-        || type == "fuseblk"
-        || type == "fusectl"
-        || type == "fuse.gvfsd-fuse"
-        || type.startsWith("fuse.vmware")
-        || type == "hugetlbfs"
-        || type == "mqueue"
-        || type == "none"
-        || type == "pipefs"
-        || type == "proc"
-        || type == "pstore"
-        || type == "ramfs"
-        || type == "rootfs"
-        || type == "rpc_pipefs"
-        || type == "securityfs"
-        || type == "sockfs"
-        || type == "sysfs"
-        || type == "tmpfs"
-        || type == "usbfs") {
+#if defined(Q_OS_LINUX)
+    if (type == "rootfs")
         return true;
-    }
+#endif
 
     return false;
 }
@@ -136,7 +108,7 @@ public:
     bool isValid() const;
     bool next();
     QString rootPath() const;
-    QByteArray fileSystemName() const;
+    QByteArray fileSystemType() const;
     QByteArray device() const;
 private:
 #if defined(Q_OS_BSD4)
@@ -180,7 +152,7 @@ inline QString QVolumeIterator::rootPath() const
     return QFile::decodeName(stat_buf[i].f_mntonname);
 }
 
-inline QByteArray QVolumeIterator::fileSystemName() const
+inline QByteArray QVolumeIterator::fileSystemType() const
 {
     return QByteArray(stat_buf[i].f_fstypename);
 }
@@ -221,7 +193,7 @@ inline QString QVolumeIterator::rootPath() const
     return QFile::decodeName(mnt->mnt_mountp);
 }
 
-inline QByteArray QVolumeIterator::fileSystemName() const
+inline QByteArray QVolumeIterator::fileSystemType() const
 {
     return QByteArray(mnt->mnt_fstype);
 }
@@ -271,7 +243,7 @@ inline QString QVolumeIterator::rootPath() const
     return QFile::decodeName(mnt.mnt_dir);
 }
 
-inline QByteArray QVolumeIterator::fileSystemName() const
+inline QByteArray QVolumeIterator::fileSystemType() const
 {
     return QByteArray(mnt.mnt_type);
 }
@@ -302,7 +274,7 @@ void QVolumeInfoPrivate::initRootPath()
 
     while (it.next()) {
         const QString mountDir = it.rootPath();
-        const QByteArray fsName = it.fileSystemName();
+        const QByteArray fsName = it.fileSystemType();
         if (isPseudoFs(mountDir, fsName))
             continue;
         // we try to find most suitable entry
@@ -310,15 +282,16 @@ void QVolumeInfoPrivate::initRootPath()
             maxLength = mountDir.length();
             rootPath = mountDir;
             device = it.device();
-            fileSystemName = fsName;
+            fileSystemType = fsName;
         }
     }
 }
 
-// TODO: use udev to determine info.
 static inline QString getName(const QByteArray &device)
 {
 #ifdef Q_OS_LINUX
+    static const char pathDiskByLabel[] = "/dev/disk/by-label";
+
     QDirIterator it(QLatin1String(pathDiskByLabel), QDir::NoDotAndDotDot);
     while (it.hasNext()) {
         it.next();
@@ -338,9 +311,9 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
     if (getCachedFlag(requiredFlags))
         return;
 
-    if (!getCachedFlag(CachedRootPathFlag | CachedDeviceFlag | CachedFileSystemNameFlag)) {
+    if (!getCachedFlag(CachedRootPathFlag | CachedDeviceFlag | CachedFileSystemTypeFlag)) {
         initRootPath();
-        setCachedFlag(CachedRootPathFlag | CachedDeviceFlag | CachedFileSystemNameFlag);
+        setCachedFlag(CachedRootPathFlag | CachedDeviceFlag | CachedFileSystemTypeFlag);
     }
 
     if (rootPath.isEmpty() || (getCachedFlag(CachedValidFlag) && !valid))
@@ -349,7 +322,7 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
     if (!getCachedFlag(CachedValidFlag))
         requiredFlags |= CachedValidFlag; // force volume validation
 
-    uint bitmask = 0;
+    uint bitmask;
 
     bitmask = CachedBytesTotalFlag | CachedBytesFreeFlag | CachedBytesAvailableFlag
             | CachedReadOnlyFlag | CachedReadyFlag | CachedValidFlag;
@@ -361,7 +334,7 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
             return;
     }
 
-    bitmask = CachedNameFlag;
+    bitmask = CachedLabelFlag;
     if (requiredFlags & bitmask) {
         name = getName(device);
         setCachedFlag(bitmask);
@@ -399,16 +372,16 @@ QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
 
     while (it.next()) {
         const QString mountDir = it.rootPath();
-        const QByteArray fsName = it.fileSystemName();
+        const QByteArray fsName = it.fileSystemType();
         if (isPseudoFs(mountDir, fsName))
             continue;
 
         QVolumeInfoPrivate *data = new QVolumeInfoPrivate;
         data->rootPath = mountDir;
         data->device = QByteArray(it.device());
-        data->fileSystemName = fsName;
+        data->fileSystemType = fsName;
         data->setCachedFlag(CachedRootPathFlag |
-                            CachedFileSystemNameFlag |
+                            CachedFileSystemTypeFlag |
                             CachedDeviceFlag);
         volumes.append(QVolumeInfo(*data));
     }
