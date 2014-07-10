@@ -70,35 +70,40 @@ void QVolumeInfoPrivate::initRootPath()
         path.append(QLatin1Char('\\'));
 
     // ### test if disk mounted to folder on other disk
-    wchar_t buffer[MAX_PATH + 1];
-    if (::GetVolumePathName(reinterpret_cast<const wchar_t *>(path.utf16()), buffer, MAX_PATH))
-        rootPath = QDir::fromNativeSeparators(QString::fromWCharArray(buffer));
+    QVarLengthArray<wchar_t, MAX_PATH + 1> buffer(MAX_PATH + 1);
+    if (::GetVolumePathName(reinterpret_cast<const wchar_t *>(path.utf16()), buffer.data(), MAX_PATH))
+        rootPath = QDir::fromNativeSeparators(QString::fromWCharArray(buffer.data()));
 }
 
 static inline QByteArray getDevice(const QString &rootPath)
 {
     const QString path = QDir::toNativeSeparators(rootPath);
 #if !defined(Q_OS_WINCE)
-    UINT type = ::GetDriveType(reinterpret_cast<const wchar_t *>(path.utf16()));
+    const UINT type = ::GetDriveType(reinterpret_cast<const wchar_t *>(path.utf16()));
     if (type == DRIVE_REMOTE) {
-        wchar_t buffer[1024];
-        UNIVERSAL_NAME_INFO *remoteNameInfo = reinterpret_cast<UNIVERSAL_NAME_INFO *>(buffer);
-        DWORD bufferLength = 1024;
-        if (::WNetGetUniversalName(reinterpret_cast<const wchar_t *>(path.utf16()),
-                                   UNIVERSAL_NAME_INFO_LEVEL,
-                                   remoteNameInfo,
-                                   &bufferLength) == NO_ERROR) {
+        QVarLengthArray<wchar_t, 1024> buffer(1024);
+        DWORD bufferLength = buffer.size();
+        DWORD result;
+        UNIVERSAL_NAME_INFO *remoteNameInfo;
+        do {
+            buffer.resize(bufferLength);
+            remoteNameInfo = reinterpret_cast<UNIVERSAL_NAME_INFO *>(buffer.data());
+            result = ::WNetGetUniversalName(reinterpret_cast<const wchar_t *>(path.utf16()),
+                                            UNIVERSAL_NAME_INFO_LEVEL,
+                                            remoteNameInfo,
+                                            &bufferLength);
+        } while (result == ERROR_MORE_DATA);
+        if (result == NO_ERROR)
             return QString::fromWCharArray(remoteNameInfo->lpUniversalName).toUtf8();
-        }
         return QByteArray();
     }
 #endif
 
-    wchar_t deviceBuffer[MAX_PATH + 1];
+    QVarLengthArray<wchar_t, 51> deviceBuffer(51);
     if (::GetVolumeNameForVolumeMountPoint(reinterpret_cast<const wchar_t *>(path.utf16()),
-                                           deviceBuffer,
+                                           deviceBuffer.data(),
                                            MAX_PATH)) {
-        return QString::fromWCharArray(deviceBuffer).toLatin1();
+        return QString::fromWCharArray(deviceBuffer.data()).toLatin1();
     }
     return QByteArray();
 }
@@ -154,14 +159,14 @@ void QVolumeInfoPrivate::getVolumeInfo()
     const UINT oldmode = ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 
     const QString path = QDir::toNativeSeparators(rootPath);
-    wchar_t nameBuf[MAX_PATH + 1];
+    QVarLengthArray<wchar_t, MAX_PATH + 1> nameBuffer(MAX_PATH + 1);
+    QVarLengthArray<wchar_t, MAX_PATH + 1> fileSystemTypeBuffer(MAX_PATH + 1);
     DWORD fileSystemFlags = 0;
-    wchar_t fileSystemTypeBuf[MAX_PATH + 1];
     const bool result = ::GetVolumeInformation(reinterpret_cast<const wchar_t *>(path.utf16()),
-                                               nameBuf, MAX_PATH,
-                                               0, 0,
+                                               nameBuffer.data(), MAX_PATH,
+                                               Q_NULLPTR, Q_NULLPTR,
                                                &fileSystemFlags,
-                                               fileSystemTypeBuf, MAX_PATH);
+                                               fileSystemTypeBuffer.data(), MAX_PATH);
     if (!result) {
         ready = false;
         valid = ::GetLastError() == ERROR_NOT_READY;
@@ -169,8 +174,8 @@ void QVolumeInfoPrivate::getVolumeInfo()
         ready = true;
         valid = true;
 
-        fileSystemType = QString::fromWCharArray(fileSystemTypeBuf).toLatin1();
-        name = QString::fromWCharArray(nameBuf);
+        fileSystemType = QString::fromWCharArray(fileSystemTypeBuffer.data()).toLatin1();
+        name = QString::fromWCharArray(nameBuffer.data());
 
         readOnly = (fileSystemFlags & FILE_READ_ONLY_VOLUME) != 0;
     }
@@ -184,9 +189,9 @@ void QVolumeInfoPrivate::getDiskFreeSpace()
 
     const QString path = QDir::toNativeSeparators(rootPath);
     ::GetDiskFreeSpaceEx(reinterpret_cast<const wchar_t *>(path.utf16()),
-                         (PULARGE_INTEGER)&bytesAvailable,
-                         (PULARGE_INTEGER)&bytesTotal,
-                         (PULARGE_INTEGER)&bytesFree);
+                         PULARGE_INTEGER(&bytesAvailable),
+                         PULARGE_INTEGER(&bytesTotal),
+                         PULARGE_INTEGER(&bytesFree));
 
     ::SetErrorMode(oldmode);
 }
@@ -215,16 +220,16 @@ QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
 
 QVolumeInfo QVolumeInfoPrivate::rootVolume()
 {
-    DWORD dwBufferSize = 128;
-    QVarLengthArray<wchar_t, 128> profilesDirectory(dwBufferSize);
+    QVarLengthArray<wchar_t, 128> buffer(128);
+    DWORD bufferSize = buffer.size();
     bool ok;
     do {
-        if ((int)dwBufferSize > profilesDirectory.size())
-            profilesDirectory.resize(dwBufferSize);
-        ok = ::GetProfilesDirectory(profilesDirectory.data(), &dwBufferSize);
+        if ((int)bufferSize > buffer.size())
+            buffer.resize(bufferSize);
+        ok = ::GetProfilesDirectory(buffer.data(), &bufferSize);
     } while (!ok && GetLastError() == ERROR_INSUFFICIENT_BUFFER);
     if (ok)
-        return QVolumeInfo(QString::fromWCharArray(profilesDirectory.data(), profilesDirectory.size()));
+        return QVolumeInfo(QString::fromWCharArray(buffer.data(), buffer.size()));
 
     return QVolumeInfo();
 }

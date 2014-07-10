@@ -88,7 +88,8 @@ static bool isPseudoFs(const QString &mountDir, const QByteArray &type)
     if (mountDir.startsWith(QStringLiteral("/dev"))
         || mountDir.startsWith(QStringLiteral("/proc"))
         || mountDir.startsWith(QStringLiteral("/run"))
-        || mountDir.startsWith(QStringLiteral("/sys"))) {
+        || mountDir.startsWith(QStringLiteral("/sys"))
+        || mountDir.startsWith(QStringLiteral("/var"))) {
         return true;
     }
 #if defined(Q_OS_LINUX)
@@ -112,24 +113,24 @@ public:
     QByteArray device() const;
 private:
 #if defined(Q_OS_BSD4)
-    struct statfs *stat_buf;
-    int count;
-    int i;
+    statfs *stat_buf;
+    int entryCount;
+    int currentIndex;
 #elif defined(Q_OS_LINUX)
     FILE *fp;
-    struct mntent mnt;
-    char buffer[3*PATH_MAX];
+    mntent mnt;
+    QByteArray buffer;
 #elif defined(Q_OS_SOLARIS)
     FILE *fp;
-    struct mnttab mnt;
+    mnttab mnt;
 #endif
 };
 
 #if defined(Q_OS_BSD4)
 
 inline QVolumeIterator::QVolumeIterator()
-    : count(getmntinfo(&stat_buf, 0)),
-      i(-1)
+    : entryCount(getmntinfo(&stat_buf, 0)),
+      currentIndex(-1)
 {
 }
 
@@ -139,27 +140,27 @@ inline QVolumeIterator::~QVolumeIterator()
 
 inline bool QVolumeIterator::isValid() const
 {
-    return count != -1;
+    return entryCount != -1;
 }
 
 inline bool QVolumeIterator::next()
 {
-    return ++i < count;
+    return ++currentIndex < entryCount;
 }
 
 inline QString QVolumeIterator::rootPath() const
 {
-    return QFile::decodeName(stat_buf[i].f_mntonname);
+    return QFile::decodeName(stat_buf[currentIndex].f_mntonname);
 }
 
 inline QByteArray QVolumeIterator::fileSystemType() const
 {
-    return QByteArray(stat_buf[i].f_fstypename);
+    return QByteArray(stat_buf[currentIndex].f_fstypename);
 }
 
 inline QByteArray QVolumeIterator::device() const
 {
-    return QByteArray(stat_buf[i].f_mntfromname);
+    return QByteArray(stat_buf[currentIndex].f_mntfromname);
 }
 
 #elif defined(Q_OS_SOLARIS)
@@ -180,12 +181,12 @@ inline QVolumeIterator::~QVolumeIterator()
 
 inline bool QVolumeIterator::isValid() const
 {
-    return fp != 0;
+    return fp != Q_NULLPTR;
 }
 
 inline bool QVolumeIterator::next()
 {
-    return (getmntent(fp, &mnt) == 0);
+    return ::getmntent(fp, &mnt) == Q_NULLPTR;
 }
 
 inline QString QVolumeIterator::rootPath() const
@@ -206,8 +207,10 @@ inline QByteArray QVolumeIterator::device() const
 #else
 
 static const char pathMounted[] = "/etc/mtab";
+static const int bufferSize = 3*PATH_MAX; // 2 paths (mount point+device) and metainfo
 
-inline QVolumeIterator::QVolumeIterator()
+inline QVolumeIterator::QVolumeIterator() :
+    buffer(bufferSize, '\0')
 {
 #if defined(Q_OS_ANDROID)
     const int fd = qt_safe_open(pathMounted, O_RDONLY);
@@ -230,12 +233,12 @@ inline QVolumeIterator::~QVolumeIterator()
 
 inline bool QVolumeIterator::isValid() const
 {
-    return fp != 0;
+    return fp != Q_NULLPTR;
 }
 
 inline bool QVolumeIterator::next()
 {
-    return ::getmntent_r(fp, &mnt, buffer, sizeof(buffer)) != 0;
+    return ::getmntent_r(fp, &mnt, buffer.data(), buffer.size()) != Q_NULLPTR;
 }
 
 inline QString QVolumeIterator::rootPath() const
@@ -322,9 +325,7 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
     if (!getCachedFlag(CachedValidFlag))
         requiredFlags |= CachedValidFlag; // force volume validation
 
-    uint bitmask;
-
-    bitmask = CachedBytesTotalFlag | CachedBytesFreeFlag | CachedBytesAvailableFlag
+    uint bitmask = CachedBytesTotalFlag | CachedBytesFreeFlag | CachedBytesAvailableFlag
             | CachedReadOnlyFlag | CachedReadyFlag | CachedValidFlag;
     if (requiredFlags & bitmask) {
         getVolumeInfo();

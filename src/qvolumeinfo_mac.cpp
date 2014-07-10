@@ -85,9 +85,7 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
         setCachedFlag(CachedLabelFlag);
     }
 
-    uint bitmask;
-
-    bitmask = CachedDeviceFlag | CachedReadOnlyFlag | CachedFileSystemTypeFlag;
+    uint bitmask = bitmask = CachedDeviceFlag | CachedReadOnlyFlag | CachedFileSystemTypeFlag;
     if (requiredFlags & bitmask) {
         getPosixInfo();
         setCachedFlag(bitmask);
@@ -137,12 +135,12 @@ void QVolumeInfoPrivate::getUrlProperties(bool initRootPath)
     QCFType<CFArrayRef> keys = CFArrayCreate(kCFAllocatorDefault,
                                              initRootPath ? rootPathKey : propertyKeys,
                                              size,
-                                             0);
+                                             Q_NULLPTR);
 
     if (!keys)
         return;
 
-    QCFString cfPath = rootPath;
+    const QCFString cfPath = rootPath;
     if (initRootPath)
         rootPath.clear();
 
@@ -160,7 +158,7 @@ void QVolumeInfoPrivate::getUrlProperties(bool initRootPath)
         return;
 
     if (initRootPath) {
-        CFURLRef rootUrl = (CFURLRef)CFDictionaryGetValue(map, kCFURLVolumeURLKey);
+        const CFURLRef rootUrl = (CFURLRef)CFDictionaryGetValue(map, kCFURLVolumeURLKey);
         if (!rootUrl)
             return;
 
@@ -181,24 +179,28 @@ void QVolumeInfoPrivate::getLabel()
 #if !defined(Q_OS_IOS)
     // deprecated since 10.8
     FSRef ref;
-    FSPathMakeRef(reinterpret_cast<const UInt8*>(QFile::encodeName(rootPath).constData()), &ref, 0);
+    FSPathMakeRef(reinterpret_cast<const UInt8*>(QFile::encodeName(rootPath).constData()),
+                  &ref,
+                  Q_NULLPTR);
 
     // deprecated since 10.8
     FSCatalogInfo catalogInfo;
-    if (FSGetCatalogInfo(&ref, kFSCatInfoVolume, &catalogInfo, 0, 0, 0) != noErr)
+    OSErr error;
+    error = FSGetCatalogInfo(&ref, kFSCatInfoVolume, &catalogInfo, Q_NULLPTR, Q_NULLPTR, Q_NULLPTR);
+    if (error != noErr)
         return;
 
     // deprecated (use CFURLCopyResourcePropertiesForKeys for 10.7 and higher)
     HFSUniStr255 volumeName;
-    OSErr error = FSGetVolumeInfo(catalogInfo.volume,
-                                  0,
-                                  0,
-                                  kFSVolInfoFSInfo,
-                                  0,
-                                  &volumeName,
-                                  0);
+    error = FSGetVolumeInfo(catalogInfo.volume,
+                            Q_NULLPTR,
+                            Q_NULLPTR,
+                            kFSVolInfoFSInfo,
+                            Q_NULLPTR,
+                            &volumeName,
+                            Q_NULLPTR);
     if (error == noErr)
-        name = QCFString(FSCreateStringFromHFSUniStr(NULL, &volumeName));
+        name = QCFString(FSCreateStringFromHFSUniStr(Q_NULLPTR, &volumeName));
 #endif
 }
 
@@ -207,9 +209,9 @@ QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
     QList<QVolumeInfo> volumes;
 
     QCFType<CFURLEnumeratorRef> enumerator;
-    enumerator = CFURLEnumeratorCreateForMountedVolumes(NULL,
+    enumerator = CFURLEnumeratorCreateForMountedVolumes(Q_NULLPTR,
                                                         kCFURLEnumeratorSkipInvisibles,
-                                                        NULL);
+                                                        Q_NULLPTR);
 
     CFURLEnumeratorResult result = kCFURLEnumeratorSuccess;
     do {
