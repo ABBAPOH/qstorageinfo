@@ -259,7 +259,7 @@ QByteArray QVolumeInfo::fileSystemType() const
 /*!
     Returns the device for this volume.
 
-    For example, on Unix filesystems (including Mac OS X), this returns the
+    For example, on Unix filesystems (including OS X), this returns the
     devpath like '/dev/sda0' for local volumes. On Windows, returns the UNC
     path starting with \\\\?\\ for local volumes (i.e. volume GUID).
 
@@ -370,7 +370,7 @@ void QVolumeInfo::refresh()
     filesystems.
 
     On Windows, this returns volumes presented in 'My Computer' folder. On Unix
-    operation systems, returns list of all mounted filesystems (except for
+    operating systems, returns list of all mounted filesystems (except for
     pseudo filesystems).
 
     By default, returns all currently mounted filesystems.

@@ -61,7 +61,7 @@ void QVolumeInfoPrivate::initRootPath()
     if (rootPath.isEmpty())
         return;
 
-    getUrlProperties(true);
+    retrieveUrlProperties(true);
 }
 
 void QVolumeInfoPrivate::doStat(uint requiredFlags)
@@ -81,31 +81,31 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
         return;
 
     if (!getCachedFlag(CachedLabelFlag)) {
-        getLabel();
+        retrieveLabel();
         setCachedFlag(CachedLabelFlag);
     }
 
-    uint bitmask = bitmask = CachedDeviceFlag | CachedReadOnlyFlag | CachedFileSystemTypeFlag;
+    uint bitmask = CachedDeviceFlag | CachedReadOnlyFlag | CachedFileSystemTypeFlag;
     if (requiredFlags & bitmask) {
-        getPosixInfo();
+        retrievePosixInfo();
         setCachedFlag(bitmask);
     }
 
     bitmask = CachedBytesTotalFlag | CachedBytesFreeFlag | CachedBytesAvailableFlag;
     if (requiredFlags & bitmask) {
-        getUrlProperties();
+        retrieveUrlProperties();
         setCachedFlag(bitmask);
     }
 }
 
-void QVolumeInfoPrivate::getPosixInfo()
+void QVolumeInfoPrivate::retrievePosixInfo()
 {
     QT_STATFSBUF statfs_buf;
     int result = QT_STATFS(QFile::encodeName(rootPath).constData(), &statfs_buf);
     if (result == 0) {
         device = QByteArray(statfs_buf.f_mntfromname);
         readOnly = (statfs_buf.f_flags & MNT_RDONLY) != 0;
-        fileSystemType = statfs_buf.f_fstypename;
+        fileSystemType = QByteArray(statfs_buf.f_fstypename);
     }
 }
 
@@ -121,9 +121,9 @@ static inline qint64 CFDictionaryGetInt64(CFDictionaryRef dictionary, const void
     return result;
 }
 
-void QVolumeInfoPrivate::getUrlProperties(bool initRootPath)
+void QVolumeInfoPrivate::retrieveUrlProperties(bool initRootPath)
 {
-    static const void *rootPathKey[] = { kCFURLVolumeURLKey };
+    static const void *rootPathKeys[] = { kCFURLVolumeURLKey };
     static const void *propertyKeys[] = {
         // kCFURLVolumeNameKey, // 10.7
         // kCFURLVolumeLocalizedNameKey, // 10.7
@@ -131,9 +131,9 @@ void QVolumeInfoPrivate::getUrlProperties(bool initRootPath)
         kCFURLVolumeAvailableCapacityKey,
         // kCFURLVolumeIsReadOnlyKey // 10.7
     };
-    size_t size = (initRootPath ? sizeof(rootPathKey) : sizeof(propertyKeys) ) / sizeof(void*);
+    size_t size = (initRootPath ? sizeof(rootPathKeys) : sizeof(propertyKeys)) / sizeof(void*);
     QCFType<CFArrayRef> keys = CFArrayCreate(kCFAllocatorDefault,
-                                             initRootPath ? rootPathKey : propertyKeys,
+                                             initRootPath ? rootPathKeys : propertyKeys,
                                              size,
                                              Q_NULLPTR);
 
@@ -174,7 +174,7 @@ void QVolumeInfoPrivate::getUrlProperties(bool initRootPath)
     bytesFree = bytesAvailable;
 }
 
-void QVolumeInfoPrivate::getLabel()
+void QVolumeInfoPrivate::retrieveLabel()
 {
 #if !defined(Q_OS_IOS)
     // deprecated since 10.8

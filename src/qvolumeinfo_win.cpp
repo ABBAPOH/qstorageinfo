@@ -71,7 +71,7 @@ void QVolumeInfoPrivate::initRootPath()
 
     // ### test if disk mounted to folder on other disk
     QVarLengthArray<wchar_t, MAX_PATH + 1> buffer(MAX_PATH + 1);
-    if (::GetVolumePathName(reinterpret_cast<const wchar_t *>(path.utf16()), buffer.data(), MAX_PATH))
+    if (::GetVolumePathName(reinterpret_cast<const wchar_t *>(path.utf16()), buffer.data(), buffer.size()))
         rootPath = QDir::fromNativeSeparators(QString::fromWCharArray(buffer.data()));
 }
 
@@ -81,7 +81,7 @@ static inline QByteArray getDevice(const QString &rootPath)
 #if !defined(Q_OS_WINCE)
     const UINT type = ::GetDriveType(reinterpret_cast<const wchar_t *>(path.utf16()));
     if (type == DRIVE_REMOTE) {
-        QVarLengthArray<wchar_t, 1024> buffer(1024);
+        QVarLengthArray<char, 256> buffer(256);
         DWORD bufferLength = buffer.size();
         DWORD result;
         UNIVERSAL_NAME_INFO *remoteNameInfo;
@@ -102,7 +102,7 @@ static inline QByteArray getDevice(const QString &rootPath)
     QVarLengthArray<wchar_t, 51> deviceBuffer(51);
     if (::GetVolumeNameForVolumeMountPoint(reinterpret_cast<const wchar_t *>(path.utf16()),
                                            deviceBuffer.data(),
-                                           MAX_PATH)) {
+                                           deviceBuffer.size())) {
         return QString::fromWCharArray(deviceBuffer.data()).toLatin1();
     }
     return QByteArray();
@@ -124,15 +124,13 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
     if (!getCachedFlag(CachedValidFlag))
         requiredFlags |= CachedValidFlag; // force volume validation
 
-    uint bitmask;
-
-    bitmask = CachedFileSystemTypeFlag
-              | CachedLabelFlag
-              | CachedReadOnlyFlag
-              | CachedReadyFlag
-              | CachedValidFlag;
+    uint bitmask = CachedFileSystemTypeFlag
+            | CachedLabelFlag
+            | CachedReadOnlyFlag
+            | CachedReadyFlag
+            | CachedValidFlag;
     if (requiredFlags & bitmask) {
-        getVolumeInfo();
+        retreiveVolumeInfo();
         if (valid && !ready)
             bitmask = CachedValidFlag;
         setCachedFlag(bitmask);
@@ -149,12 +147,12 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
 
     bitmask = CachedBytesTotalFlag | CachedBytesFreeFlag | CachedBytesAvailableFlag;
     if (requiredFlags & bitmask) {
-        getDiskFreeSpace();
+        retreiveDiskFreeSpace();
         setCachedFlag(bitmask);
     }
 }
 
-void QVolumeInfoPrivate::getVolumeInfo()
+void QVolumeInfoPrivate::retreiveVolumeInfo()
 {
     const UINT oldmode = ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 
@@ -163,10 +161,13 @@ void QVolumeInfoPrivate::getVolumeInfo()
     QVarLengthArray<wchar_t, MAX_PATH + 1> fileSystemTypeBuffer(MAX_PATH + 1);
     DWORD fileSystemFlags = 0;
     const bool result = ::GetVolumeInformation(reinterpret_cast<const wchar_t *>(path.utf16()),
-                                               nameBuffer.data(), MAX_PATH,
-                                               Q_NULLPTR, Q_NULLPTR,
+                                               nameBuffer.data(),
+                                               nameBuffer.size(),
+                                               Q_NULLPTR,
+                                               Q_NULLPTR,
                                                &fileSystemFlags,
-                                               fileSystemTypeBuffer.data(), MAX_PATH);
+                                               fileSystemTypeBuffer.data(),
+                                               fileSystemTypeBuffer.size());
     if (!result) {
         ready = false;
         valid = ::GetLastError() == ERROR_NOT_READY;
@@ -183,7 +184,7 @@ void QVolumeInfoPrivate::getVolumeInfo()
     ::SetErrorMode(oldmode);
 }
 
-void QVolumeInfoPrivate::getDiskFreeSpace()
+void QVolumeInfoPrivate::retreiveDiskFreeSpace()
 {
     const UINT oldmode = ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 
@@ -200,18 +201,20 @@ QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
 {
     QList<QVolumeInfo> volumes;
 
-    char driveName[] = "A:/";
+    QString driveName = QStringLiteral("A:/");
+    const UINT oldmode = ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
     quint32 driveBits = quint32(::GetLogicalDrives()) & 0x3ffffff;
+    ::SetErrorMode(oldmode);
     while (driveBits) {
         if (driveBits & 1) {
             QVolumeInfoPrivate *data = new QVolumeInfoPrivate;
-            data->rootPath = QString::fromLatin1(driveName);
+            data->rootPath = driveName;
             data->setCachedFlag(CachedRootPathFlag);
             QVolumeInfo drive(*data);
             if (!drive.rootPath().isEmpty()) // drive exists, but not mounted
                 volumes.append(drive);
         }
-        driveName[0]++;
+        driveName[0] = driveName[0].unicode() + 1;
         driveBits = driveBits >> 1;
     }
 
@@ -224,8 +227,7 @@ QVolumeInfo QVolumeInfoPrivate::rootVolume()
     DWORD bufferSize = buffer.size();
     bool ok;
     do {
-        if ((int)bufferSize > buffer.size())
-            buffer.resize(bufferSize);
+        buffer.resize(bufferSize);
         ok = ::GetProfilesDirectory(buffer.data(), &bufferSize);
     } while (!ok && GetLastError() == ERROR_INSUFFICIENT_BUFFER);
     if (ok)

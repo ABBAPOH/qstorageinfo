@@ -89,7 +89,8 @@ static bool isPseudoFs(const QString &mountDir, const QByteArray &type)
         || mountDir.startsWith(QStringLiteral("/proc"))
         || mountDir.startsWith(QStringLiteral("/run"))
         || mountDir.startsWith(QStringLiteral("/sys"))
-        || mountDir.startsWith(QStringLiteral("/var"))) {
+        || mountDir.startsWith(QStringLiteral("/var/run"))
+        || mountDir.startsWith(QStringLiteral("/var/lock"))) {
         return true;
     }
 #if defined(Q_OS_LINUX)
@@ -106,11 +107,11 @@ public:
     QVolumeIterator();
     ~QVolumeIterator();
 
-    bool isValid() const;
-    bool next();
-    QString rootPath() const;
-    QByteArray fileSystemType() const;
-    QByteArray device() const;
+    inline bool isValid() const;
+    inline bool next();
+    inline QString rootPath() const;
+    inline QByteArray fileSystemType() const;
+    inline QByteArray device() const;
 private:
 #if defined(Q_OS_BSD4)
     statfs *stat_buf;
@@ -290,7 +291,7 @@ void QVolumeInfoPrivate::initRootPath()
     }
 }
 
-static inline QString getName(const QByteArray &device)
+static inline QString retrieveLabel(const QByteArray &device)
 {
 #ifdef Q_OS_LINUX
     static const char pathDiskByLabel[] = "/dev/disk/by-label";
@@ -299,7 +300,7 @@ static inline QString getName(const QByteArray &device)
     while (it.hasNext()) {
         it.next();
         QFileInfo fileInfo(it.fileInfo());
-        if (fileInfo.isSymLink() && fileInfo.symLinkTarget().toLatin1() == device)
+        if (fileInfo.isSymLink() && fileInfo.symLinkTarget().toLocal8Bit() == device)
             return fileInfo.fileName();
     }
 #else
@@ -328,7 +329,7 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
     uint bitmask = CachedBytesTotalFlag | CachedBytesFreeFlag | CachedBytesAvailableFlag
             | CachedReadOnlyFlag | CachedReadyFlag | CachedValidFlag;
     if (requiredFlags & bitmask) {
-        getVolumeInfo();
+        retreiveVolumeInfo();
         setCachedFlag(bitmask);
 
         if (!valid)
@@ -337,12 +338,12 @@ void QVolumeInfoPrivate::doStat(uint requiredFlags)
 
     bitmask = CachedLabelFlag;
     if (requiredFlags & bitmask) {
-        name = getName(device);
+        name = retrieveLabel(device);
         setCachedFlag(bitmask);
     }
 }
 
-void QVolumeInfoPrivate::getVolumeInfo()
+void QVolumeInfoPrivate::retreiveVolumeInfo()
 {
     QT_STATFSBUF statfs_buf;
     int result;

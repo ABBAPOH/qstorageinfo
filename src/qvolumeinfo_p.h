@@ -60,7 +60,6 @@ QT_BEGIN_NAMESPACE
 class QVolumeInfoPrivate : public QSharedData
 {
 public:
-
     inline QVolumeInfoPrivate() : QSharedData(),
         bytesTotal(0), bytesFree(0), bytesAvailable(0),
         readOnly(false), ready(false), valid(false),
@@ -108,18 +107,18 @@ public:
     static QList<QVolumeInfo> volumes();
     static QVolumeInfo rootVolume();
 
-    static inline void ensureCached(const QVolumeInfo *q, uint flags);
+    static void ensureCached(const QVolumeInfo *q, uint flags);
 
 protected:
 #if defined(Q_OS_WIN)
-    void getVolumeInfo();
-    void getDiskFreeSpace();
+    void retreiveVolumeInfo();
+    void retreiveDiskFreeSpace();
 #elif defined(Q_OS_MAC)
-    void getPosixInfo();
-    void getUrlProperties(bool initRootPath = false);
-    void getLabel();
+    void retrievePosixInfo();
+    void retrieveUrlProperties(bool initRootPath = false);
+    void retrieveLabel();
 #elif defined(Q_OS_UNIX)
-    void getVolumeInfo();
+    void retreiveVolumeInfo();
 #endif
 
 public:
