@@ -130,7 +130,7 @@ private:
 #if defined(Q_OS_BSD4)
 
 inline QVolumeIterator::QVolumeIterator()
-    : entryCount(getmntinfo(&stat_buf, 0)),
+    : entryCount(::getmntinfo(&stat_buf, 0)),
       currentIndex(-1)
 {
 }
@@ -211,7 +211,7 @@ static const char pathMounted[] = "/etc/mtab";
 static const int bufferSize = 3*PATH_MAX; // 2 paths (mount point+device) and metainfo
 
 inline QVolumeIterator::QVolumeIterator() :
-    buffer(bufferSize, '\0')
+    buffer(bufferSize, 0)
 {
 #if defined(Q_OS_ANDROID)
     const int fd = qt_safe_open(pathMounted, O_RDONLY);

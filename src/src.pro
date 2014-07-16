@@ -5,6 +5,7 @@ DESTDIR = ../lib
 QT = core core-private
 
 CONFIG -= rtti exceptions
+CONFIG += c++11
 DEFINES *= QT_NO_CAST_FROM_BYTEARRAY QT_NO_CAST_FROM_ASCII QT_NO_CAST_TO_ASCII
 
 #HEADERS += qtdriveinfoglobal.h

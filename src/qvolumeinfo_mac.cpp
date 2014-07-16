@@ -193,7 +193,7 @@ void QVolumeInfoPrivate::retrieveLabel()
     // deprecated (use CFURLCopyResourcePropertiesForKeys for 10.7 and higher)
     HFSUniStr255 volumeName;
     error = FSGetVolumeInfo(catalogInfo.volume,
-                            Q_NULLPTR,
+                            0,
                             Q_NULLPTR,
                             kFSVolInfoFSInfo,
                             Q_NULLPTR,

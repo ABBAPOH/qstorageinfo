@@ -1,6 +1,5 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2014 Ivan Komissarov
 ** Contact: http://www.qt-project.org/legal
 **
@@ -47,21 +46,20 @@
 class tst_QVolumeInfo : public QObject
 {
     Q_OBJECT
-public:
-    tst_QVolumeInfo() {}
-
 private slots:
-    void testInvalidVolume();
-    void testOperatorEqual();
-    void testOperatorNotEqual();
-    void testRootVolume();
-    void testCurrentVolume();
-    void testVolumeList();
-    void testTempFile();
-    void testCaching();
+    void defaultValues();
+    void operatorEqual();
+#ifndef Q_OS_WINRT
+    void operatorNotEqual();
+    void rootVolume();
+    void currentVolume();
+    void volumeList();
+    void tempFile();
+    void caching();
+#endif
 };
 
-void tst_QVolumeInfo::testInvalidVolume()
+void tst_QVolumeInfo::defaultValues()
 {
     QVolumeInfo volume;
 
@@ -76,7 +74,7 @@ void tst_QVolumeInfo::testInvalidVolume()
     QVERIFY(volume.bytesAvailable() == 0);
 }
 
-void tst_QVolumeInfo::testOperatorEqual()
+void tst_QVolumeInfo::operatorEqual()
 {
     {
         QVolumeInfo volume1 = QVolumeInfo::rootVolume();
@@ -97,14 +95,15 @@ void tst_QVolumeInfo::testOperatorEqual()
     }
 }
 
-void tst_QVolumeInfo::testOperatorNotEqual()
+#ifndef Q_OS_WINRT
+void tst_QVolumeInfo::operatorNotEqual()
 {
     QVolumeInfo volume1 = QVolumeInfo::rootVolume();
     QVolumeInfo volume2;
     QVERIFY(volume1 != volume2);
 }
 
-void tst_QVolumeInfo::testRootVolume()
+void tst_QVolumeInfo::rootVolume()
 {
     QVolumeInfo volume = QVolumeInfo::rootVolume();
 
@@ -119,7 +118,7 @@ void tst_QVolumeInfo::testRootVolume()
     QVERIFY(volume.bytesAvailable() > 0);
 }
 
-void tst_QVolumeInfo::testCurrentVolume()
+void tst_QVolumeInfo::currentVolume()
 {
     QString appPath = QCoreApplication::applicationFilePath();
     QVolumeInfo volume(appPath);
@@ -133,7 +132,7 @@ void tst_QVolumeInfo::testCurrentVolume()
     QVERIFY(volume.bytesAvailable() > 0);
 }
 
-void tst_QVolumeInfo::testVolumeList()
+void tst_QVolumeInfo::volumeList()
 {
     QVolumeInfo rootVolume = QVolumeInfo::rootVolume();
 
@@ -157,7 +156,7 @@ void tst_QVolumeInfo::testVolumeList()
     }
 }
 
-void tst_QVolumeInfo::testTempFile()
+void tst_QVolumeInfo::tempFile()
 {
     QTemporaryFile file;
     QVERIFY(file.open());
@@ -173,7 +172,7 @@ void tst_QVolumeInfo::testTempFile()
     QVERIFY(free != volume2.bytesFree());
 }
 
-void tst_QVolumeInfo::testCaching()
+void tst_QVolumeInfo::caching()
 {
     QTemporaryFile file;
     QVERIFY(file.open());
@@ -192,6 +191,7 @@ void tst_QVolumeInfo::testCaching()
     QVERIFY(volume1 == volume2);
     QVERIFY(free != volume2.bytesFree());
 }
+#endif
 
 QTEST_MAIN(tst_QVolumeInfo)
 
