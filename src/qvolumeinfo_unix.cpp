@@ -53,12 +53,12 @@
 
 #if defined(Q_OS_BSD4)
 #  include <sys/mount.h>
-#elif defined(Q_OS_LINUX)
-#  include <mntent.h>
-#  include <sys/statvfs.h>
 #elif defined(Q_OS_ANDROID)
 #  include <sys/mount.h>
 #  include <mntent.h>
+#elif defined(Q_OS_LINUX)
+#  include <mntent.h>
+#  include <sys/statvfs.h>
 #elif defined(Q_OS_SOLARIS)
 #  include <sys/mnttab.h>
 #endif
@@ -118,9 +118,16 @@ private:
     int entryCount;
     int currentIndex;
 #elif defined(Q_OS_LINUX)
+#if defined(Q_OS_ANDROID)
+    QFile file;
+    QByteArray m_rootPath;
+    QByteArray m_fileSystemType;
+    QByteArray m_device;
+#else
     FILE *fp;
     mntent mnt;
     QByteArray buffer;
+#endif
 #elif defined(Q_OS_SOLARIS)
     FILE *fp;
     mnttab mnt;
@@ -207,16 +214,20 @@ inline QByteArray QVolumeIterator::device() const
 
 #else
 
+#if defined(Q_OS_ANDROID)
+static const char pathMounted[] = "/proc/mounts";
+#else
 static const char pathMounted[] = "/etc/mtab";
 static const int bufferSize = 3*PATH_MAX; // 2 paths (mount point+device) and metainfo
+#endif
 
-inline QVolumeIterator::QVolumeIterator() :
-    buffer(bufferSize, 0)
+inline QVolumeIterator::QVolumeIterator()
 {
 #if defined(Q_OS_ANDROID)
-    const int fd = qt_safe_open(pathMounted, O_RDONLY);
-    fp = ::fdopen(fd, "r");
+    file.setFileName(pathMounted);
+    file.open(QIODevice::ReadOnly | QIODevice::Text);
 #else
+    buffer = QByteArray(bufferSize, 0);
     fp = ::setmntent(pathMounted, "r");
 #endif
 }
@@ -225,36 +236,65 @@ inline QVolumeIterator::~QVolumeIterator()
 {
 #if defined(Q_OS_ANDROID)
     if (fp)
-        ::fclose(fp);
-#else
-    if (fp)
         ::endmntent(fp);
 #endif
 }
 
 inline bool QVolumeIterator::isValid() const
 {
+#if defined(Q_OS_ANDROID)
+    return file.isOpen();
+#else
     return fp != Q_NULLPTR;
+#endif
 }
 
 inline bool QVolumeIterator::next()
 {
+#if defined(Q_OS_ANDROID)
+    QList<QByteArray> data;
+    do {
+        const QByteArray line = file.readLine();
+        data = line.split(' ');
+    } while (data.count() < 3 && !file.atEnd());
+
+    if (file.atEnd())
+        return false;
+    m_device = data.at(0);
+    m_rootPath = data.at(1);
+    m_fileSystemType = data.at(2);
+
+    return true;
+#else
     return ::getmntent_r(fp, &mnt, buffer.data(), buffer.size()) != Q_NULLPTR;
+#endif
 }
 
 inline QString QVolumeIterator::rootPath() const
 {
+#if defined(Q_OS_ANDROID)
+    return QFile::decodeName(m_rootPath);
+#else
     return QFile::decodeName(mnt.mnt_dir);
+#endif
 }
 
 inline QByteArray QVolumeIterator::fileSystemType() const
 {
+#if defined(Q_OS_ANDROID)
+    return m_fileSystemType;
+#else
     return QByteArray(mnt.mnt_type);
+#endif
 }
 
 inline QByteArray QVolumeIterator::device() const
 {
+#if defined(Q_OS_ANDROID)
+    return m_device;
+#else
     return QByteArray(mnt.mnt_fsname);
+#endif
 }
 
 #endif
