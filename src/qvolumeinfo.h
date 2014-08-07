@@ -85,9 +85,6 @@ public:
     static QList<QVolumeInfo> volumes();
     static QVolumeInfo rootVolume();
 
-protected:
-    explicit QVolumeInfo(QVolumeInfoPrivate &dd);
-
 private:
     friend class QVolumeInfoPrivate;
     QSharedDataPointer<QVolumeInfoPrivate> d;

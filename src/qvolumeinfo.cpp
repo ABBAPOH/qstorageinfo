@@ -113,14 +113,6 @@ QVolumeInfo::QVolumeInfo(const QVolumeInfo &other)
 }
 
 /*!
-    \internal
-*/
-QVolumeInfo::QVolumeInfo(QVolumeInfoPrivate &dd)
-    : d(&dd)
-{
-}
-
-/*!
     Destroys the QVolumeInfo and frees its resources.
 */
 QVolumeInfo::~QVolumeInfo()
