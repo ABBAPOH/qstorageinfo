@@ -83,8 +83,6 @@ QT_BEGIN_NAMESPACE
 
 static bool isPseudoFs(const QString &mountDir, const QByteArray &type)
 {
-    if (type.startsWith('/'))
-        return false;
     if (mountDir.startsWith(QStringLiteral("/dev"))
         || mountDir.startsWith(QStringLiteral("/proc"))
         || mountDir.startsWith(QStringLiteral("/run"))
@@ -96,6 +94,8 @@ static bool isPseudoFs(const QString &mountDir, const QByteArray &type)
 #if defined(Q_OS_LINUX)
     if (type == "rootfs")
         return true;
+#else
+    Q_UNUSED(type);
 #endif
 
     return false;
