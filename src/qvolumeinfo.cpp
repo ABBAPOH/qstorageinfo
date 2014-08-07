@@ -325,12 +325,10 @@ bool QVolumeInfo::isValid() const
 /*!
     Resets QVolumeInfo's internal cache.
 
-    QVolumeInfo caches information about volumes to speed up performance. Some
-    information can be retrieved by only one native function call (for example,
-    if you call bytesTotal(), QVolumeInfo will also cache information for
-    bytesAvailable() and bytesFree()). Also, QVolumeInfo won't update
-    information for future calls and you have to manually reset the cache when
-    needed.
+    QVolumeInfo caches information about volumes to speed up performance -
+    QVolumeInfo retrieves information during object construction and/or call
+    to setPath() method. You have to manually reset cache by calling this
+    function.
 */
 void QVolumeInfo::refresh()
 {
