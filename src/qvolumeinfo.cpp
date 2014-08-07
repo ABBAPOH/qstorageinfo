@@ -100,8 +100,7 @@ QVolumeInfo::QVolumeInfo()
 QVolumeInfo::QVolumeInfo(const QString &path)
     : d(new QVolumeInfoPrivate)
 {
-    d->rootPath = path;
-    d->doStat();
+    setPath(path);
 }
 
 /*!
