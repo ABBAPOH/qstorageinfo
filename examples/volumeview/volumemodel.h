@@ -53,11 +53,13 @@ public:
         ColumnRootPath = 0,
         ColumnName,
         ColumnDevice,
-        ColumnFileSystemType,
+        ColumnFileSystemName,
         ColumnTotal,
         ColumnFree,
         ColumnAvailable,
-        CoulmnIsReady,
+        ColumnIsReady,
+        ColumnIsReadOnly,
+        ColumnIsValid,
         ColumnCount
     };
 

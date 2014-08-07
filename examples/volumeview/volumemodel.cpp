@@ -92,7 +92,7 @@ QVariant VolumeModel::data(const QModelIndex &index, int role) const
             return volume.name();
         case ColumnDevice:
             return volume.device();
-        case ColumnFileSystemType:
+        case ColumnFileSystemName:
             return volume.fileSystemType();
         case ColumnTotal:
             return sizeToString(volume.bytesTotal());
@@ -100,8 +100,12 @@ QVariant VolumeModel::data(const QModelIndex &index, int role) const
             return sizeToString(volume.bytesFree());
         case ColumnAvailable:
             return sizeToString(volume.bytesAvailable());
-        case CoulmnIsReady:
+        case ColumnIsReady:
             return volume.isReady();
+        case ColumnIsReadOnly:
+            return volume.isReadOnly();
+        case ColumnIsValid:
+            return volume.isValid();
         default:
             break;
         }
@@ -109,23 +113,30 @@ QVariant VolumeModel::data(const QModelIndex &index, int role) const
         const QVolumeInfo &volume = m_volumes.at(index.row());
         return tr("Root path : %1\n"
                   "Name: %2\n"
-                  "Device: %3\n"
-                  "FileSystem: %4\n"
-                  "Total size: %5\n"
-                  "Free size: %6\n"
-                  "Available size: %7\n"
-                  "Is Ready: %8"
+                  "Display Name: %3\n"
+                  "Device: %4\n"
+                  "FileSystem: %5\n"
+                  "Total size: %6\n"
+                  "Free size: %7\n"
+                  "Available size: %8\n"
+                  "Is Ready: %9\n"
+                  "Is Read-only: %10\n"
+                  "Is Valid: %11\n"
+                  "Is Root: %12"
                   ).
                 arg(QDir::toNativeSeparators(volume.rootPath())).
                 arg(volume.name()).
+                arg(volume.displayName()).
                 arg(QString::fromUtf8(volume.device())).
                 arg(QString::fromUtf8(volume.fileSystemType())).
                 arg(sizeToString(volume.bytesTotal())).
                 arg(sizeToString(volume.bytesFree())).
                 arg(sizeToString(volume.bytesAvailable())).
-                arg(volume.isReady() ? tr("true") : tr("false"));
+                arg(volume.isReady() ? tr("true") : tr("false")).
+                arg(volume.isReadOnly() ? tr("true") : tr("false")).
+                arg(volume.isValid() ? tr("true") : tr("false")).
+                arg(volume.isRoot() ? tr("true") : tr("false"));
     }
-
     return QVariant();
 }
 
@@ -141,10 +152,10 @@ QVariant VolumeModel::headerData(int section, Qt::Orientation orientation, int r
     case ColumnRootPath:
         return tr("Root path");
     case ColumnName:
-        return tr("Name");
+        return tr("Volume Name");
     case ColumnDevice:
         return tr("Device");
-    case ColumnFileSystemType:
+    case ColumnFileSystemName:
         return tr("File system");
     case ColumnTotal:
         return tr("Total");
@@ -152,8 +163,12 @@ QVariant VolumeModel::headerData(int section, Qt::Orientation orientation, int r
         return tr("Free");
     case ColumnAvailable:
         return tr("Available");
-    case CoulmnIsReady:
+    case ColumnIsReady:
         return tr("Ready");
+    case ColumnIsReadOnly:
+        return tr("Read-only");
+    case ColumnIsValid:
+        return tr("Valid");
     default:
         break;
     }
