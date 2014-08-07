@@ -69,6 +69,9 @@
 #elif defined(Q_OS_ANDROID)
 #  define QT_STATFS    ::statfs
 #  define QT_STATFSBUF struct statfs
+#  if !defined(ST_RDONLY)
+#    define ST_RDONLY 1 // hack for missing define on Android
+#  endif
 #else
 #  if defined(QT_LARGEFILE_SUPPORT)
 #    define QT_STATFSBUF struct statvfs64
@@ -117,8 +120,10 @@ private:
     statfs *stat_buf;
     int entryCount;
     int currentIndex;
-#elif defined(Q_OS_LINUX)
-#if defined(Q_OS_ANDROID)
+#elif defined(Q_OS_SOLARIS)
+    FILE *fp;
+    mnttab mnt;
+#elif defined(Q_OS_ANDROID)
     QFile file;
     QByteArray m_rootPath;
     QByteArray m_fileSystemType;
@@ -127,10 +132,6 @@ private:
     FILE *fp;
     mntent mnt;
     QByteArray buffer;
-#endif
-#elif defined(Q_OS_SOLARIS)
-    FILE *fp;
-    mnttab mnt;
 #endif
 };
 
@@ -212,46 +213,27 @@ inline QByteArray QVolumeIterator::device() const
     return QByteArray(mnt->mnt_mntopts);
 }
 
-#else
+#elif defined(Q_OS_ANDROID)
 
-#if defined(Q_OS_ANDROID)
 static const char pathMounted[] = "/proc/mounts";
-#else
-static const char pathMounted[] = "/etc/mtab";
-static const int bufferSize = 3*PATH_MAX; // 2 paths (mount point+device) and metainfo
-#endif
 
 inline QVolumeIterator::QVolumeIterator()
 {
-#if defined(Q_OS_ANDROID)
     file.setFileName(pathMounted);
     file.open(QIODevice::ReadOnly | QIODevice::Text);
-#else
-    buffer = QByteArray(bufferSize, 0);
-    fp = ::setmntent(pathMounted, "r");
-#endif
 }
 
 inline QVolumeIterator::~QVolumeIterator()
 {
-#if !defined(Q_OS_ANDROID)
-    if (fp)
-        ::endmntent(fp);
-#endif
 }
 
 inline bool QVolumeIterator::isValid() const
 {
-#if defined(Q_OS_ANDROID)
     return file.isOpen();
-#else
-    return fp != Q_NULLPTR;
-#endif
 }
 
 inline bool QVolumeIterator::next()
 {
-#if defined(Q_OS_ANDROID)
     QList<QByteArray> data;
     do {
         const QByteArray line = file.readLine();
@@ -265,36 +247,63 @@ inline bool QVolumeIterator::next()
     m_fileSystemType = data.at(2);
 
     return true;
-#else
-    return ::getmntent_r(fp, &mnt, buffer.data(), buffer.size()) != Q_NULLPTR;
-#endif
 }
 
 inline QString QVolumeIterator::rootPath() const
 {
-#if defined(Q_OS_ANDROID)
     return QFile::decodeName(m_rootPath);
-#else
-    return QFile::decodeName(mnt.mnt_dir);
-#endif
 }
 
 inline QByteArray QVolumeIterator::fileSystemType() const
 {
-#if defined(Q_OS_ANDROID)
     return m_fileSystemType;
-#else
-    return QByteArray(mnt.mnt_type);
-#endif
 }
 
 inline QByteArray QVolumeIterator::device() const
 {
-#if defined(Q_OS_ANDROID)
     return m_device;
+}
+
 #else
+
+static const char pathMounted[] = "/etc/mtab";
+static const int bufferSize = 3*PATH_MAX; // 2 paths (mount point+device) and metainfo
+
+inline QVolumeIterator::QVolumeIterator() :
+    buffer(QByteArray(bufferSize, 0))
+{
+    fp = ::setmntent(pathMounted, "r");
+}
+
+inline QVolumeIterator::~QVolumeIterator()
+{
+    if (fp)
+        ::endmntent(fp);
+}
+
+inline bool QVolumeIterator::isValid() const
+{
+    return fp != Q_NULLPTR;
+}
+
+inline bool QVolumeIterator::next()
+{
+    return ::getmntent_r(fp, &mnt, buffer.data(), buffer.size()) != Q_NULLPTR;
+}
+
+inline QString QVolumeIterator::rootPath() const
+{
+    return QFile::decodeName(mnt.mnt_dir);
+}
+
+inline QByteArray QVolumeIterator::fileSystemType() const
+{
+    return QByteArray(mnt.mnt_type);
+}
+
+inline QByteArray QVolumeIterator::device() const
+{
     return QByteArray(mnt.mnt_fsname);
-#endif
 }
 
 #endif
@@ -372,12 +381,7 @@ void QVolumeInfoPrivate::retreiveVolumeInfo()
         bytesTotal = statfs_buf.f_blocks * statfs_buf.f_bsize;
         bytesFree = statfs_buf.f_bfree * statfs_buf.f_bsize;
         bytesAvailable = statfs_buf.f_bavail * statfs_buf.f_bsize;
-
-#if defined(Q_OS_ANDROID)
-        readOnly = (statfs_buf.f_flags & 1 /* MS_RDONLY */) != 0;
-#else
         readOnly = (statfs_buf.f_flag & ST_RDONLY) != 0;
-#endif
     }
 }
 
