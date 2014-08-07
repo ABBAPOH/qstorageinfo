@@ -234,7 +234,7 @@ inline QVolumeIterator::QVolumeIterator()
 
 inline QVolumeIterator::~QVolumeIterator()
 {
-#if defined(Q_OS_ANDROID)
+#if !defined(Q_OS_ANDROID)
     if (fp)
         ::endmntent(fp);
 #endif
