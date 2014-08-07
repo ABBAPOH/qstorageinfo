@@ -44,14 +44,6 @@
 
 QT_BEGIN_NAMESPACE
 
-void QVolumeInfoPrivate::ensureCached(const QVolumeInfo *q, uint flags)
-{
-    if ((q->d->cachedFlags & flags) != flags) {
-        QVolumeInfo *that = const_cast<QVolumeInfo *>(q);
-        that->d->doStat(flags);
-    }
-}
-
 /*!
     \class QVolumeInfo
     \inmodule QtCore
@@ -109,6 +101,7 @@ QVolumeInfo::QVolumeInfo(const QString &path)
     : d(new QVolumeInfoPrivate)
 {
     d->rootPath = path;
+    d->doStat();
 }
 
 /*!
@@ -180,6 +173,7 @@ void QVolumeInfo::setPath(const QString &path)
 {
     d->clear();
     d->rootPath = path;
+    d->doStat();
 }
 
 /*!
@@ -198,7 +192,6 @@ void QVolumeInfo::setPath(const QString &path)
 */
 QString QVolumeInfo::rootPath() const
 {
-    QVolumeInfoPrivate::ensureCached(this, QVolumeInfoPrivate::CachedRootPathFlag);
     return d->rootPath;
 }
 
@@ -213,7 +206,6 @@ QString QVolumeInfo::rootPath() const
 */
 qint64 QVolumeInfo::bytesAvailable() const
 {
-    QVolumeInfoPrivate::ensureCached(this, QVolumeInfoPrivate::CachedBytesAvailableFlag);
     return d->bytesAvailable;
 }
 
@@ -226,7 +218,6 @@ qint64 QVolumeInfo::bytesAvailable() const
 */
 qint64 QVolumeInfo::bytesFree() const
 {
-    QVolumeInfoPrivate::ensureCached(this, QVolumeInfoPrivate::CachedBytesFreeFlag);
     return d->bytesFree;
 }
 
@@ -237,7 +228,6 @@ qint64 QVolumeInfo::bytesFree() const
 */
 qint64 QVolumeInfo::bytesTotal() const
 {
-    QVolumeInfoPrivate::ensureCached(this, QVolumeInfoPrivate::CachedBytesTotalFlag);
     return d->bytesTotal;
 }
 
@@ -252,7 +242,6 @@ qint64 QVolumeInfo::bytesTotal() const
 */
 QByteArray QVolumeInfo::fileSystemType() const
 {
-    QVolumeInfoPrivate::ensureCached(this, QVolumeInfoPrivate::CachedFileSystemTypeFlag);
     return d->fileSystemType;
 }
 
@@ -267,7 +256,6 @@ QByteArray QVolumeInfo::fileSystemType() const
 */
 QByteArray QVolumeInfo::device() const
 {
-    QVolumeInfoPrivate::ensureCached(this, QVolumeInfoPrivate::CachedDeviceFlag);
     return d->device;
 }
 
@@ -285,7 +273,6 @@ QByteArray QVolumeInfo::device() const
 */
 QString QVolumeInfo::name() const
 {
-    QVolumeInfoPrivate::ensureCached(this, QVolumeInfoPrivate::CachedLabelFlag);
     return d->name;
 }
 
@@ -294,8 +281,6 @@ QString QVolumeInfo::name() const
 */
 QString QVolumeInfo::displayName() const
 {
-    QVolumeInfoPrivate::ensureCached(this, QVolumeInfoPrivate::CachedLabelFlag
-                                           | QVolumeInfoPrivate::CachedRootPathFlag);
     if (!d->name.isEmpty())
         return d->name;
     return d->rootPath;
@@ -319,7 +304,6 @@ QString QVolumeInfo::displayName() const
 */
 bool QVolumeInfo::isReadOnly() const
 {
-    QVolumeInfoPrivate::ensureCached(this, QVolumeInfoPrivate::CachedReadOnlyFlag);
     return d->readOnly;
 }
 
@@ -334,7 +318,6 @@ bool QVolumeInfo::isReadOnly() const
 */
 bool QVolumeInfo::isReady() const
 {
-    QVolumeInfoPrivate::ensureCached(this, QVolumeInfoPrivate::CachedReadyFlag);
     return d->ready;
 }
 
@@ -346,7 +329,6 @@ bool QVolumeInfo::isReady() const
 */
 bool QVolumeInfo::isValid() const
 {
-    QVolumeInfoPrivate::ensureCached(this, QVolumeInfoPrivate::CachedValidFlag);
     return d->valid;
 }
 
@@ -363,6 +345,7 @@ bool QVolumeInfo::isValid() const
 void QVolumeInfo::refresh()
 {
     d->clear();
+    d->doStat();
 }
 
 /*!

@@ -62,22 +62,8 @@ class QVolumeInfoPrivate : public QSharedData
 public:
     inline QVolumeInfoPrivate() : QSharedData(),
         bytesTotal(0), bytesFree(0), bytesAvailable(0),
-        readOnly(false), ready(false), valid(false),
-        cachedFlags(0)
+        readOnly(false), ready(false), valid(false)
     {}
-
-    enum CachedFlags {
-        CachedRootPathFlag = 0x001,
-        CachedDeviceFlag = 0x002,
-        CachedFileSystemTypeFlag = 0x004,
-        CachedLabelFlag = 0x008,
-        CachedBytesTotalFlag = 0x010,
-        CachedBytesFreeFlag = 0x020,
-        CachedBytesAvailableFlag = 0x040,
-        CachedReadOnlyFlag = 0x100,
-        CachedReadyFlag = 0x200,
-        CachedValidFlag = 0x400
-    };
 
     inline void clear()
     {
@@ -92,22 +78,13 @@ public:
         readOnly = false;
         ready = false;
         valid = false;
-
-        cachedFlags = 0;
     }
 
-    inline bool getCachedFlag(uint c) const
-    { return !!(cachedFlags & c); }
-    inline void setCachedFlag(uint c)
-    { cachedFlags |= c; }
-
     void initRootPath();
-    void doStat(uint requiredFlags);
+    void doStat();
 
     static QList<QVolumeInfo> volumes();
     static QVolumeInfo rootVolume();
-
-    static void ensureCached(const QVolumeInfo *q, uint flags);
 
 protected:
 #if defined(Q_OS_WIN)
@@ -135,8 +112,6 @@ public:
     ushort ready : 1;
     ushort valid : 1;
     ushort reserved : 5;
-
-    uint cachedFlags;
 };
 
 QT_END_NAMESPACE

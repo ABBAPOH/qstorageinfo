@@ -350,37 +350,14 @@ static inline QString retrieveLabel(const QByteArray &device)
     return QString();
 }
 
-void QVolumeInfoPrivate::doStat(uint requiredFlags)
+void QVolumeInfoPrivate::doStat()
 {
-    if (getCachedFlag(requiredFlags))
+    initRootPath();
+    if (rootPath.isEmpty())
         return;
 
-    if (!getCachedFlag(CachedRootPathFlag | CachedDeviceFlag | CachedFileSystemTypeFlag)) {
-        initRootPath();
-        setCachedFlag(CachedRootPathFlag | CachedDeviceFlag | CachedFileSystemTypeFlag);
-    }
-
-    if (rootPath.isEmpty() || (getCachedFlag(CachedValidFlag) && !valid))
-        return;
-
-    if (!getCachedFlag(CachedValidFlag))
-        requiredFlags |= CachedValidFlag; // force volume validation
-
-    uint bitmask = CachedBytesTotalFlag | CachedBytesFreeFlag | CachedBytesAvailableFlag
-            | CachedReadOnlyFlag | CachedReadyFlag | CachedValidFlag;
-    if (requiredFlags & bitmask) {
-        retreiveVolumeInfo();
-        setCachedFlag(bitmask);
-
-        if (!valid)
-            return;
-    }
-
-    bitmask = CachedLabelFlag;
-    if (requiredFlags & bitmask) {
-        name = retrieveLabel(device);
-        setCachedFlag(bitmask);
-    }
+    retreiveVolumeInfo();
+    name = retrieveLabel(device);
 }
 
 void QVolumeInfoPrivate::retreiveVolumeInfo()
@@ -418,14 +395,7 @@ QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
         if (isPseudoFs(mountDir, fsName))
             continue;
 
-        QVolumeInfoPrivate *data = new QVolumeInfoPrivate;
-        data->rootPath = mountDir;
-        data->device = QByteArray(it.device());
-        data->fileSystemType = fsName;
-        data->setCachedFlag(CachedRootPathFlag |
-                            CachedFileSystemTypeFlag |
-                            CachedDeviceFlag);
-        volumes.append(QVolumeInfo(*data));
+        volumes.append(QVolumeInfo(mountDir));
     }
 
     return volumes;

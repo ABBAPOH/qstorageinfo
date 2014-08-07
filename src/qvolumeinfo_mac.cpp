@@ -64,38 +64,16 @@ void QVolumeInfoPrivate::initRootPath()
     retrieveUrlProperties(true);
 }
 
-void QVolumeInfoPrivate::doStat(uint requiredFlags)
+void QVolumeInfoPrivate::doStat()
 {
-    if (getCachedFlag(requiredFlags))
+    initRootPath();
+
+    if (rootPath.isEmpty())
         return;
 
-    if (!getCachedFlag(CachedValidFlag))
-        requiredFlags |= CachedValidFlag; // force volume validation
-
-    if (!getCachedFlag(CachedRootPathFlag | CachedValidFlag | CachedReadyFlag)) {
-        initRootPath();
-        setCachedFlag(CachedRootPathFlag | CachedValidFlag | CachedReadyFlag);
-    }
-
-    if (rootPath.isEmpty() || (getCachedFlag(CachedValidFlag) && !valid))
-        return;
-
-    if (!getCachedFlag(CachedLabelFlag)) {
-        retrieveLabel();
-        setCachedFlag(CachedLabelFlag);
-    }
-
-    uint bitmask = CachedDeviceFlag | CachedReadOnlyFlag | CachedFileSystemTypeFlag;
-    if (requiredFlags & bitmask) {
-        retrievePosixInfo();
-        setCachedFlag(bitmask);
-    }
-
-    bitmask = CachedBytesTotalFlag | CachedBytesFreeFlag | CachedBytesAvailableFlag;
-    if (requiredFlags & bitmask) {
-        retrieveUrlProperties();
-        setCachedFlag(bitmask);
-    }
+    retrieveLabel();
+    retrievePosixInfo();
+    retrieveUrlProperties();
 }
 
 void QVolumeInfoPrivate::retrievePosixInfo()
@@ -219,12 +197,8 @@ QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
         CFErrorRef error;
         result = CFURLEnumeratorGetNextURL(enumerator, &url, &error);
         if (result == kCFURLEnumeratorSuccess) {
-            QCFString urlString = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);
-
-            QVolumeInfoPrivate *data = new QVolumeInfoPrivate;
-            data->rootPath = urlString;
-            data->setCachedFlag(CachedRootPathFlag);
-            volumes.append(QVolumeInfo(*data));
+            const QCFString urlString = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);
+            volumes.append(QVolumeInfo(urlString));
         }
     } while (result != kCFURLEnumeratorEnd);
 

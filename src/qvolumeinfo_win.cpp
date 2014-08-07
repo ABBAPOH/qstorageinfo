@@ -108,48 +108,15 @@ static inline QByteArray getDevice(const QString &rootPath)
     return QByteArray();
 }
 
-void QVolumeInfoPrivate::doStat(uint requiredFlags)
+void QVolumeInfoPrivate::doStat()
 {
-    if (getCachedFlag(requiredFlags))
+    initRootPath();
+    if (rootPath.isEmpty())
         return;
 
-    if (!getCachedFlag(CachedRootPathFlag)) {
-        initRootPath();
-        setCachedFlag(CachedRootPathFlag);
-    }
-
-    if (rootPath.isEmpty() || (getCachedFlag(CachedValidFlag) && !valid))
-        return;
-
-    if (!getCachedFlag(CachedValidFlag))
-        requiredFlags |= CachedValidFlag; // force volume validation
-
-    uint bitmask = CachedFileSystemTypeFlag
-            | CachedLabelFlag
-            | CachedReadOnlyFlag
-            | CachedReadyFlag
-            | CachedValidFlag;
-    if (requiredFlags & bitmask) {
-        retreiveVolumeInfo();
-        if (valid && !ready)
-            bitmask = CachedValidFlag;
-        setCachedFlag(bitmask);
-
-        if (!valid)
-            return;
-    }
-
-    bitmask = CachedDeviceFlag;
-    if (requiredFlags & bitmask) {
-        device = getDevice(rootPath);
-        setCachedFlag(bitmask);
-    }
-
-    bitmask = CachedBytesTotalFlag | CachedBytesFreeFlag | CachedBytesAvailableFlag;
-    if (requiredFlags & bitmask) {
-        retreiveDiskFreeSpace();
-        setCachedFlag(bitmask);
-    }
+    retreiveVolumeInfo();
+    device = getDevice(rootPath);
+    retreiveDiskFreeSpace();
 }
 
 void QVolumeInfoPrivate::retreiveVolumeInfo()
@@ -207,10 +174,7 @@ QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
     ::SetErrorMode(oldmode);
     while (driveBits) {
         if (driveBits & 1) {
-            QVolumeInfoPrivate *data = new QVolumeInfoPrivate;
-            data->rootPath = driveName;
-            data->setCachedFlag(CachedRootPathFlag);
-            QVolumeInfo drive(*data);
+            QVolumeInfo drive(driveName);
             if (!drive.rootPath().isEmpty()) // drive exists, but not mounted
                 volumes.append(drive);
         }
