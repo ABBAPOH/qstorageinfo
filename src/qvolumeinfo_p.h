@@ -65,21 +65,6 @@ public:
         readOnly(false), ready(false), valid(false)
     {}
 
-    inline void clear()
-    {
-        device.clear();
-        fileSystemType.clear();
-        name.clear();
-
-        bytesTotal = 0;
-        bytesFree = 0;
-        bytesAvailable = 0;
-
-        readOnly = false;
-        ready = false;
-        valid = false;
-    }
-
     void initRootPath();
     void doStat();
 

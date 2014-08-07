@@ -171,7 +171,6 @@ bool QVolumeInfo::operator==(const QVolumeInfo &other) const
 */
 void QVolumeInfo::setPath(const QString &path)
 {
-    d->clear();
     d->rootPath = path;
     d->doStat();
 }
@@ -344,7 +343,6 @@ bool QVolumeInfo::isValid() const
 */
 void QVolumeInfo::refresh()
 {
-    d->clear();
     d->doStat();
 }
 
