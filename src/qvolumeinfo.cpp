@@ -151,15 +151,6 @@ QVolumeInfo &QVolumeInfo::operator=(const QVolumeInfo &other)
 */
 
 /*!
-    \fn bool QVolumeInfo::operator!=(const QVolumeInfo &other) const
-
-    Returns true if this QVolumeInfo object refers to a different drive or
-    volume than the one specified by \a other; otherwise returns false.
-
-    \sa operator==()
-*/
-
-/*!
     Sets QVolumeInfo to the filesystem mounted where \a path is located.
 
     Path can either be a root path of the filesystem, or a directory or a file
@@ -389,15 +380,7 @@ QVolumeInfo QVolumeInfo::rootVolume()
 
     Note that the result of comparing two invalid QVolumeInfo objects is always
     positive.
-
-    \sa operator!=()
 */
-//bool QVolumeInfo::operator==(const QVolumeInfo &other) const
-//{
-//    if (d == other.d)
-//        return true;
-//    return device() == other.device();
-//}
 
 bool operator==(const QVolumeInfo &first, const QVolumeInfo &second)
 {
@@ -406,5 +389,11 @@ bool operator==(const QVolumeInfo &first, const QVolumeInfo &second)
     return first.device() == second.device();
 }
 
-QT_END_NAMESPACE
+/*!
+    \fn bool operator!=(const QVolumeInfo &first, const QVolumeInfo &second) const
 
+    Returns true if \a first QVolumeInfo object refers to a different drive or
+    volume than the one specified by \a second; otherwise returns false.
+*/
+
+QT_END_NAMESPACE
