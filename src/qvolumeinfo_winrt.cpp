@@ -41,38 +41,28 @@
 
 #include "qvolumeinfo_p.h"
 
-#include <QtCore/qfileinfo.h>
-
 QT_BEGIN_NAMESPACE
 
 void QVolumeInfoPrivate::initRootPath()
 {
-    rootPath = QFileInfo(rootPath).canonicalFilePath();
-
-    if (rootPath.isEmpty())
-        return;
-
+    Q_UNIMPLEMENTED();
     rootPath = QString();
 }
 
-void QVolumeInfoPrivate::doStat(uint requiredFlags)
+void QVolumeInfoPrivate::doStat()
 {
-    if (getCachedFlag(requiredFlags))
-        return;
-
-    if (!getCachedFlag(CachedRootPathFlag)) {
-        initRootPath();
-        setCachedFlag(CachedRootPathFlag);
-    }
+    Q_UNIMPLEMENTED();
 }
 
 QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
 {
+    Q_UNIMPLEMENTED();
     return QList<QVolumeInfo>();
 }
 
 QVolumeInfo QVolumeInfoPrivate::rootVolume()
 {
+    Q_UNIMPLEMENTED();
     return QVolumeInfo();
 }
 
