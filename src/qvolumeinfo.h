@@ -98,7 +98,13 @@ private:
     QExplicitlySharedDataPointer<QVolumeInfoPrivate> d;
 };
 
-bool operator==(const QVolumeInfo &first, const QVolumeInfo &second);
+inline bool operator==(const QVolumeInfo &first, const QVolumeInfo &second)
+{
+    if (first.d == second.d)
+        return true;
+    return first.device() == second.device();
+}
+
 inline bool operator!=(const QVolumeInfo &first, const QVolumeInfo &second)
 {
     return !(first == second);

@@ -375,6 +375,8 @@ QVolumeInfo QVolumeInfo::rootVolume()
 }
 
 /*!
+    \fn bool operator==(const QVolumeInfo &first, const QVolumeInfo &second)
+
     Returns true if \a first QVolumeInfo object refers to the same drive or volume
     as the \a second; otherwise returns false.
 
@@ -382,15 +384,8 @@ QVolumeInfo QVolumeInfo::rootVolume()
     positive.
 */
 
-bool operator==(const QVolumeInfo &first, const QVolumeInfo &second)
-{
-    if (first.d == second.d)
-        return true;
-    return first.device() == second.device();
-}
-
 /*!
-    \fn bool operator!=(const QVolumeInfo &first, const QVolumeInfo &second) const
+    \fn bool operator!=(const QVolumeInfo &first, const QVolumeInfo &second)
 
     Returns true if \a first QVolumeInfo object refers to a different drive or
     volume than the one specified by \a second; otherwise returns false.

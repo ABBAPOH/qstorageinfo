@@ -104,7 +104,7 @@ static inline QByteArray getDevice(const QString &rootPath)
     wchar_t deviceBuffer[51];
     if (::GetVolumeNameForVolumeMountPoint(reinterpret_cast<const wchar_t *>(path.utf16()),
                                            deviceBuffer,
-                                           51)) {
+                                           sizeof(deviceBuffer) / sizeof(wchar_t))) {
         return QString::fromWCharArray(deviceBuffer).toLatin1();
     }
     return QByteArray();
