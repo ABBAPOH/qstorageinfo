@@ -69,6 +69,9 @@
 #elif defined(Q_OS_ANDROID)
 #  define QT_STATFS    ::statfs
 #  define QT_STATFSBUF struct statfs
+#  if !defined(ST_RDONLY)
+#    define ST_RDONLY 1 // hack for missing define on Android
+#  endif
 #else
 #  if defined(QT_LARGEFILE_SUPPORT)
 #    define QT_STATFSBUF struct statvfs64
@@ -379,7 +382,7 @@ void QVolumeInfoPrivate::retreiveVolumeInfo()
         bytesFree = statfs_buf.f_bfree * statfs_buf.f_bsize;
         bytesAvailable = statfs_buf.f_bavail * statfs_buf.f_bsize;
 #if defined(Q_OS_ANDROID)
-        readOnly = (statfs_buf.f_flags & 1 /* MS_RDONLY */) != 0;
+        readOnly = (statfs_buf.f_flags & ST_RDONLY) != 0;
 #else
         readOnly = (statfs_buf.f_flag & ST_RDONLY) != 0;
 #endif
