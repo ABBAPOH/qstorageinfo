@@ -48,7 +48,6 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    QVolumeInfo::rootVolume();
 
     QTreeView view;
     view.setModel(new VolumeModel(&view));
