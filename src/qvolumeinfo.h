@@ -43,7 +43,9 @@
 #define QVOLUMEINFO_H
 
 #include <QtCore/qbytearray.h>
+#include <QtCore/qdir.h>
 #include <QtCore/qlist.h>
+#include <QtCore/qmetatype.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qshareddata.h>
 
@@ -55,13 +57,18 @@ class QVolumeInfo
 public:
     QVolumeInfo();
     explicit QVolumeInfo(const QString &path);
+    explicit QVolumeInfo(const QDir &dir);
     QVolumeInfo(const QVolumeInfo &other);
     ~QVolumeInfo();
 
     QVolumeInfo &operator=(const QVolumeInfo &other);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QVolumeInfo &operator=(QVolumeInfo &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
 
-    bool operator==(const QVolumeInfo &other) const;
-    inline bool operator!=(const QVolumeInfo &other) const;
+    inline void swap(QVolumeInfo &other)
+    { qSwap(d, other.d); }
 
     void setPath(const QString &path);
 
@@ -87,15 +94,23 @@ public:
 
 private:
     friend class QVolumeInfoPrivate;
-    QSharedDataPointer<QVolumeInfoPrivate> d;
+    friend bool operator==(const QVolumeInfo &first, const QVolumeInfo &second);
+    QExplicitlySharedDataPointer<QVolumeInfoPrivate> d;
 };
 
-inline bool QVolumeInfo::operator!=(const QVolumeInfo &other) const
-{ return !(operator==(other)); }
+bool operator==(const QVolumeInfo &first, const QVolumeInfo &second);
+inline bool operator!=(const QVolumeInfo &first, const QVolumeInfo &second)
+{
+    return !(first == second);
+}
 
 inline bool QVolumeInfo::isRoot() const
 { return *this == QVolumeInfo::rootVolume(); }
 
+Q_DECLARE_SHARED(QVolumeInfo)
+
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QVolumeInfo)
 
 #endif // QVOLUMEINFO_H

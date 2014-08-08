@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+static const int defaultBufferSize = MAX_PATH + 1;
+
 void QVolumeInfoPrivate::initRootPath()
 {
     rootPath = QFileInfo(rootPath).canonicalFilePath();
@@ -70,9 +72,9 @@ void QVolumeInfoPrivate::initRootPath()
         path.append(QLatin1Char('\\'));
 
     // ### test if disk mounted to folder on other disk
-    QVarLengthArray<wchar_t, MAX_PATH + 1> buffer(MAX_PATH + 1);
-    if (::GetVolumePathName(reinterpret_cast<const wchar_t *>(path.utf16()), buffer.data(), buffer.size()))
-        rootPath = QDir::fromNativeSeparators(QString::fromWCharArray(buffer.data()));
+    wchar_t buffer[defaultBufferSize];
+    if (::GetVolumePathName(reinterpret_cast<const wchar_t *>(path.utf16()), buffer, defaultBufferSize))
+        rootPath = QDir::fromNativeSeparators(QString::fromWCharArray(buffer));
 }
 
 static inline QByteArray getDevice(const QString &rootPath)
@@ -99,11 +101,11 @@ static inline QByteArray getDevice(const QString &rootPath)
     }
 #endif
 
-    QVarLengthArray<wchar_t, 51> deviceBuffer(51);
+    wchar_t deviceBuffer[51];
     if (::GetVolumeNameForVolumeMountPoint(reinterpret_cast<const wchar_t *>(path.utf16()),
-                                           deviceBuffer.data(),
-                                           deviceBuffer.size())) {
-        return QString::fromWCharArray(deviceBuffer.data()).toLatin1();
+                                           deviceBuffer,
+                                           51)) {
+        return QString::fromWCharArray(deviceBuffer).toLatin1();
     }
     return QByteArray();
 }
@@ -124,17 +126,17 @@ void QVolumeInfoPrivate::retreiveVolumeInfo()
     const UINT oldmode = ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 
     const QString path = QDir::toNativeSeparators(rootPath);
-    QVarLengthArray<wchar_t, MAX_PATH + 1> nameBuffer(MAX_PATH + 1);
-    QVarLengthArray<wchar_t, MAX_PATH + 1> fileSystemTypeBuffer(MAX_PATH + 1);
+    wchar_t nameBuffer[defaultBufferSize];
+    wchar_t fileSystemTypeBuffer[defaultBufferSize];
     DWORD fileSystemFlags = 0;
     const bool result = ::GetVolumeInformation(reinterpret_cast<const wchar_t *>(path.utf16()),
-                                               nameBuffer.data(),
-                                               nameBuffer.size(),
+                                               nameBuffer,
+                                               defaultBufferSize,
                                                Q_NULLPTR,
                                                Q_NULLPTR,
                                                &fileSystemFlags,
-                                               fileSystemTypeBuffer.data(),
-                                               fileSystemTypeBuffer.size());
+                                               fileSystemTypeBuffer,
+                                               defaultBufferSize);
     if (!result) {
         ready = false;
         valid = ::GetLastError() == ERROR_NOT_READY;
@@ -142,8 +144,8 @@ void QVolumeInfoPrivate::retreiveVolumeInfo()
         ready = true;
         valid = true;
 
-        fileSystemType = QString::fromWCharArray(fileSystemTypeBuffer.data()).toLatin1();
-        name = QString::fromWCharArray(nameBuffer.data());
+        fileSystemType = QString::fromWCharArray(fileSystemTypeBuffer).toLatin1();
+        name = QString::fromWCharArray(nameBuffer);
 
         readOnly = (fileSystemFlags & FILE_READ_ONLY_VOLUME) != 0;
     }

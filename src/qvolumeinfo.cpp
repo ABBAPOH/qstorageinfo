@@ -104,6 +104,16 @@ QVolumeInfo::QVolumeInfo(const QString &path)
 }
 
 /*!
+    Constructs a new QVolumeInfo that gives information about the volume
+    that contains the \a dir folder.
+*/
+QVolumeInfo::QVolumeInfo(const QDir &dir)
+    : d(new QVolumeInfoPrivate)
+{
+    setPath(dir.absolutePath());
+}
+
+/*!
     Constructs a new QVolumeInfo that is a copy of the \a other QVolumeInfo.
 */
 QVolumeInfo::QVolumeInfo(const QVolumeInfo &other)
@@ -128,6 +138,19 @@ QVolumeInfo &QVolumeInfo::operator=(const QVolumeInfo &other)
 }
 
 /*!
+    \fn QVolumeInfo &QVolumeInfo::operator=(QVolumeInfo &&other)
+
+    Move-assigns \a other to this QVolumeInfo instance.
+*/
+
+/*!
+    \fn void QVolumeInfo::swap(QVolumeInfo &other)
+
+    Swaps this volume info with \a other. This function is very fast and
+    never fails.
+*/
+
+/*!
     \fn bool QVolumeInfo::operator!=(const QVolumeInfo &other) const
 
     Returns true if this QVolumeInfo object refers to a different drive or
@@ -135,22 +158,6 @@ QVolumeInfo &QVolumeInfo::operator=(const QVolumeInfo &other)
 
     \sa operator==()
 */
-
-/*!
-    Returns true if this QVolumeInfo object refers to the same drive or volume
-    as the \a other; otherwise returns false.
-
-    Note that the result of comparing two invalid QVolumeInfo objects is always
-    positive.
-
-    \sa operator!=()
-*/
-bool QVolumeInfo::operator==(const QVolumeInfo &other) const
-{
-    if (d == other.d)
-        return true;
-    return device() == other.device();
-}
 
 /*!
     Sets QVolumeInfo to the filesystem mounted where \a path is located.
@@ -162,6 +169,9 @@ bool QVolumeInfo::operator==(const QVolumeInfo &other) const
 */
 void QVolumeInfo::setPath(const QString &path)
 {
+    if (d->rootPath == path)
+        return;
+    d.detach();
     d->rootPath = path;
     d->doStat();
 }
@@ -327,11 +337,12 @@ bool QVolumeInfo::isValid() const
 
     QVolumeInfo caches information about volumes to speed up performance -
     QVolumeInfo retrieves information during object construction and/or call
-    to setPath() method. You have to manually reset cache by calling this
+    to setPath() method. You have to manually reset the cache by calling this
     function.
 */
 void QVolumeInfo::refresh()
 {
+    d.detach();
     d->doStat();
 }
 
@@ -372,4 +383,28 @@ QVolumeInfo QVolumeInfo::rootVolume()
     return *theRootVolume();
 }
 
+/*!
+    Returns true if \a first QVolumeInfo object refers to the same drive or volume
+    as the \a second; otherwise returns false.
+
+    Note that the result of comparing two invalid QVolumeInfo objects is always
+    positive.
+
+    \sa operator!=()
+*/
+//bool QVolumeInfo::operator==(const QVolumeInfo &other) const
+//{
+//    if (d == other.d)
+//        return true;
+//    return device() == other.device();
+//}
+
+bool operator==(const QVolumeInfo &first, const QVolumeInfo &second)
+{
+    if (first.d == second.d)
+        return true;
+    return first.device() == second.device();
+}
+
 QT_END_NAMESPACE
+

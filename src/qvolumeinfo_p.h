@@ -93,10 +93,9 @@ public:
     qint64 bytesFree;
     qint64 bytesAvailable;
 
-    ushort readOnly : 1;
-    ushort ready : 1;
-    ushort valid : 1;
-    ushort reserved : 5;
+    bool readOnly;
+    bool ready;
+    bool valid;
 };
 
 QT_END_NAMESPACE
