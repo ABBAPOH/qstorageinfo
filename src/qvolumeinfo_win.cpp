@@ -45,7 +45,7 @@
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qvarlengtharray.h>
 
-#include <userenv.h>
+#include <Windows.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -189,17 +189,7 @@ QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
 
 QVolumeInfo QVolumeInfoPrivate::rootVolume()
 {
-    QVarLengthArray<wchar_t, 128> buffer(128);
-    DWORD bufferSize = buffer.size();
-    bool ok;
-    do {
-        buffer.resize(bufferSize);
-        ok = ::GetProfilesDirectory(buffer.data(), &bufferSize);
-    } while (!ok && GetLastError() == ERROR_INSUFFICIENT_BUFFER);
-    if (ok)
-        return QVolumeInfo(QString::fromWCharArray(buffer.data(), buffer.size()));
-
-    return QVolumeInfo();
+    return QVolumeInfo(QFile::decodeName(qgetenv("SystemDrive")));
 }
 
 QT_END_NAMESPACE

@@ -15,7 +15,7 @@ SOURCES += qvolumeinfo.cpp
 
 win* {
     SOURCES += qvolumeinfo_win.cpp
-    LIBS += -luserenv -lNetapi32 -lMpr -luser32 -lWinmm
+    LIBS += -lNetapi32 -lMpr -luser32 -lWinmm
 }
 
 unix {

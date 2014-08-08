@@ -1,5 +1,5 @@
 win* {
-    LIBS += -luserenv -lNetapi32 -lMpr -luser32 -lWinmm
+    LIBS += -lNetapi32 -lMpr -luser32 -lWinmm
 }
 
 macx-* {
