@@ -377,6 +377,8 @@ QVolumeInfo QVolumeInfo::rootVolume()
 /*!
     \fn inline bool operator==(const QVolumeInfo &first, const QVolumeInfo &second)
 
+    \relates QVolumeInfo
+
     Returns true if \a first QVolumeInfo object refers to the same drive or volume
     as the \a second; otherwise returns false.
 
@@ -386,6 +388,8 @@ QVolumeInfo QVolumeInfo::rootVolume()
 
 /*!
     \fn inline bool operator!=(const QVolumeInfo &first, const QVolumeInfo &second)
+
+    \relates QVolumeInfo
 
     Returns true if \a first QVolumeInfo object refers to a different drive or
     volume than the one specified by \a second; otherwise returns false.
