@@ -72,7 +72,7 @@ public:
     static QVolumeInfo rootVolume();
 
 protected:
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     void retreiveVolumeInfo();
     void retreiveDiskFreeSpace();
 #elif defined(Q_OS_MAC)

@@ -80,7 +80,6 @@ void QVolumeInfoPrivate::initRootPath()
 static inline QByteArray getDevice(const QString &rootPath)
 {
     const QString path = QDir::toNativeSeparators(rootPath);
-#if !defined(Q_OS_WINCE)
     const UINT type = ::GetDriveType(reinterpret_cast<const wchar_t *>(path.utf16()));
     if (type == DRIVE_REMOTE) {
         QVarLengthArray<char, 256> buffer(256);
@@ -99,7 +98,6 @@ static inline QByteArray getDevice(const QString &rootPath)
             return QString::fromWCharArray(remoteNameInfo->lpUniversalName).toUtf8();
         return QByteArray();
     }
-#endif
 
     wchar_t deviceBuffer[51];
     if (::GetVolumeNameForVolumeMountPoint(reinterpret_cast<const wchar_t *>(path.utf16()),

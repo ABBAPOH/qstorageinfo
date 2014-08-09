@@ -40,13 +40,18 @@ DynamicLibrary {
     }
     Group {
         name: "windows"
-        condition: qbs.targetOS.contains("windows")
+        condition: qbs.targetOS.contains("windows") && !qbs.targetOS.contains("wince")
         files: "qvolumeinfo_win.cpp"
     }
     Group {
         name: "winrt"
         condition: qbs.targetOS.contains("winrt")
-        files: "qvolumeinfo_winrt.cpp"
+        files: "qvolumeinfo_stub.cpp"
+    }
+    Group {
+        name: "wince"
+        condition: qbs.targetOS.contains("wince")
+        files: "qvolumeinfo_stub.cpp"
     }
 
     Group {
