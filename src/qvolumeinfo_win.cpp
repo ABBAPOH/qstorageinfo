@@ -187,7 +187,7 @@ QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
 
 QVolumeInfo QVolumeInfoPrivate::rootVolume()
 {
-    return QVolumeInfo(QFile::decodeName(qgetenv("SystemDrive")));
+    return QVolumeInfo(QDir::fromNativeSeparators(QFile::decodeName(qgetenv("SystemDrive"))));
 }
 
 QT_END_NAMESPACE
