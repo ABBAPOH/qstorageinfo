@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qvolumeinfo_p.h"
+#include "qstorageinfo_p.h"
 
 #include <QtCore/qdiriterator.h>
 #include <QtCore/qfileinfo.h>
@@ -308,7 +308,7 @@ inline QByteArray QVolumeIterator::device() const
 
 #endif
 
-void QVolumeInfoPrivate::initRootPath()
+void QStorageInfoPrivate::initRootPath()
 {
     rootPath = QFileInfo(rootPath).canonicalFilePath();
 
@@ -359,7 +359,7 @@ static inline QString retrieveLabel(const QByteArray &device)
     return QString();
 }
 
-void QVolumeInfoPrivate::doStat()
+void QStorageInfoPrivate::doStat()
 {
     initRootPath();
     if (rootPath.isEmpty())
@@ -369,7 +369,7 @@ void QVolumeInfoPrivate::doStat()
     name = retrieveLabel(device);
 }
 
-void QVolumeInfoPrivate::retreiveVolumeInfo()
+void QStorageInfoPrivate::retreiveVolumeInfo()
 {
     QT_STATFSBUF statfs_buf;
     int result;
@@ -389,13 +389,13 @@ void QVolumeInfoPrivate::retreiveVolumeInfo()
     }
 }
 
-QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
+QList<QStorageInfo> QStorageInfoPrivate::volumes()
 {
     QVolumeIterator it;
     if (!it.isValid())
-        return QList<QVolumeInfo>() << rootVolume();
+        return QList<QStorageInfo>() << rootVolume();
 
-    QList<QVolumeInfo> volumes;
+    QList<QStorageInfo> volumes;
 
     while (it.next()) {
         const QString mountDir = it.rootPath();
@@ -403,15 +403,15 @@ QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
         if (isPseudoFs(mountDir, fsName))
             continue;
 
-        volumes.append(QVolumeInfo(mountDir));
+        volumes.append(QStorageInfo(mountDir));
     }
 
     return volumes;
 }
 
-QVolumeInfo QVolumeInfoPrivate::rootVolume()
+QStorageInfo QStorageInfoPrivate::rootVolume()
 {
-    return QVolumeInfo(QStringLiteral("/"));
+    return QStorageInfo(QStringLiteral("/"));
 }
 
 QT_END_NAMESPACE

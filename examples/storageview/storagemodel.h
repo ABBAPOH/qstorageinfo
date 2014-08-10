@@ -39,21 +39,41 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QHeaderView>
-#include <QtWidgets/QTreeView>
+#ifndef STORAGEMODEL_H
+#define STORAGEMODEL_H
 
-#include "volumemodel.h"
+#include <QAbstractTableModel>
+#include <QStorageInfo>
 
-int main(int argc, char *argv[])
+class StorageModel : public QAbstractTableModel
 {
-    QApplication a(argc, argv);
+    Q_OBJECT
+    Q_DISABLE_COPY(StorageModel)
+public:
+    enum Column {
+        ColumnRootPath = 0,
+        ColumnName,
+        ColumnDevice,
+        ColumnFileSystemName,
+        ColumnTotal,
+        ColumnFree,
+        ColumnAvailable,
+        ColumnIsReady,
+        ColumnIsReadOnly,
+        ColumnIsValid,
+        ColumnCount
+    };
 
-    QTreeView view;
-    view.setModel(new VolumeModel(&view));
-    view.resize(640, 480);
-    view.setSelectionBehavior(QAbstractItemView::SelectRows);
-    view.show();
+    explicit StorageModel(QObject *parent = 0);
 
-    return a.exec();
-}
+    int columnCount(const QModelIndex &parent) const;
+    int rowCount(const QModelIndex &parent) const;
+
+    QVariant data(const QModelIndex &index, int role) const;
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+
+private:
+    QList<QStorageInfo> m_volumes;
+};
+
+#endif // STORAGEMODEL_H

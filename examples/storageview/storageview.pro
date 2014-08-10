@@ -2,12 +2,12 @@ TEMPLATE = app
 QT += core gui widgets
 DESTDIR = ../../bin
 
-HEADERS += volumemodel.h
+HEADERS += storagemodel.h
 SOURCES += \
-    volumemodel.cpp \
+    storagemodel.cpp \
     main.cpp
 
-LIBS += -L$$OUT_PWD/../../lib -lqvolumeinfo
+LIBS += -L$$OUT_PWD/../../lib -lqstorageinfo
 INCLUDEPATH += $$PWD/../../include
 
 include(../../src/libs.pri)

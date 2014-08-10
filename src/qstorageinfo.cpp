@@ -39,16 +39,16 @@
 **
 ****************************************************************************/
 
-#include "qvolumeinfo.h"
-#include "qvolumeinfo_p.h"
+#include "qstorageinfo.h"
+#include "qstorageinfo_p.h"
 
 QT_BEGIN_NAMESPACE
 
 /*!
-    \class QVolumeInfo
+    \class QStorageInfo
     \inmodule QtCore
     \since 5.4
-    \brief Provides information about currently mounted volumes.
+    \brief Provides information about currently mounted volumes and drives.
 
     \ingroup io
     \ingroup shared
@@ -56,109 +56,109 @@ QT_BEGIN_NAMESPACE
     Allows retrieving information about the volume's space, its mount point,
     label, filesystem name.
 
-    You can create an instance of QVolumeInfo passing the path to the volume's
+    You can create an instance of QStorageInfo passing the path to the volume's
     mount point as the constructor parameter, or you can set it using
     setPath() method. The static volumes() method can be used to get the
     list of all mounted filesystems.
 
-    QVolumeInfo always caches the retrieved information but you can call
+    QStorageInfo always caches the retrieved information but you can call
     refresh() to invalidate the cache.
 
     The following example retrieves the most common information about the root
     volume of the system and prints information about it.
 
-    \snippet code/src_corelib_io_qvolumeinfo.cpp 2
+    \snippet code/src_corelib_io_qstorageinfo.cpp 2
 */
 
 /*!
-    Constructs an empty QVolumeInfo object.
+    Constructs an empty QStorageInfo object.
 
     This object is not ready for use, invalid and all its parameters are empty.
 
     \sa setPath(), isReady(), isValid()
 */
-QVolumeInfo::QVolumeInfo()
-    : d(new QVolumeInfoPrivate)
+QStorageInfo::QStorageInfo()
+    : d(new QStorageInfoPrivate)
 {
 }
 
 /*!
-    Constructs a new QVolumeInfo that gives information about the volume
+    Constructs a new QStorageInfo that gives information about the volume
     mounted at \a path.
 
-    If you pass a directory or file, the QVolumeInfo object will refer to the
+    If you pass a directory or file, the QStorageInfo object will refer to the
     volume where this directory or file is located.
     You can check if the created object is correct using the isValid() method.
 
     The following example shows how to get volume on which application is
     located. It is recommended to always check that volume is ready and valid.
 
-    \snippet code/src_corelib_io_qvolumeinfo.cpp 0
+    \snippet code/src_corelib_io_qstorageinfo.cpp 0
 
     \sa setPath()
 */
-QVolumeInfo::QVolumeInfo(const QString &path)
-    : d(new QVolumeInfoPrivate)
+QStorageInfo::QStorageInfo(const QString &path)
+    : d(new QStorageInfoPrivate)
 {
     setPath(path);
 }
 
 /*!
-    Constructs a new QVolumeInfo that gives information about the volume
+    Constructs a new QStorageInfo that gives information about the volume
     that contains the \a dir folder.
 */
-QVolumeInfo::QVolumeInfo(const QDir &dir)
-    : d(new QVolumeInfoPrivate)
+QStorageInfo::QStorageInfo(const QDir &dir)
+    : d(new QStorageInfoPrivate)
 {
     setPath(dir.absolutePath());
 }
 
 /*!
-    Constructs a new QVolumeInfo that is a copy of the \a other QVolumeInfo.
+    Constructs a new QStorageInfo that is a copy of the \a other QStorageInfo.
 */
-QVolumeInfo::QVolumeInfo(const QVolumeInfo &other)
+QStorageInfo::QStorageInfo(const QStorageInfo &other)
     : d(other.d)
 {
 }
 
 /*!
-    Destroys the QVolumeInfo and frees its resources.
+    Destroys the QStorageInfo and frees its resources.
 */
-QVolumeInfo::~QVolumeInfo()
+QStorageInfo::~QStorageInfo()
 {
 }
 
 /*!
-    Makes a copy of \a other QVolumeInfo and assigns it to this QVolumeInfo.
+    Makes a copy of \a other QStorageInfo and assigns it to this QStorageInfo.
 */
-QVolumeInfo &QVolumeInfo::operator=(const QVolumeInfo &other)
+QStorageInfo &QStorageInfo::operator=(const QStorageInfo &other)
 {
     d = other.d;
     return *this;
 }
 
 /*!
-    \fn QVolumeInfo &QVolumeInfo::operator=(QVolumeInfo &&other)
+    \fn QStorageInfo &QStorageInfo::operator=(QStorageInfo &&other)
 
-    Move-assigns \a other to this QVolumeInfo instance.
+    Move-assigns \a other to this QStorageInfo instance.
 */
 
 /*!
-    \fn void QVolumeInfo::swap(QVolumeInfo &other)
+    \fn void QStorageInfo::swap(QStorageInfo &other)
 
     Swaps this volume info with \a other. This function is very fast and
     never fails.
 */
 
 /*!
-    Sets QVolumeInfo to the filesystem mounted where \a path is located.
+    Sets QStorageInfo to the filesystem mounted where \a path is located.
 
     Path can either be a root path of the filesystem, or a directory or a file
     within that filesystem.
 
     \sa rootPath()
 */
-void QVolumeInfo::setPath(const QString &path)
+void QStorageInfo::setPath(const QString &path)
 {
     if (d->rootPath == path)
         return;
@@ -168,7 +168,7 @@ void QVolumeInfo::setPath(const QString &path)
 }
 
 /*!
-    Returns the mount point of the filesystem this QVolumeInfo object
+    Returns the mount point of the filesystem this QStorageInfo object
     represents.
 
     On Windows, returns the volume letter in case the volume is not mounted to
@@ -181,7 +181,7 @@ void QVolumeInfo::setPath(const QString &path)
 
     \sa setPath(), device()
 */
-QString QVolumeInfo::rootPath() const
+QString QStorageInfo::rootPath() const
 {
     return d->rootPath;
 }
@@ -195,7 +195,7 @@ QString QVolumeInfo::rootPath() const
 
     \sa bytesTotal(), bytesFree()
 */
-qint64 QVolumeInfo::bytesAvailable() const
+qint64 QStorageInfo::bytesAvailable() const
 {
     return d->bytesAvailable;
 }
@@ -207,7 +207,7 @@ qint64 QVolumeInfo::bytesAvailable() const
 
     \sa bytesTotal(), bytesAvailable()
 */
-qint64 QVolumeInfo::bytesFree() const
+qint64 QStorageInfo::bytesFree() const
 {
     return d->bytesFree;
 }
@@ -217,7 +217,7 @@ qint64 QVolumeInfo::bytesFree() const
 
     \sa bytesFree(), bytesAvailable()
 */
-qint64 QVolumeInfo::bytesTotal() const
+qint64 QStorageInfo::bytesTotal() const
 {
     return d->bytesTotal;
 }
@@ -231,7 +231,7 @@ qint64 QVolumeInfo::bytesTotal() const
 
     \sa name()
 */
-QByteArray QVolumeInfo::fileSystemType() const
+QByteArray QStorageInfo::fileSystemType() const
 {
     return d->fileSystemType;
 }
@@ -245,7 +245,7 @@ QByteArray QVolumeInfo::fileSystemType() const
 
     \sa rootPath()
 */
-QByteArray QVolumeInfo::device() const
+QByteArray QStorageInfo::device() const
 {
     return d->device;
 }
@@ -262,7 +262,7 @@ QByteArray QVolumeInfo::device() const
 
     \sa fileSystemType()
 */
-QString QVolumeInfo::name() const
+QString QStorageInfo::name() const
 {
     return d->name;
 }
@@ -270,7 +270,7 @@ QString QVolumeInfo::name() const
 /*!
     Returns the volume's name, if available, or the device's path if not.
 */
-QString QVolumeInfo::displayName() const
+QString QStorageInfo::displayName() const
 {
     if (!d->name.isEmpty())
         return d->name;
@@ -278,9 +278,9 @@ QString QVolumeInfo::displayName() const
 }
 
 /*!
-    \fn bool QVolumeInfo::isRoot() const
+    \fn bool QStorageInfo::isRoot() const
 
-    Returns true if this QVolumeInfo represents the system root volume; false
+    Returns true if this QStorageInfo represents the system root volume; false
     otherwise.
 
     On Unix filesystems, the root volume is a volume mounted at "/", on Windows
@@ -293,7 +293,7 @@ QString QVolumeInfo::displayName() const
     Returns true if the current filesystem is protected from writing; false
     otherwise.
 */
-bool QVolumeInfo::isReadOnly() const
+bool QStorageInfo::isReadOnly() const
 {
     return d->readOnly;
 }
@@ -307,31 +307,31 @@ bool QVolumeInfo::isReadOnly() const
 
     \sa isValid()
 */
-bool QVolumeInfo::isReady() const
+bool QStorageInfo::isReady() const
 {
     return d->ready;
 }
 
 /*!
-    Returns true if the QVolumeInfo specified by rootPath exists and is mounted
+    Returns true if the QStorageInfo specified by rootPath exists and is mounted
     correctly.
 
     \sa isReady()
 */
-bool QVolumeInfo::isValid() const
+bool QStorageInfo::isValid() const
 {
     return d->valid;
 }
 
 /*!
-    Resets QVolumeInfo's internal cache.
+    Resets QStorageInfo's internal cache.
 
-    QVolumeInfo caches information about volumes to speed up performance -
-    QVolumeInfo retrieves information during object construction and/or call
+    QStorageInfo caches information about volumes to speed up performance -
+    QStorageInfo retrieves information during object construction and/or call
     to setPath() method. You have to manually reset the cache by calling this
     function.
 */
-void QVolumeInfo::refresh()
+void QStorageInfo::refresh()
 {
     d.detach();
     d->doStat();
@@ -350,48 +350,48 @@ void QVolumeInfo::refresh()
     The example shows how to retrieve all volumes present in the system and
     skip read-only volumes.
 
-    \snippet code/src_corelib_io_qvolumeinfo.cpp 1
+    \snippet code/src_corelib_io_qstorageinfo.cpp 1
 
     \sa rootVolume()
 */
-QList<QVolumeInfo> QVolumeInfo::volumes()
+QList<QStorageInfo> QStorageInfo::volumes()
 {
-    return QVolumeInfoPrivate::volumes();
+    return QStorageInfoPrivate::volumes();
 }
 
-Q_GLOBAL_STATIC_WITH_ARGS(QVolumeInfo, theRootVolume, (QVolumeInfoPrivate::rootVolume()))
+Q_GLOBAL_STATIC_WITH_ARGS(QStorageInfo, theRootVolume, (QStorageInfoPrivate::rootVolume()))
 
 /*!
-    Returns a QVolumeInfo object that represents the system root volume.
+    Returns a QStorageInfo object that represents the system root volume.
 
     On Unix systems this call returns '/' volume, on Windows the volume where
     operating system is installed is returned.
 
     \sa isRoot()
 */
-QVolumeInfo QVolumeInfo::rootVolume()
+QStorageInfo QStorageInfo::rootVolume()
 {
     return *theRootVolume();
 }
 
 /*!
-    \fn inline bool operator==(const QVolumeInfo &first, const QVolumeInfo &second)
+    \fn inline bool operator==(const QStorageInfo &first, const QStorageInfo &second)
 
-    \relates QVolumeInfo
+    \relates QStorageInfo
 
-    Returns true if \a first QVolumeInfo object refers to the same drive or volume
+    Returns true if \a first QStorageInfo object refers to the same drive or volume
     as the \a second; otherwise returns false.
 
-    Note that the result of comparing two invalid QVolumeInfo objects is always
+    Note that the result of comparing two invalid QStorageInfo objects is always
     positive.
 */
 
 /*!
-    \fn inline bool operator!=(const QVolumeInfo &first, const QVolumeInfo &second)
+    \fn inline bool operator!=(const QStorageInfo &first, const QStorageInfo &second)
 
-    \relates QVolumeInfo
+    \relates QStorageInfo
 
-    Returns true if \a first QVolumeInfo object refers to a different drive or
+    Returns true if \a first QStorageInfo object refers to a different drive or
     volume than the one specified by \a second; otherwise returns false.
 */
 

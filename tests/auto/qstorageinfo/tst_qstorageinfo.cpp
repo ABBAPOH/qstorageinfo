@@ -41,9 +41,9 @@
 
 #include <QtTest/QtTest>
 
-#include <QVolumeInfo>
+#include <QStorageInfo>
 
-class tst_QVolumeInfo : public QObject
+class tst_QStorageInfo : public QObject
 {
     Q_OBJECT
 private slots:
@@ -59,9 +59,9 @@ private slots:
 #endif
 };
 
-void tst_QVolumeInfo::defaultValues()
+void tst_QStorageInfo::defaultValues()
 {
-    QVolumeInfo volume;
+    QStorageInfo volume;
 
     QVERIFY(!volume.isValid());
     QVERIFY(!volume.isReady());
@@ -74,38 +74,38 @@ void tst_QVolumeInfo::defaultValues()
     QVERIFY(volume.bytesAvailable() == 0);
 }
 
-void tst_QVolumeInfo::operatorEqual()
+void tst_QStorageInfo::operatorEqual()
 {
     {
-        QVolumeInfo volume1 = QVolumeInfo::rootVolume();
-        QVolumeInfo volume2(QDir::rootPath());
+        QStorageInfo volume1 = QStorageInfo::rootVolume();
+        QStorageInfo volume2(QDir::rootPath());
         QVERIFY(volume1 == volume2);
     }
 
     {
-        QVolumeInfo volume1(QCoreApplication::applicationDirPath());
-        QVolumeInfo volume2(QCoreApplication::applicationFilePath());
+        QStorageInfo volume1(QCoreApplication::applicationDirPath());
+        QStorageInfo volume2(QCoreApplication::applicationFilePath());
         QVERIFY(volume1 == volume2);
     }
 
     {
-        QVolumeInfo volume1;
-        QVolumeInfo volume2;
+        QStorageInfo volume1;
+        QStorageInfo volume2;
         QVERIFY(volume1 == volume2);
     }
 }
 
 #ifndef Q_OS_WINRT
-void tst_QVolumeInfo::operatorNotEqual()
+void tst_QStorageInfo::operatorNotEqual()
 {
-    QVolumeInfo volume1 = QVolumeInfo::rootVolume();
-    QVolumeInfo volume2;
+    QStorageInfo volume1 = QStorageInfo::rootVolume();
+    QStorageInfo volume2;
     QVERIFY(volume1 != volume2);
 }
 
-void tst_QVolumeInfo::rootVolume()
+void tst_QStorageInfo::rootVolume()
 {
-    QVolumeInfo volume = QVolumeInfo::rootVolume();
+    QStorageInfo volume = QStorageInfo::rootVolume();
 
     QVERIFY(volume.isValid());
     QVERIFY(volume.isReady());
@@ -118,10 +118,10 @@ void tst_QVolumeInfo::rootVolume()
     QVERIFY(volume.bytesAvailable() > 0);
 }
 
-void tst_QVolumeInfo::currentVolume()
+void tst_QStorageInfo::currentVolume()
 {
     QString appPath = QCoreApplication::applicationFilePath();
-    QVolumeInfo volume(appPath);
+    QStorageInfo volume(appPath);
     QVERIFY(volume.isValid());
     QVERIFY(volume.isReady());
     QVERIFY(appPath.startsWith(volume.rootPath(), Qt::CaseInsensitive));
@@ -132,18 +132,18 @@ void tst_QVolumeInfo::currentVolume()
     QVERIFY(volume.bytesAvailable() > 0);
 }
 
-void tst_QVolumeInfo::volumeList()
+void tst_QStorageInfo::volumeList()
 {
-    QVolumeInfo rootVolume = QVolumeInfo::rootVolume();
+    QStorageInfo rootVolume = QStorageInfo::rootVolume();
 
-    QList<QVolumeInfo> volumes = QVolumeInfo::volumes();
+    QList<QStorageInfo> volumes = QStorageInfo::volumes();
 
     // at least, root volume should be present
     QVERIFY(volumes.contains(rootVolume));
     volumes.removeOne(rootVolume);
     QVERIFY(!volumes.contains(rootVolume));
 
-    foreach (const QVolumeInfo &volume, volumes) {
+    foreach (const QStorageInfo &volume, volumes) {
         if (!volume.isReady())
             continue;
 
@@ -156,30 +156,30 @@ void tst_QVolumeInfo::volumeList()
     }
 }
 
-void tst_QVolumeInfo::tempFile()
+void tst_QStorageInfo::tempFile()
 {
     QTemporaryFile file;
     QVERIFY(file.open());
 
-    QVolumeInfo volume1(file.fileName());
+    QStorageInfo volume1(file.fileName());
     qint64 free = volume1.bytesFree();
 
     file.write(QByteArray(1024*1024, '1'));
     file.flush();
     file.close();
 
-    QVolumeInfo volume2(file.fileName());
+    QStorageInfo volume2(file.fileName());
     QVERIFY(free != volume2.bytesFree());
 }
 
-void tst_QVolumeInfo::caching()
+void tst_QStorageInfo::caching()
 {
     QTemporaryFile file;
     QVERIFY(file.open());
 
-    QVolumeInfo volume1(file.fileName());
+    QStorageInfo volume1(file.fileName());
     qint64 free = volume1.bytesFree();
-    QVolumeInfo volume2(volume1);
+    QStorageInfo volume2(volume1);
     QVERIFY(free == volume2.bytesFree());
 
     file.write(QByteArray(1024*1024, '\0'));
@@ -193,6 +193,6 @@ void tst_QVolumeInfo::caching()
 }
 #endif
 
-QTEST_MAIN(tst_QVolumeInfo)
+QTEST_MAIN(tst_QStorageInfo)
 
-#include "tst_qvolumeinfo.moc"
+#include "tst_qstorageinfo.moc"

@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qvolumeinfo_p.h"
+#include "qstorageinfo_p.h"
 
 #include <QtCore/qdir.h>
 #include <QtCore/qfileinfo.h>
@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
 static const int defaultBufferSize = MAX_PATH + 1;
 
-void QVolumeInfoPrivate::initRootPath()
+void QStorageInfoPrivate::initRootPath()
 {
     rootPath = QFileInfo(rootPath).canonicalFilePath();
 
@@ -108,7 +108,7 @@ static inline QByteArray getDevice(const QString &rootPath)
     return QByteArray();
 }
 
-void QVolumeInfoPrivate::doStat()
+void QStorageInfoPrivate::doStat()
 {
     initRootPath();
     if (rootPath.isEmpty())
@@ -119,7 +119,7 @@ void QVolumeInfoPrivate::doStat()
     retreiveDiskFreeSpace();
 }
 
-void QVolumeInfoPrivate::retreiveVolumeInfo()
+void QStorageInfoPrivate::retreiveVolumeInfo()
 {
     const UINT oldmode = ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 
@@ -151,7 +151,7 @@ void QVolumeInfoPrivate::retreiveVolumeInfo()
     ::SetErrorMode(oldmode);
 }
 
-void QVolumeInfoPrivate::retreiveDiskFreeSpace()
+void QStorageInfoPrivate::retreiveDiskFreeSpace()
 {
     const UINT oldmode = ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 
@@ -164,9 +164,9 @@ void QVolumeInfoPrivate::retreiveDiskFreeSpace()
     ::SetErrorMode(oldmode);
 }
 
-QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
+QList<QStorageInfo> QStorageInfoPrivate::volumes()
 {
-    QList<QVolumeInfo> volumes;
+    QList<QStorageInfo> volumes;
 
     QString driveName = QStringLiteral("A:/");
     const UINT oldmode = ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
@@ -174,7 +174,7 @@ QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
     ::SetErrorMode(oldmode);
     while (driveBits) {
         if (driveBits & 1) {
-            QVolumeInfo drive(driveName);
+            QStorageInfo drive(driveName);
             if (!drive.rootPath().isEmpty()) // drive exists, but not mounted
                 volumes.append(drive);
         }
@@ -185,9 +185,9 @@ QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
     return volumes;
 }
 
-QVolumeInfo QVolumeInfoPrivate::rootVolume()
+QStorageInfo QStorageInfoPrivate::rootVolume()
 {
-    return QVolumeInfo(QDir::fromNativeSeparators(QFile::decodeName(qgetenv("SystemDrive"))));
+    return QStorageInfo(QDir::fromNativeSeparators(QFile::decodeName(qgetenv("SystemDrive"))));
 }
 
 QT_END_NAMESPACE

@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qvolumeinfo_p.h"
+#include "qstorageinfo_p.h"
 
 #include <QtCore/qfileinfo.h>
 #include <QtCore/private/qcore_mac_p.h>
@@ -54,7 +54,7 @@
 
 QT_BEGIN_NAMESPACE
 
-void QVolumeInfoPrivate::initRootPath()
+void QStorageInfoPrivate::initRootPath()
 {
     rootPath = QFileInfo(rootPath).canonicalFilePath();
 
@@ -64,7 +64,7 @@ void QVolumeInfoPrivate::initRootPath()
     retrieveUrlProperties(true);
 }
 
-void QVolumeInfoPrivate::doStat()
+void QStorageInfoPrivate::doStat()
 {
     initRootPath();
 
@@ -76,7 +76,7 @@ void QVolumeInfoPrivate::doStat()
     retrieveUrlProperties();
 }
 
-void QVolumeInfoPrivate::retrievePosixInfo()
+void QStorageInfoPrivate::retrievePosixInfo()
 {
     QT_STATFSBUF statfs_buf;
     int result = QT_STATFS(QFile::encodeName(rootPath).constData(), &statfs_buf);
@@ -99,7 +99,7 @@ static inline qint64 CFDictionaryGetInt64(CFDictionaryRef dictionary, const void
     return result;
 }
 
-void QVolumeInfoPrivate::retrieveUrlProperties(bool initRootPath)
+void QStorageInfoPrivate::retrieveUrlProperties(bool initRootPath)
 {
     static const void *rootPathKeys[] = { kCFURLVolumeURLKey };
     static const void *propertyKeys[] = {
@@ -152,7 +152,7 @@ void QVolumeInfoPrivate::retrieveUrlProperties(bool initRootPath)
     bytesFree = bytesAvailable;
 }
 
-void QVolumeInfoPrivate::retrieveLabel()
+void QStorageInfoPrivate::retrieveLabel()
 {
 #if !defined(Q_OS_IOS)
     // deprecated since 10.8
@@ -182,9 +182,9 @@ void QVolumeInfoPrivate::retrieveLabel()
 #endif
 }
 
-QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
+QList<QStorageInfo> QStorageInfoPrivate::volumes()
 {
-    QList<QVolumeInfo> volumes;
+    QList<QStorageInfo> volumes;
 
     QCFType<CFURLEnumeratorRef> enumerator;
     enumerator = CFURLEnumeratorCreateForMountedVolumes(Q_NULLPTR,
@@ -198,16 +198,16 @@ QList<QVolumeInfo> QVolumeInfoPrivate::volumes()
         result = CFURLEnumeratorGetNextURL(enumerator, &url, &error);
         if (result == kCFURLEnumeratorSuccess) {
             const QCFString urlString = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);
-            volumes.append(QVolumeInfo(urlString));
+            volumes.append(QStorageInfo(urlString));
         }
     } while (result != kCFURLEnumeratorEnd);
 
     return volumes;
 }
 
-QVolumeInfo QVolumeInfoPrivate::rootVolume()
+QStorageInfo QStorageInfoPrivate::rootVolume()
 {
-    return QVolumeInfo(QStringLiteral("/"));
+    return QStorageInfo(QStringLiteral("/"));
 }
 
 QT_END_NAMESPACE

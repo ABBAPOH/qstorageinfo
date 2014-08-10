@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QVOLUMEINFO_P_H
-#define QVOLUMEINFO_P_H
+#ifndef QSTORAGEINFO_P_H
+#define QSTORAGEINFO_P_H
 
 //
 //  W A R N I N G
@@ -53,14 +53,14 @@
 // We mean it.
 //
 
-#include "qvolumeinfo.h"
+#include "qstorageinfo.h"
 
 QT_BEGIN_NAMESPACE
 
-class QVolumeInfoPrivate : public QSharedData
+class QStorageInfoPrivate : public QSharedData
 {
 public:
-    inline QVolumeInfoPrivate() : QSharedData(),
+    inline QStorageInfoPrivate() : QSharedData(),
         bytesTotal(0), bytesFree(0), bytesAvailable(0),
         readOnly(false), ready(false), valid(false)
     {}
@@ -68,8 +68,8 @@ public:
     void initRootPath();
     void doStat();
 
-    static QList<QVolumeInfo> volumes();
-    static QVolumeInfo rootVolume();
+    static QList<QStorageInfo> volumes();
+    static QStorageInfo rootVolume();
 
 protected:
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
@@ -100,4 +100,4 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QVOLUMEINFO_P_H
+#endif // QSTORAGEINFO_P_H

@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "volumemodel.h"
+#include "storagemodel.h"
 
 #include <QDir>
 #include <qmath.h>
@@ -49,7 +49,7 @@ static QString sizeToString(qint64 size)
     static const char *const strings[] = { "b", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
 
     if (size <= 0)
-        return VolumeModel::tr("0 b");
+        return StorageModel::tr("0 b");
 
     double power = log((double)size)/log(1024.0);
     int intPower = (int)power;
@@ -57,34 +57,34 @@ static QString sizeToString(qint64 size)
 
     double normSize = size / pow(1024.0, intPower);
     //: this should expand to "1.23 GB"
-    return VolumeModel::tr("%1 %2").arg(normSize, 0, 'f', intPower > 0 ? 2 : 0).arg(strings[intPower]);
+    return StorageModel::tr("%1 %2").arg(normSize, 0, 'f', intPower > 0 ? 2 : 0).arg(strings[intPower]);
 }
 
-VolumeModel::VolumeModel(QObject *parent) :
+StorageModel::StorageModel(QObject *parent) :
     QAbstractTableModel(parent),
-    m_volumes(QVolumeInfo::volumes())
+    m_volumes(QStorageInfo::volumes())
 {
 }
 
-int VolumeModel::columnCount(const QModelIndex &/*parent*/) const
+int StorageModel::columnCount(const QModelIndex &/*parent*/) const
 {
     return ColumnCount;
 }
 
-int VolumeModel::rowCount(const QModelIndex &parent) const
+int StorageModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
     return m_volumes.count();
 }
 
-QVariant VolumeModel::data(const QModelIndex &index, int role) const
+QVariant StorageModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
 
     if (role == Qt::DisplayRole) {
-        const QVolumeInfo &volume = m_volumes.at(index.row());
+        const QStorageInfo &volume = m_volumes.at(index.row());
         switch (index.column()) {
         case ColumnRootPath:
             return QDir::toNativeSeparators(volume.rootPath());
@@ -110,7 +110,7 @@ QVariant VolumeModel::data(const QModelIndex &index, int role) const
             break;
         }
     } else if (role == Qt::ToolTipRole) {
-        const QVolumeInfo &volume = m_volumes.at(index.row());
+        const QStorageInfo &volume = m_volumes.at(index.row());
         return tr("Root path : %1\n"
                   "Name: %2\n"
                   "Display Name: %3\n"
@@ -140,7 +140,7 @@ QVariant VolumeModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-QVariant VolumeModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant StorageModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (orientation != Qt::Horizontal)
         return QVariant();

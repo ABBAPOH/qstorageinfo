@@ -39,84 +39,31 @@
 **
 ****************************************************************************/
 
-#ifndef QVOLUMEINFO_H
-#define QVOLUMEINFO_H
-
-#include <QtCore/qbytearray.h>
-#include <QtCore/qdir.h>
-#include <QtCore/qlist.h>
-#include <QtCore/qmetatype.h>
-#include <QtCore/qstring.h>
-#include <QtCore/qshareddata.h>
+#include "qstorageinfo_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QVolumeInfoPrivate;
-class QVolumeInfo
+void QStorageInfoPrivate::initRootPath()
 {
-public:
-    QVolumeInfo();
-    explicit QVolumeInfo(const QString &path);
-    explicit QVolumeInfo(const QDir &dir);
-    QVolumeInfo(const QVolumeInfo &other);
-    ~QVolumeInfo();
-
-    QVolumeInfo &operator=(const QVolumeInfo &other);
-#ifdef Q_COMPILER_RVALUE_REFS
-    inline QVolumeInfo &operator=(QVolumeInfo &&other)
-    { qSwap(d, other.d); return *this; }
-#endif
-
-    inline void swap(QVolumeInfo &other)
-    { qSwap(d, other.d); }
-
-    void setPath(const QString &path);
-
-    QString rootPath() const;
-    QByteArray device() const;
-    QByteArray fileSystemType() const;
-    QString name() const;
-    QString displayName() const;
-
-    qint64 bytesTotal() const;
-    qint64 bytesFree() const;
-    qint64 bytesAvailable() const;
-
-    inline bool isRoot() const;
-    bool isReadOnly() const;
-    bool isReady() const;
-    bool isValid() const;
-
-    void refresh();
-
-    static QList<QVolumeInfo> volumes();
-    static QVolumeInfo rootVolume();
-
-private:
-    friend class QVolumeInfoPrivate;
-    friend bool operator==(const QVolumeInfo &first, const QVolumeInfo &second);
-    QExplicitlySharedDataPointer<QVolumeInfoPrivate> d;
-};
-
-inline bool operator==(const QVolumeInfo &first, const QVolumeInfo &second)
-{
-    if (first.d == second.d)
-        return true;
-    return first.device() == second.device();
+    Q_UNIMPLEMENTED();
+    rootPath = QString();
 }
 
-inline bool operator!=(const QVolumeInfo &first, const QVolumeInfo &second)
+void QStorageInfoPrivate::doStat()
 {
-    return !(first == second);
+    Q_UNIMPLEMENTED();
 }
 
-inline bool QVolumeInfo::isRoot() const
-{ return *this == QVolumeInfo::rootVolume(); }
+QList<QStorageInfo> QStorageInfoPrivate::volumes()
+{
+    Q_UNIMPLEMENTED();
+    return QList<QStorageInfo>();
+}
 
-Q_DECLARE_SHARED(QVolumeInfo)
+QStorageInfo QStorageInfoPrivate::rootVolume()
+{
+    Q_UNIMPLEMENTED();
+    return QStorageInfo();
+}
 
 QT_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QVolumeInfo)
-
-#endif // QVOLUMEINFO_H

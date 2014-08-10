@@ -39,40 +39,21 @@
 **
 ****************************************************************************/
 
-#ifndef VOLUMEMODEL_H
-#define VOLUMEMODEL_H
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QHeaderView>
+#include <QtWidgets/QTreeView>
 
-#include <QAbstractTableModel>
-#include <QVolumeInfo>
+#include "storagemodel.h"
 
-class VolumeModel : public QAbstractTableModel
+int main(int argc, char *argv[])
 {
-    Q_OBJECT
-public:
-    enum Column {
-        ColumnRootPath = 0,
-        ColumnName,
-        ColumnDevice,
-        ColumnFileSystemName,
-        ColumnTotal,
-        ColumnFree,
-        ColumnAvailable,
-        ColumnIsReady,
-        ColumnIsReadOnly,
-        ColumnIsValid,
-        ColumnCount
-    };
+    QApplication a(argc, argv);
 
-    explicit VolumeModel(QObject *parent = 0);
+    QTreeView view;
+    view.setModel(new StorageModel(&view));
+    view.resize(640, 480);
+    view.setSelectionBehavior(QAbstractItemView::SelectRows);
+    view.show();
 
-    int columnCount(const QModelIndex &parent) const;
-    int rowCount(const QModelIndex &parent) const;
-
-    QVariant data(const QModelIndex &index, int role) const;
-    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
-
-private:
-    QList<QVolumeInfo> m_volumes;
-};
-
-#endif // VOLUMEMODEL_H
+    return a.exec();
+}
