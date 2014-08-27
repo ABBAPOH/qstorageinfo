@@ -62,7 +62,7 @@ static QString sizeToString(qint64 size)
 
 StorageModel::StorageModel(QObject *parent) :
     QAbstractTableModel(parent),
-    m_volumes(QStorageInfo::volumes())
+    m_storages(QStorageInfo::storages())
 {
 }
 
@@ -75,7 +75,7 @@ int StorageModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
-    return m_volumes.count();
+    return m_storages.count();
 }
 
 QVariant StorageModel::data(const QModelIndex &index, int role) const
@@ -84,7 +84,7 @@ QVariant StorageModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     if (role == Qt::DisplayRole) {
-        const QStorageInfo &volume = m_volumes.at(index.row());
+        const QStorageInfo &volume = m_storages.at(index.row());
         switch (index.column()) {
         case ColumnRootPath:
             return QDir::toNativeSeparators(volume.rootPath());
@@ -110,7 +110,7 @@ QVariant StorageModel::data(const QModelIndex &index, int role) const
             break;
         }
     } else if (role == Qt::ToolTipRole) {
-        const QStorageInfo &volume = m_volumes.at(index.row());
+        const QStorageInfo &volume = m_storages.at(index.row());
         return tr("Root path : %1\n"
                   "Name: %2\n"
                   "Display Name: %3\n"

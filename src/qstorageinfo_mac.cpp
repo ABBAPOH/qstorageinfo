@@ -182,9 +182,9 @@ void QStorageInfoPrivate::retrieveLabel()
 #endif
 }
 
-QList<QStorageInfo> QStorageInfoPrivate::volumes()
+QList<QStorageInfo> QStorageInfoPrivate::storages()
 {
-    QList<QStorageInfo> volumes;
+    QList<QStorageInfo> storages;
 
     QCFType<CFURLEnumeratorRef> enumerator;
     enumerator = CFURLEnumeratorCreateForMountedVolumes(Q_NULLPTR,
@@ -198,14 +198,14 @@ QList<QStorageInfo> QStorageInfoPrivate::volumes()
         result = CFURLEnumeratorGetNextURL(enumerator, &url, &error);
         if (result == kCFURLEnumeratorSuccess) {
             const QCFString urlString = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);
-            volumes.append(QStorageInfo(urlString));
+            storages.append(QStorageInfo(urlString));
         }
     } while (result != kCFURLEnumeratorEnd);
 
-    return volumes;
+    return storages;
 }
 
-QStorageInfo QStorageInfoPrivate::rootVolume()
+QStorageInfo QStorageInfoPrivate::rootStorage()
 {
     return QStorageInfo(QStringLiteral("/"));
 }

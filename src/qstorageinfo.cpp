@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
     \class QStorageInfo
     \inmodule QtCore
     \since 5.4
-    \brief Provides information about currently mounted volumes and drives.
+    \brief Provides information about currently mounted storages and drives.
 
     \ingroup io
     \ingroup shared
@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
 
     You can create an instance of QStorageInfo passing the path to the volume's
     mount point as the constructor parameter, or you can set it using
-    setPath() method. The static volumes() method can be used to get the
+    setPath() method. The static storages() method can be used to get the
     list of all mounted filesystems.
 
     QStorageInfo always caches the retrieved information but you can call
@@ -240,8 +240,8 @@ QByteArray QStorageInfo::fileSystemType() const
     Returns the device for this volume.
 
     For example, on Unix filesystems (including OS X), this returns the
-    devpath like '/dev/sda0' for local volumes. On Windows, returns the UNC
-    path starting with \\\\?\\ for local volumes (i.e. volume GUID).
+    devpath like '/dev/sda0' for local storages. On Windows, returns the UNC
+    path starting with \\\\?\\ for local storages (i.e. volume GUID).
 
     \sa rootPath()
 */
@@ -286,7 +286,7 @@ QString QStorageInfo::displayName() const
     On Unix filesystems, the root volume is a volume mounted at "/", on Windows
     the root volume is the volume where OS is installed.
 
-    \sa rootVolume()
+    \sa rootStorage()
 */
 
 /*!
@@ -326,7 +326,7 @@ bool QStorageInfo::isValid() const
 /*!
     Resets QStorageInfo's internal cache.
 
-    QStorageInfo caches information about volumes to speed up performance -
+    QStorageInfo caches information about storages to speed up performance -
     QStorageInfo retrieves information during object construction and/or call
     to setPath() method. You have to manually reset the cache by calling this
     function.
@@ -338,28 +338,28 @@ void QStorageInfo::refresh()
 }
 
 /*!
-    Returns volumes that corresponds to the list of currently mounted
-    filesystems.
+    Returns list of QStorageInfos that corresponds to the list of currently
+    mounted filesystems.
 
-    On Windows, this returns volumes presented in 'My Computer' folder. On Unix
+    On Windows, this returns drives presented in 'My Computer' folder. On Unix
     operating systems, returns list of all mounted filesystems (except for
     pseudo filesystems).
 
     By default, returns all currently mounted filesystems.
 
-    The example shows how to retrieve all volumes present in the system and
-    skip read-only volumes.
+    The example shows how to retrieve all storages present in the system and
+    skip read-only storages.
 
     \snippet code/src_corelib_io_qstorageinfo.cpp 1
 
-    \sa rootVolume()
+    \sa rootStorage()
 */
-QList<QStorageInfo> QStorageInfo::volumes()
+QList<QStorageInfo> QStorageInfo::storages()
 {
-    return QStorageInfoPrivate::volumes();
+    return QStorageInfoPrivate::storages();
 }
 
-Q_GLOBAL_STATIC_WITH_ARGS(QStorageInfo, theRootVolume, (QStorageInfoPrivate::rootVolume()))
+Q_GLOBAL_STATIC_WITH_ARGS(QStorageInfo, theRootVolume, (QStorageInfoPrivate::rootStorage()))
 
 /*!
     Returns a QStorageInfo object that represents the system root volume.
@@ -369,7 +369,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QStorageInfo, theRootVolume, (QStorageInfoPrivate::roo
 
     \sa isRoot()
 */
-QStorageInfo QStorageInfo::rootVolume()
+QStorageInfo QStorageInfo::rootStorage()
 {
     return *theRootVolume();
 }

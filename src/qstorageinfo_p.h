@@ -68,8 +68,8 @@ public:
     void initRootPath();
     void doStat();
 
-    static QList<QStorageInfo> volumes();
-    static QStorageInfo rootVolume();
+    static QList<QStorageInfo> storages();
+    static QStorageInfo rootStorage();
 
 protected:
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)

@@ -389,13 +389,13 @@ void QStorageInfoPrivate::retreiveVolumeInfo()
     }
 }
 
-QList<QStorageInfo> QStorageInfoPrivate::volumes()
+QList<QStorageInfo> QStorageInfoPrivate::storages()
 {
     QVolumeIterator it;
     if (!it.isValid())
-        return QList<QStorageInfo>() << rootVolume();
+        return QList<QStorageInfo>() << rootStorage();
 
-    QList<QStorageInfo> volumes;
+    QList<QStorageInfo> storages;
 
     while (it.next()) {
         const QString mountDir = it.rootPath();
@@ -403,13 +403,13 @@ QList<QStorageInfo> QStorageInfoPrivate::volumes()
         if (isPseudoFs(mountDir, fsName))
             continue;
 
-        volumes.append(QStorageInfo(mountDir));
+        storages.append(QStorageInfo(mountDir));
     }
 
-    return volumes;
+    return storages;
 }
 
-QStorageInfo QStorageInfoPrivate::rootVolume()
+QStorageInfo QStorageInfoPrivate::rootStorage()
 {
     return QStorageInfo(QStringLiteral("/"));
 }

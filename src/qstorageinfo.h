@@ -89,8 +89,8 @@ public:
 
     void refresh();
 
-    static QList<QStorageInfo> volumes();
-    static QStorageInfo rootVolume();
+    static QList<QStorageInfo> storages();
+    static QStorageInfo rootStorage();
 
 private:
     friend class QStorageInfoPrivate;
@@ -111,7 +111,7 @@ inline bool operator!=(const QStorageInfo &first, const QStorageInfo &second)
 }
 
 inline bool QStorageInfo::isRoot() const
-{ return *this == QStorageInfo::rootVolume(); }
+{ return *this == QStorageInfo::rootStorage(); }
 
 Q_DECLARE_SHARED(QStorageInfo)
 

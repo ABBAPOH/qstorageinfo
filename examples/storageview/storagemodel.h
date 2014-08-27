@@ -73,7 +73,7 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
 private:
-    QList<QStorageInfo> m_volumes;
+    QList<QStorageInfo> m_storages;
 };
 
 #endif // STORAGEMODEL_H

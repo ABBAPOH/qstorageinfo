@@ -51,9 +51,9 @@ private slots:
     void operatorEqual();
 #ifndef Q_OS_WINRT
     void operatorNotEqual();
-    void rootVolume();
-    void currentVolume();
-    void volumeList();
+    void rootStorage();
+    void currentStorage();
+    void storageList();
     void tempFile();
     void caching();
 #endif
@@ -61,97 +61,97 @@ private slots:
 
 void tst_QStorageInfo::defaultValues()
 {
-    QStorageInfo volume;
+    QStorageInfo storage;
 
-    QVERIFY(!volume.isValid());
-    QVERIFY(!volume.isReady());
-    QVERIFY(volume.rootPath().isEmpty());
-    QVERIFY(!volume.isRoot());
-    QVERIFY(volume.device().isEmpty());
-    QVERIFY(volume.fileSystemType().isEmpty());
-    QVERIFY(volume.bytesTotal() == 0);
-    QVERIFY(volume.bytesFree() == 0);
-    QVERIFY(volume.bytesAvailable() == 0);
+    QVERIFY(!storage.isValid());
+    QVERIFY(!storage.isReady());
+    QVERIFY(storage.rootPath().isEmpty());
+    QVERIFY(!storage.isRoot());
+    QVERIFY(storage.device().isEmpty());
+    QVERIFY(storage.fileSystemType().isEmpty());
+    QVERIFY(storage.bytesTotal() == 0);
+    QVERIFY(storage.bytesFree() == 0);
+    QVERIFY(storage.bytesAvailable() == 0);
 }
 
 void tst_QStorageInfo::operatorEqual()
 {
     {
-        QStorageInfo volume1 = QStorageInfo::rootVolume();
-        QStorageInfo volume2(QDir::rootPath());
-        QVERIFY(volume1 == volume2);
+        QStorageInfo storage1 = QStorageInfo::rootStorage();
+        QStorageInfo storage2(QDir::rootPath());
+        QVERIFY(storage1 == storage2);
     }
 
     {
-        QStorageInfo volume1(QCoreApplication::applicationDirPath());
-        QStorageInfo volume2(QCoreApplication::applicationFilePath());
-        QVERIFY(volume1 == volume2);
+        QStorageInfo storage1(QCoreApplication::applicationDirPath());
+        QStorageInfo storage2(QCoreApplication::applicationFilePath());
+        QVERIFY(storage1 == storage2);
     }
 
     {
-        QStorageInfo volume1;
-        QStorageInfo volume2;
-        QVERIFY(volume1 == volume2);
+        QStorageInfo storage1;
+        QStorageInfo storage2;
+        QVERIFY(storage1 == storage2);
     }
 }
 
 #ifndef Q_OS_WINRT
 void tst_QStorageInfo::operatorNotEqual()
 {
-    QStorageInfo volume1 = QStorageInfo::rootVolume();
-    QStorageInfo volume2;
-    QVERIFY(volume1 != volume2);
+    QStorageInfo storage1 = QStorageInfo::rootStorage();
+    QStorageInfo storage2;
+    QVERIFY(storage1 != storage2);
 }
 
-void tst_QStorageInfo::rootVolume()
+void tst_QStorageInfo::rootStorage()
 {
-    QStorageInfo volume = QStorageInfo::rootVolume();
+    QStorageInfo storage = QStorageInfo::rootStorage();
 
-    QVERIFY(volume.isValid());
-    QVERIFY(volume.isReady());
-    QCOMPARE(volume.rootPath(), QDir::rootPath());
-    QVERIFY(volume.isRoot());
-    QVERIFY(!volume.device().isEmpty());
-    QVERIFY(!volume.fileSystemType().isEmpty());
-    QVERIFY(volume.bytesTotal() > 0);
-    QVERIFY(volume.bytesFree() > 0);
-    QVERIFY(volume.bytesAvailable() > 0);
+    QVERIFY(storage.isValid());
+    QVERIFY(storage.isReady());
+    QCOMPARE(storage.rootPath(), QDir::rootPath());
+    QVERIFY(storage.isRoot());
+    QVERIFY(!storage.device().isEmpty());
+    QVERIFY(!storage.fileSystemType().isEmpty());
+    QVERIFY(storage.bytesTotal() > 0);
+    QVERIFY(storage.bytesFree() > 0);
+    QVERIFY(storage.bytesAvailable() > 0);
 }
 
-void tst_QStorageInfo::currentVolume()
+void tst_QStorageInfo::currentStorage()
 {
     QString appPath = QCoreApplication::applicationFilePath();
-    QStorageInfo volume(appPath);
-    QVERIFY(volume.isValid());
-    QVERIFY(volume.isReady());
-    QVERIFY(appPath.startsWith(volume.rootPath(), Qt::CaseInsensitive));
-    QVERIFY(!volume.device().isEmpty());
-    QVERIFY(!volume.fileSystemType().isEmpty());
-    QVERIFY(volume.bytesTotal() > 0);
-    QVERIFY(volume.bytesFree() > 0);
-    QVERIFY(volume.bytesAvailable() > 0);
+    QStorageInfo storage(appPath);
+    QVERIFY(storage.isValid());
+    QVERIFY(storage.isReady());
+    QVERIFY(appPath.startsWith(storage.rootPath(), Qt::CaseInsensitive));
+    QVERIFY(!storage.device().isEmpty());
+    QVERIFY(!storage.fileSystemType().isEmpty());
+    QVERIFY(storage.bytesTotal() > 0);
+    QVERIFY(storage.bytesFree() > 0);
+    QVERIFY(storage.bytesAvailable() > 0);
 }
 
-void tst_QStorageInfo::volumeList()
+void tst_QStorageInfo::storageList()
 {
-    QStorageInfo rootVolume = QStorageInfo::rootVolume();
+    QStorageInfo rootStorage = QStorageInfo::rootStorage();
 
-    QList<QStorageInfo> volumes = QStorageInfo::volumes();
+    QList<QStorageInfo> storages = QStorageInfo::storages();
 
-    // at least, root volume should be present
-    QVERIFY(volumes.contains(rootVolume));
-    volumes.removeOne(rootVolume);
-    QVERIFY(!volumes.contains(rootVolume));
+    // at least, root storage should be present
+    QVERIFY(storages.contains(rootStorage));
+    storages.removeOne(rootStorage);
+    QVERIFY(!storages.contains(rootStorage));
 
-    foreach (const QStorageInfo &volume, volumes) {
-        if (!volume.isReady())
+    foreach (const QStorageInfo &storage, storages) {
+        if (!storage.isReady())
             continue;
 
-        QVERIFY(volume.isValid());
-        QVERIFY(!volume.isRoot());
+        QVERIFY(storage.isValid());
+        QVERIFY(!storage.isRoot());
 #ifndef Q_OS_WIN
-        QVERIFY(!volume.device().isEmpty());
-        QVERIFY(!volume.fileSystemType().isEmpty());
+        QVERIFY(!storage.device().isEmpty());
+        QVERIFY(!storage.fileSystemType().isEmpty());
 #endif
     }
 }
@@ -161,15 +161,15 @@ void tst_QStorageInfo::tempFile()
     QTemporaryFile file;
     QVERIFY(file.open());
 
-    QStorageInfo volume1(file.fileName());
-    qint64 free = volume1.bytesFree();
+    QStorageInfo storage1(file.fileName());
+    qint64 free = storage1.bytesFree();
 
     file.write(QByteArray(1024*1024, '1'));
     file.flush();
     file.close();
 
-    QStorageInfo volume2(file.fileName());
-    QVERIFY(free != volume2.bytesFree());
+    QStorageInfo storage2(file.fileName());
+    QVERIFY(free != storage2.bytesFree());
 }
 
 void tst_QStorageInfo::caching()
@@ -177,19 +177,19 @@ void tst_QStorageInfo::caching()
     QTemporaryFile file;
     QVERIFY(file.open());
 
-    QStorageInfo volume1(file.fileName());
-    qint64 free = volume1.bytesFree();
-    QStorageInfo volume2(volume1);
-    QVERIFY(free == volume2.bytesFree());
+    QStorageInfo storage1(file.fileName());
+    qint64 free = storage1.bytesFree();
+    QStorageInfo storage2(storage1);
+    QVERIFY(free == storage2.bytesFree());
 
     file.write(QByteArray(1024*1024, '\0'));
     file.flush();
 
-    QVERIFY(free == volume1.bytesFree());
-    QVERIFY(free == volume2.bytesFree());
-    volume2.refresh();
-    QVERIFY(volume1 == volume2);
-    QVERIFY(free != volume2.bytesFree());
+    QVERIFY(free == storage1.bytesFree());
+    QVERIFY(free == storage2.bytesFree());
+    storage2.refresh();
+    QVERIFY(storage1 == storage2);
+    QVERIFY(free != storage2.bytesFree());
 }
 #endif
 

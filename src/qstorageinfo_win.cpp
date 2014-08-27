@@ -164,9 +164,9 @@ void QStorageInfoPrivate::retreiveDiskFreeSpace()
     ::SetErrorMode(oldmode);
 }
 
-QList<QStorageInfo> QStorageInfoPrivate::volumes()
+QList<QStorageInfo> QStorageInfoPrivate::storages()
 {
-    QList<QStorageInfo> volumes;
+    QList<QStorageInfo> storages;
 
     QString driveName = QStringLiteral("A:/");
     const UINT oldmode = ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
@@ -176,16 +176,16 @@ QList<QStorageInfo> QStorageInfoPrivate::volumes()
         if (driveBits & 1) {
             QStorageInfo drive(driveName);
             if (!drive.rootPath().isEmpty()) // drive exists, but not mounted
-                volumes.append(drive);
+                storages.append(drive);
         }
         driveName[0] = driveName[0].unicode() + 1;
         driveBits = driveBits >> 1;
     }
 
-    return volumes;
+    return storages;
 }
 
-QStorageInfo QStorageInfoPrivate::rootVolume()
+QStorageInfo QStorageInfoPrivate::rootStorage()
 {
     return QStorageInfo(QDir::fromNativeSeparators(QFile::decodeName(qgetenv("SystemDrive"))));
 }
