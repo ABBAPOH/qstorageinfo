@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Ivan Komissarov
+** Copyright (C) 2014 Ivan Komissarov <ABBAPOH@gmail.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -182,9 +182,9 @@ void QStorageInfoPrivate::retrieveLabel()
 #endif
 }
 
-QList<QStorageInfo> QStorageInfoPrivate::storages()
+QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
 {
-    QList<QStorageInfo> storages;
+    QList<QStorageInfo> volumes;
 
     QCFType<CFURLEnumeratorRef> enumerator;
     enumerator = CFURLEnumeratorCreateForMountedVolumes(Q_NULLPTR,
@@ -198,14 +198,14 @@ QList<QStorageInfo> QStorageInfoPrivate::storages()
         result = CFURLEnumeratorGetNextURL(enumerator, &url, &error);
         if (result == kCFURLEnumeratorSuccess) {
             const QCFString urlString = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);
-            storages.append(QStorageInfo(urlString));
+            volumes.append(QStorageInfo(urlString));
         }
     } while (result != kCFURLEnumeratorEnd);
 
-    return storages;
+    return volumes;
 }
 
-QStorageInfo QStorageInfoPrivate::rootStorage()
+QStorageInfo QStorageInfoPrivate::root()
 {
     return QStorageInfo(QStringLiteral("/"));
 }

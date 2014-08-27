@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Ivan Komissarov
+** Copyright (C) 2014 Ivan Komissarov <ABBAPOH@gmail.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -68,8 +68,8 @@ public:
     void initRootPath();
     void doStat();
 
-    static QList<QStorageInfo> storages();
-    static QStorageInfo rootStorage();
+    static QList<QStorageInfo> mountedVolumes();
+    static QStorageInfo root();
 
 protected:
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)

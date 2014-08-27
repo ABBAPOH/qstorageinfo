@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Ivan Komissarov
+** Copyright (C) 2014 Ivan Komissarov <ABBAPOH@gmail.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -49,13 +49,15 @@
 
 #include <errno.h>
 #include <sys/stat.h>
-#include <sys/vfs.h>
 
 #if defined(Q_OS_BSD4)
 #  include <sys/mount.h>
 #elif defined(Q_OS_ANDROID)
 #  include <sys/mount.h>
+#  include <sys/vfs.h>
 #  include <mntent.h>
+#elif defined(Q_OS_QNX)
+#  include <sys/statvfs.h>
 #elif defined(Q_OS_LINUX)
 #  include <mntent.h>
 #  include <sys/statvfs.h>
@@ -104,11 +106,11 @@ static bool isPseudoFs(const QString &mountDir, const QByteArray &type)
     return false;
 }
 
-class QVolumeIterator
+class QStorageIterator
 {
 public:
-    QVolumeIterator();
-    ~QVolumeIterator();
+    QStorageIterator();
+    ~QStorageIterator();
 
     inline bool isValid() const;
     inline bool next();
@@ -128,7 +130,7 @@ private:
     QByteArray m_rootPath;
     QByteArray m_fileSystemType;
     QByteArray m_device;
-#else
+#elif defined(Q_OS_LINUX)
     FILE *fp;
     mntent mnt;
     QByteArray buffer;
@@ -137,37 +139,37 @@ private:
 
 #if defined(Q_OS_BSD4)
 
-inline QVolumeIterator::QVolumeIterator()
+inline QStorageIterator::QStorageIterator()
     : entryCount(::getmntinfo(&stat_buf, 0)),
       currentIndex(-1)
 {
 }
 
-inline QVolumeIterator::~QVolumeIterator()
+inline QStorageIterator::~QStorageIterator()
 {
 }
 
-inline bool QVolumeIterator::isValid() const
+inline bool QStorageIterator::isValid() const
 {
     return entryCount != -1;
 }
 
-inline bool QVolumeIterator::next()
+inline bool QStorageIterator::next()
 {
     return ++currentIndex < entryCount;
 }
 
-inline QString QVolumeIterator::rootPath() const
+inline QString QStorageIterator::rootPath() const
 {
     return QFile::decodeName(stat_buf[currentIndex].f_mntonname);
 }
 
-inline QByteArray QVolumeIterator::fileSystemType() const
+inline QByteArray QStorageIterator::fileSystemType() const
 {
     return QByteArray(stat_buf[currentIndex].f_fstypename);
 }
 
-inline QByteArray QVolumeIterator::device() const
+inline QByteArray QStorageIterator::device() const
 {
     return QByteArray(stat_buf[currentIndex].f_mntfromname);
 }
@@ -176,39 +178,39 @@ inline QByteArray QVolumeIterator::device() const
 
 static const char pathMounted[] = "/etc/mnttab";
 
-inline QVolumeIterator::QVolumeIterator()
+inline QStorageIterator::QStorageIterator()
 {
     const int fd = qt_safe_open(pathMounted, O_RDONLY);
     fp = ::fdopen(fd, "r");
 }
 
-inline QVolumeIterator::~QVolumeIterator()
+inline QStorageIterator::~QStorageIterator()
 {
     if (fp)
         ::fclose(fp);
 }
 
-inline bool QVolumeIterator::isValid() const
+inline bool QStorageIterator::isValid() const
 {
     return fp != Q_NULLPTR;
 }
 
-inline bool QVolumeIterator::next()
+inline bool QStorageIterator::next()
 {
     return ::getmntent(fp, &mnt) == Q_NULLPTR;
 }
 
-inline QString QVolumeIterator::rootPath() const
+inline QString QStorageIterator::rootPath() const
 {
     return QFile::decodeName(mnt->mnt_mountp);
 }
 
-inline QByteArray QVolumeIterator::fileSystemType() const
+inline QByteArray QStorageIterator::fileSystemType() const
 {
     return QByteArray(mnt->mnt_fstype);
 }
 
-inline QByteArray QVolumeIterator::device() const
+inline QByteArray QStorageIterator::device() const
 {
     return QByteArray(mnt->mnt_mntopts);
 }
@@ -217,22 +219,22 @@ inline QByteArray QVolumeIterator::device() const
 
 static const char pathMounted[] = "/proc/mounts";
 
-inline QVolumeIterator::QVolumeIterator()
+inline QStorageIterator::QStorageIterator()
 {
     file.setFileName(pathMounted);
     file.open(QIODevice::ReadOnly | QIODevice::Text);
 }
 
-inline QVolumeIterator::~QVolumeIterator()
+inline QStorageIterator::~QStorageIterator()
 {
 }
 
-inline bool QVolumeIterator::isValid() const
+inline bool QStorageIterator::isValid() const
 {
     return file.isOpen();
 }
 
-inline bool QVolumeIterator::next()
+inline bool QStorageIterator::next()
 {
     QList<QByteArray> data;
     do {
@@ -249,61 +251,96 @@ inline bool QVolumeIterator::next()
     return true;
 }
 
-inline QString QVolumeIterator::rootPath() const
+inline QString QStorageIterator::rootPath() const
 {
     return QFile::decodeName(m_rootPath);
 }
 
-inline QByteArray QVolumeIterator::fileSystemType() const
+inline QByteArray QStorageIterator::fileSystemType() const
 {
     return m_fileSystemType;
 }
 
-inline QByteArray QVolumeIterator::device() const
+inline QByteArray QStorageIterator::device() const
 {
     return m_device;
 }
 
-#else
+#elif defined(Q_OS_LINUX)
 
 static const char pathMounted[] = "/etc/mtab";
 static const int bufferSize = 3*PATH_MAX; // 2 paths (mount point+device) and metainfo
 
-inline QVolumeIterator::QVolumeIterator() :
+inline QStorageIterator::QStorageIterator() :
     buffer(QByteArray(bufferSize, 0))
 {
     fp = ::setmntent(pathMounted, "r");
 }
 
-inline QVolumeIterator::~QVolumeIterator()
+inline QStorageIterator::~QStorageIterator()
 {
     if (fp)
         ::endmntent(fp);
 }
 
-inline bool QVolumeIterator::isValid() const
+inline bool QStorageIterator::isValid() const
 {
     return fp != Q_NULLPTR;
 }
 
-inline bool QVolumeIterator::next()
+inline bool QStorageIterator::next()
 {
     return ::getmntent_r(fp, &mnt, buffer.data(), buffer.size()) != Q_NULLPTR;
 }
 
-inline QString QVolumeIterator::rootPath() const
+inline QString QStorageIterator::rootPath() const
 {
     return QFile::decodeName(mnt.mnt_dir);
 }
 
-inline QByteArray QVolumeIterator::fileSystemType() const
+inline QByteArray QStorageIterator::fileSystemType() const
 {
     return QByteArray(mnt.mnt_type);
 }
 
-inline QByteArray QVolumeIterator::device() const
+inline QByteArray QStorageIterator::device() const
 {
     return QByteArray(mnt.mnt_fsname);
+}
+
+#else
+
+inline QStorageIterator::QStorageIterator()
+{
+}
+
+inline QStorageIterator::~QStorageIterator()
+{
+}
+
+inline bool QStorageIterator::isValid() const
+{
+    return false;
+}
+
+inline bool QStorageIterator::next()
+{
+    return false;
+}
+
+inline QString QStorageIterator::rootPath() const
+{
+    return QString();
+}
+
+inline QByteArray QStorageIterator::fileSystemType() const
+{
+    return QByteArray();
+}
+
+inline QByteArray QStorageIterator::device() const
+{
+    return QByteArray();
 }
 
 #endif
@@ -315,7 +352,7 @@ void QStorageInfoPrivate::initRootPath()
     if (rootPath.isEmpty())
         return;
 
-    QVolumeIterator it;
+    QStorageIterator it;
     if (!it.isValid()) {
         rootPath = QStringLiteral("/");
         return;
@@ -382,20 +419,22 @@ void QStorageInfoPrivate::retreiveVolumeInfo()
         bytesFree = statfs_buf.f_bfree * statfs_buf.f_bsize;
         bytesAvailable = statfs_buf.f_bavail * statfs_buf.f_bsize;
 #if defined(Q_OS_ANDROID)
+#if defined(_STATFS_F_FLAGS)
         readOnly = (statfs_buf.f_flags & ST_RDONLY) != 0;
+#endif
 #else
         readOnly = (statfs_buf.f_flag & ST_RDONLY) != 0;
 #endif
     }
 }
 
-QList<QStorageInfo> QStorageInfoPrivate::storages()
+QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
 {
-    QVolumeIterator it;
+    QStorageIterator it;
     if (!it.isValid())
-        return QList<QStorageInfo>() << rootStorage();
+        return QList<QStorageInfo>() << root();
 
-    QList<QStorageInfo> storages;
+    QList<QStorageInfo> volumes;
 
     while (it.next()) {
         const QString mountDir = it.rootPath();
@@ -403,13 +442,13 @@ QList<QStorageInfo> QStorageInfoPrivate::storages()
         if (isPseudoFs(mountDir, fsName))
             continue;
 
-        storages.append(QStorageInfo(mountDir));
+        volumes.append(QStorageInfo(mountDir));
     }
 
-    return storages;
+    return volumes;
 }
 
-QStorageInfo QStorageInfoPrivate::rootStorage()
+QStorageInfo QStorageInfoPrivate::root()
 {
     return QStorageInfo(QStringLiteral("/"));
 }

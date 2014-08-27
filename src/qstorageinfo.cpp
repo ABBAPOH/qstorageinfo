@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Ivan Komissarov
+** Copyright (C) 2014 Ivan Komissarov <ABBAPOH@gmail.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -56,9 +56,9 @@ QT_BEGIN_NAMESPACE
     Allows retrieving information about the volume's space, its mount point,
     label, filesystem name.
 
-    You can create an instance of QStorageInfo passing the path to the volume's
-    mount point as the constructor parameter, or you can set it using
-    setPath() method. The static storages() method can be used to get the
+    You can create an instance of QStorageInfo by passing the path to the
+    volume's mount point as the constructor parameter, or you can set it using
+    setPath() method. The static mountedVolumes() method can be used to get the
     list of all mounted filesystems.
 
     QStorageInfo always caches the retrieved information but you can call
@@ -146,7 +146,7 @@ QStorageInfo &QStorageInfo::operator=(const QStorageInfo &other)
 /*!
     \fn void QStorageInfo::swap(QStorageInfo &other)
 
-    Swaps this volume info with \a other. This function is very fast and
+    Swaps this volume info with the \a other. This function is very fast and
     never fails.
 */
 
@@ -201,9 +201,9 @@ qint64 QStorageInfo::bytesAvailable() const
 }
 
 /*!
-    Returns the number of free bytes on a volume. Note, that if
-    there are some kind of quotas on the filesystem, this value can be bigger
-    than bytesAvailable().
+    Returns the number of free bytes on a volume. Note, that if there are some
+    kind of quotas on the filesystem, this value can be bigger than
+    bytesAvailable().
 
     \sa bytesTotal(), bytesAvailable()
 */
@@ -268,7 +268,7 @@ QString QStorageInfo::name() const
 }
 
 /*!
-    Returns the volume's name, if available, or the device's path if not.
+    Returns the volume's name, if available, or the root path if not.
 */
 QString QStorageInfo::displayName() const
 {
@@ -286,7 +286,7 @@ QString QStorageInfo::displayName() const
     On Unix filesystems, the root volume is a volume mounted at "/", on Windows
     the root volume is the volume where OS is installed.
 
-    \sa rootStorage()
+    \sa root()
 */
 
 /*!
@@ -329,7 +329,7 @@ bool QStorageInfo::isValid() const
     QStorageInfo caches information about storages to speed up performance -
     QStorageInfo retrieves information during object construction and/or call
     to setPath() method. You have to manually reset the cache by calling this
-    function.
+    function to update storage information.
 */
 void QStorageInfo::refresh()
 {
@@ -352,14 +352,14 @@ void QStorageInfo::refresh()
 
     \snippet code/src_corelib_io_qstorageinfo.cpp 1
 
-    \sa rootStorage()
+    \sa root()
 */
-QList<QStorageInfo> QStorageInfo::storages()
+QList<QStorageInfo> QStorageInfo::mountedVolumes()
 {
-    return QStorageInfoPrivate::storages();
+    return QStorageInfoPrivate::mountedVolumes();
 }
 
-Q_GLOBAL_STATIC_WITH_ARGS(QStorageInfo, theRootVolume, (QStorageInfoPrivate::rootStorage()))
+Q_GLOBAL_STATIC_WITH_ARGS(QStorageInfo, getRoot, (QStorageInfoPrivate::root()))
 
 /*!
     Returns a QStorageInfo object that represents the system root volume.
@@ -369,9 +369,9 @@ Q_GLOBAL_STATIC_WITH_ARGS(QStorageInfo, theRootVolume, (QStorageInfoPrivate::roo
 
     \sa isRoot()
 */
-QStorageInfo QStorageInfo::rootStorage()
+QStorageInfo QStorageInfo::root()
 {
-    return *theRootVolume();
+    return *getRoot();
 }
 
 /*!

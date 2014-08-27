@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Ivan Komissarov
+** Copyright (C) 2014 Ivan Komissarov <ABBAPOH@gmail.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -54,13 +54,13 @@ void QStorageInfoPrivate::doStat()
     Q_UNIMPLEMENTED();
 }
 
-QList<QStorageInfo> QStorageInfoPrivate::volumes()
+QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
 {
     Q_UNIMPLEMENTED();
     return QList<QStorageInfo>();
 }
 
-QStorageInfo QStorageInfoPrivate::rootVolume()
+QStorageInfo QStorageInfoPrivate::root()
 {
     Q_UNIMPLEMENTED();
     return QStorageInfo();

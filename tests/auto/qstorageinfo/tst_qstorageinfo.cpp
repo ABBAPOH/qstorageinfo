@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Ivan Komissarov
+** Copyright (C) 2014 Ivan Komissarov <ABBAPOH@gmail.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -51,7 +51,7 @@ private slots:
     void operatorEqual();
 #ifndef Q_OS_WINRT
     void operatorNotEqual();
-    void rootStorage();
+    void root();
     void currentStorage();
     void storageList();
     void tempFile();
@@ -77,7 +77,7 @@ void tst_QStorageInfo::defaultValues()
 void tst_QStorageInfo::operatorEqual()
 {
     {
-        QStorageInfo storage1 = QStorageInfo::rootStorage();
+        QStorageInfo storage1 = QStorageInfo::root();
         QStorageInfo storage2(QDir::rootPath());
         QVERIFY(storage1 == storage2);
     }
@@ -98,14 +98,14 @@ void tst_QStorageInfo::operatorEqual()
 #ifndef Q_OS_WINRT
 void tst_QStorageInfo::operatorNotEqual()
 {
-    QStorageInfo storage1 = QStorageInfo::rootStorage();
+    QStorageInfo storage1 = QStorageInfo::root();
     QStorageInfo storage2;
     QVERIFY(storage1 != storage2);
 }
 
-void tst_QStorageInfo::rootStorage()
+void tst_QStorageInfo::root()
 {
-    QStorageInfo storage = QStorageInfo::rootStorage();
+    QStorageInfo storage = QStorageInfo::root();
 
     QVERIFY(storage.isValid());
     QVERIFY(storage.isReady());
@@ -134,16 +134,16 @@ void tst_QStorageInfo::currentStorage()
 
 void tst_QStorageInfo::storageList()
 {
-    QStorageInfo rootStorage = QStorageInfo::rootStorage();
+    QStorageInfo root = QStorageInfo::root();
 
-    QList<QStorageInfo> storages = QStorageInfo::storages();
+    QList<QStorageInfo> volumes = QStorageInfo::mountedVolumes();
 
     // at least, root storage should be present
-    QVERIFY(storages.contains(rootStorage));
-    storages.removeOne(rootStorage);
-    QVERIFY(!storages.contains(rootStorage));
+    QVERIFY(volumes.contains(root));
+    volumes.removeOne(root);
+    QVERIFY(!volumes.contains(root));
 
-    foreach (const QStorageInfo &storage, storages) {
+    foreach (const QStorageInfo &storage, volumes) {
         if (!storage.isReady())
             continue;
 

@@ -53,6 +53,9 @@ int main(int argc, char *argv[])
     view.setModel(new StorageModel(&view));
     view.resize(640, 480);
     view.setSelectionBehavior(QAbstractItemView::SelectRows);
+    int columnCount = view.model()->columnCount();
+    for (int c = 0; c < columnCount; ++c)
+        view.resizeColumnToContents(c);
     view.show();
 
     return a.exec();

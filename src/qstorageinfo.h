@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Ivan Komissarov
+** Copyright (C) 2014 Ivan Komissarov <ABBAPOH@gmail.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -89,8 +89,8 @@ public:
 
     void refresh();
 
-    static QList<QStorageInfo> storages();
-    static QStorageInfo rootStorage();
+    static QList<QStorageInfo> mountedVolumes();
+    static QStorageInfo root();
 
 private:
     friend class QStorageInfoPrivate;
@@ -111,7 +111,7 @@ inline bool operator!=(const QStorageInfo &first, const QStorageInfo &second)
 }
 
 inline bool QStorageInfo::isRoot() const
-{ return *this == QStorageInfo::rootStorage(); }
+{ return *this == QStorageInfo::root(); }
 
 Q_DECLARE_SHARED(QStorageInfo)
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Ivan Komissarov
+** Copyright (C) 2014 Ivan Komissarov <ABBAPOH@gmail.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -164,9 +164,9 @@ void QStorageInfoPrivate::retreiveDiskFreeSpace()
     ::SetErrorMode(oldmode);
 }
 
-QList<QStorageInfo> QStorageInfoPrivate::storages()
+QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
 {
-    QList<QStorageInfo> storages;
+    QList<QStorageInfo> volumes;
 
     QString driveName = QStringLiteral("A:/");
     const UINT oldmode = ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
@@ -176,16 +176,16 @@ QList<QStorageInfo> QStorageInfoPrivate::storages()
         if (driveBits & 1) {
             QStorageInfo drive(driveName);
             if (!drive.rootPath().isEmpty()) // drive exists, but not mounted
-                storages.append(drive);
+                volumes.append(drive);
         }
         driveName[0] = driveName[0].unicode() + 1;
         driveBits = driveBits >> 1;
     }
 
-    return storages;
+    return volumes;
 }
 
-QStorageInfo QStorageInfoPrivate::rootStorage()
+QStorageInfo QStorageInfoPrivate::root()
 {
     return QStorageInfo(QDir::fromNativeSeparators(QFile::decodeName(qgetenv("SystemDrive"))));
 }
