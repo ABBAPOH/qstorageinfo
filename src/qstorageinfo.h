@@ -52,7 +52,7 @@
 QT_BEGIN_NAMESPACE
 
 class QStorageInfoPrivate;
-class QStorageInfo
+class QSTORAGEINFO_EXPORT QStorageInfo
 {
 public:
     QStorageInfo();

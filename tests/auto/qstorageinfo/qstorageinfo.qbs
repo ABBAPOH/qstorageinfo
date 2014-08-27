@@ -2,12 +2,13 @@ import qbs.base 1.0
 
 Product {
     type: "application"
+    name: "tst_qstorageinfo"
     destinationDirectory: project.install_binary_path
 
     Depends { name: "cpp" }
     Depends { name: "Qt.core" }
     Depends { name: "Qt.test" }
-    Depends { name: "QStorageInfo" }
+    Depends { name: "qstorageinfo" }
 
     cpp.includePaths: "../../../include"
 

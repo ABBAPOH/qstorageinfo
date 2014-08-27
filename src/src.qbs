@@ -1,12 +1,20 @@
 import qbs.base 1.0
 
 DynamicLibrary {
-    name: "QStorageInfo"
+    name: "qstorageinfo"
     destinationDirectory: project.install_library_path
 
     Depends { name: "cpp" }
     Depends { name: "Qt.core" }
-    Depends { name: "Qt.core-private" }
+    Depends { name: "Qt.widgets" }
+    Depends { condition:!qbs.targetOS.contains("windows"); name: "Qt.core-private" }
+
+    cpp.defines: [ "QSTORAGEINFO_EXPORT=Q_DECL_EXPORT" ]
+
+    Export {
+        Depends { name: "cpp" }
+        cpp.defines: [ "QSTORAGEINFO_EXPORT=Q_DECL_IMPORT" ]
+    }
 
     files: [
         "qstorageinfo.cpp",
@@ -25,7 +33,7 @@ DynamicLibrary {
     }
     Properties {
         condition: qbs.targetOS.contains("windows")
-        cpp.dynamicLibraries: [ "userenv", "Netapi32", "Mpr", "user32", "Winmm" ]
+        cpp.dynamicLibraries: [ "Netapi32", "Mpr", "user32", "Winmm" ]
     }
 
     Group {

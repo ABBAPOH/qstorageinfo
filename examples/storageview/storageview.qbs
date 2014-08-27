@@ -8,7 +8,7 @@ Product {
     Depends { name: "cpp" }
     Depends { name: "Qt.core" }
     Depends { name: "Qt.widgets" }
-    Depends { name: "QStorageInfo" }
+    Depends { name: "qstorageinfo" }
 
     cpp.includePaths: "../../include"
 
