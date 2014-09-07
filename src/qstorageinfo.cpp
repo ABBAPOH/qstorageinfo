@@ -71,6 +71,19 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QVolumeInfo::VolumeTypeFlag
+    This enum describes the type of a volume
+
+    \value UnknownVolume          Volume type cannot be determined.
+    \value InternalVolume         Is an internal mass storage Volume like a hard drive.
+    \value RemovableVolume        Is a removable disk like flash disk.
+    \value RemoteVolume           Is a network Volume.
+    \value OpticalVolume          Is a CD ROM or DVD Volume.
+    \value RamVolume              Is a virtual Volume made in RAM.
+    \value AllVolumes             Includes all types
+*/
+
+/*!
     Constructs an empty QStorageInfo object.
 
     Objects created with the default constructor will be invalid and therefore

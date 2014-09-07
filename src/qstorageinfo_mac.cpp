@@ -64,6 +64,61 @@ void QStorageInfoPrivate::initRootPath()
     retrieveUrlProperties(true);
 }
 
+static inline QStorageInfo::VolumeTypeFlags determineType(const QByteArray &device)
+{
+    QStorageInfo::VolumeTypeFlags volumeType = QStorageInfo::UnknownVolume;
+
+#if !defined(Q_OS_IOS)
+    DASessionRef sessionRef;
+    DADiskRef diskRef;
+    CFDictionaryRef descriptionDictionary;
+
+    sessionRef = DASessionCreate(NULL);
+    if (sessionRef == NULL)
+        return QStorageInfo::UnknownVolume;
+
+    diskRef = DADiskCreateFromBSDName(NULL, sessionRef, device.constData());
+    if (diskRef == NULL) {
+        CFRelease(sessionRef);
+        return QStorageInfo::UnknownVolume;
+    }
+
+    descriptionDictionary = DADiskCopyDescription(diskRef);
+    if (descriptionDictionary == NULL) {
+        CFRelease(diskRef);
+        CFRelease(sessionRef);
+        return QStorageInfo::RemoteVolume;
+    }
+
+    CFBooleanRef boolRef;
+    boolRef = CFBooleanRef(CFDictionaryGetValue(descriptionDictionary,
+                                                kDADiskDescriptionVolumeNetworkKey));
+    if (boolRef && CFBooleanGetValue(boolRef)){
+        CFRelease(descriptionDictionary);
+        CFRelease(diskRef);
+        CFRelease(sessionRef);
+        return QStorageInfo::RemoteVolume;
+    }
+
+    boolRef = CFBooleanRef(CFDictionaryGetValue(descriptionDictionary,
+                                                kDADiskDescriptionMediaRemovableKey));
+    if (boolRef) {
+        volumeType |= CFBooleanGetValue(boolRef)
+                ? QStorageInfo::RemovableVolume
+                : QStorageInfo::InternalVolume;
+    }
+
+    CFRelease(descriptionDictionary);
+    CFRelease(diskRef);
+    CFRelease(sessionRef);
+#else
+    Q_UNUSED(device);
+    return QStorageInfo::InternalVolume;
+#endif
+
+    return volumeType;
+}
+
 void QStorageInfoPrivate::doStat()
 {
     initRootPath();
@@ -74,6 +129,7 @@ void QStorageInfoPrivate::doStat()
     retrieveLabel();
     retrievePosixInfo();
     retrieveUrlProperties();
+    typeFlags = determineType(device);
 }
 
 void QStorageInfoPrivate::retrievePosixInfo()

@@ -55,6 +55,15 @@ class QStorageInfoPrivate;
 class QSTORAGEINFO_EXPORT QStorageInfo
 {
 public:
+    enum VolumeTypeFlag {
+        UnknownVolume = 0,
+
+        InternalVolume = 0x01,
+        RemovableVolume = 0x02,
+        RemoteVolume = 0x04,
+    };
+    Q_DECLARE_FLAGS(VolumeTypeFlags, VolumeTypeFlag)
+
     QStorageInfo();
     explicit QStorageInfo(const QString &path);
     explicit QStorageInfo(const QDir &dir);
@@ -86,6 +95,8 @@ public:
     bool isReadOnly() const;
     bool isReady() const;
     bool isValid() const;
+
+    VolumeTypeFlags typeFlags() const;
 
     void refresh();
 

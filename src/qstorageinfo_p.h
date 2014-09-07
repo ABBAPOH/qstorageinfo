@@ -62,7 +62,8 @@ class QStorageInfoPrivate : public QSharedData
 public:
     inline QStorageInfoPrivate() : QSharedData(),
         bytesTotal(0), bytesFree(0), bytesAvailable(0),
-        readOnly(false), ready(false), valid(false)
+        readOnly(false), ready(false), valid(false),
+        typeFlags(QStorageInfo::UnknownVolume)
     {}
 
     void initRootPath();
@@ -96,6 +97,7 @@ public:
     bool readOnly;
     bool ready;
     bool valid;
+    QStorageInfo::VolumeTypeFlags typeFlags;
 };
 
 QT_END_NAMESPACE

@@ -377,6 +377,18 @@ void QStorageInfoPrivate::initRootPath()
     }
 }
 
+static inline QStorageInfo::VolumeTypeFlags determineType(const QByteArray &device)
+{
+    // test for UNC shares
+    if (device.startsWith("//"))
+        return QStorageInfo::RemoteVolume;
+
+    if (device.startsWith("/dev"))
+        return QStorageInfo::InternalVolume;
+
+    return QStorageInfo::UnknownVolume;
+}
+
 static inline QString retrieveLabel(const QByteArray &device)
 {
 #ifdef Q_OS_LINUX
@@ -404,6 +416,7 @@ void QStorageInfoPrivate::doStat()
 
     retreiveVolumeInfo();
     name = retrieveLabel(device);
+    typeFlags = determineType(device);
 }
 
 void QStorageInfoPrivate::retreiveVolumeInfo()

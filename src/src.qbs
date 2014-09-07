@@ -24,7 +24,7 @@ DynamicLibrary {
 
     Properties {
         condition: qbs.targetOS.contains("osx")
-        cpp.frameworks: [ "CoreServices" ]
+        cpp.frameworks: [ "CoreServices", "DiskArbitration" ]
         cpp.installNamePrefix: project.installNamePrefix
     }
     Properties {

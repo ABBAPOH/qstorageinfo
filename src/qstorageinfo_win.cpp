@@ -77,11 +77,33 @@ void QStorageInfoPrivate::initRootPath()
         rootPath = QDir::fromNativeSeparators(QString::fromWCharArray(buffer));
 }
 
-static inline QByteArray getDevice(const QString &rootPath)
+static inline QStorageInfo::VolumeTypeFlags determineType(const QString &rootPath)
+{
+    UINT result = ::GetDriveType(reinterpret_cast<const wchar_t *>(rootPath.utf16()));
+    switch (result) {
+    case DRIVE_REMOVABLE:
+        return QStorageInfo::RemovableVolume;
+    case DRIVE_FIXED:
+        return QStorageInfo::InternalVolume;
+    case DRIVE_REMOTE:
+        return QStorageInfo::RemoteVolume;
+    case DRIVE_CDROM:
+        return QStorageInfo::RemovableVolume;
+    case DRIVE_RAMDISK:
+        return QStorageInfo::InternalVolume;
+    case DRIVE_UNKNOWN:
+    case DRIVE_NO_ROOT_DIR:
+    // fall through
+    default:
+        break;
+    };
+    return QStorageInfo::UnknownVolume;
+}
+
+static inline QByteArray getDevice(const QString &rootPath, QStorageInfo::VolumeTypeFlags type)
 {
     const QString path = QDir::toNativeSeparators(rootPath);
-    const UINT type = ::GetDriveType(reinterpret_cast<const wchar_t *>(path.utf16()));
-    if (type == DRIVE_REMOTE) {
+    if (type & QStorageInfo::RemoteVolume) {
         QVarLengthArray<char, 256> buffer(256);
         DWORD bufferLength = buffer.size();
         DWORD result;
@@ -114,8 +136,9 @@ void QStorageInfoPrivate::doStat()
     if (rootPath.isEmpty())
         return;
 
+    typeFlags = determineType(rootPath);
     retreiveVolumeInfo();
-    device = getDevice(rootPath);
+    device = getDevice(rootPath, typeFlags);
     retreiveDiskFreeSpace();
 }
 
