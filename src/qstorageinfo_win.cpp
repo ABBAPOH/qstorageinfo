@@ -55,6 +55,10 @@ void QStorageInfoPrivate::initRootPath()
 
     if (path.startsWith(QLatin1String("\\\\?\\")))
         path.remove(0, 4);
+    if (path.startsWith("\\\\")) { // network share
+        rootPath = QDir::fromNativeSeparators(path);
+        return;
+    }
     if (path.length() < 2 || path.at(1) != QLatin1Char(':'))
         return;
     path[0] = path[0].toUpper();
@@ -106,8 +110,12 @@ void QStorageInfoPrivate::doStat()
     if (rootPath.isEmpty())
         return;
 
-    retrieveVolumeInfo();
-    device = getDevice(rootPath);
+    if (rootPath.startsWith("//")) { // network share
+        device = rootPath.toUtf8();
+    } else {
+        retrieveVolumeInfo();
+        device = getDevice(rootPath);
+    }
     retrieveDiskFreeSpace();
 }
 
@@ -127,13 +135,7 @@ void QStorageInfoPrivate::retrieveVolumeInfo()
                                                &fileSystemFlags,
                                                fileSystemTypeBuffer,
                                                defaultBufferSize);
-    if (!result) {
-        ready = false;
-        valid = ::GetLastError() == ERROR_NOT_READY;
-    } else {
-        ready = true;
-        valid = true;
-
+    if (result) {
         fileSystemType = QString::fromWCharArray(fileSystemTypeBuffer).toLatin1();
         name = QString::fromWCharArray(nameBuffer);
 
@@ -148,10 +150,17 @@ void QStorageInfoPrivate::retrieveDiskFreeSpace()
     const UINT oldmode = ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 
     const QString path = QDir::toNativeSeparators(rootPath);
-    ::GetDiskFreeSpaceEx(reinterpret_cast<const wchar_t *>(path.utf16()),
-                         PULARGE_INTEGER(&bytesAvailable),
-                         PULARGE_INTEGER(&bytesTotal),
-                         PULARGE_INTEGER(&bytesFree));
+    const bool result = ::GetDiskFreeSpaceEx(reinterpret_cast<const wchar_t *>(path.utf16()),
+                                             PULARGE_INTEGER(&bytesAvailable),
+                                             PULARGE_INTEGER(&bytesTotal),
+                                             PULARGE_INTEGER(&bytesFree));
+    if (!result) {
+        ready = false;
+        valid = ::GetLastError() == ERROR_NOT_READY;
+    } else {
+        ready = true;
+        valid = true;
+    }
 
     ::SetErrorMode(oldmode);
 }
