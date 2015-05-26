@@ -1,39 +1,31 @@
 /****************************************************************************
 **
 ** Copyright (C) 2014 Ivan Komissarov <ABBAPOH@gmail.com>
-** Contact: http://www.qt-project.org/legal
+** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
-** use the contact form at http://qt.digia.com/contact-us.
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see http://www.qt.io/terms-conditions. For further
+** information use the contact form at http://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 2.1 or version 3 as published by the Free
+** Software Foundation and appearing in the file LICENSE.LGPLv21 and
+** LICENSE.LGPLv3 included in the packaging of this file. Please review the
+** following information to ensure the GNU Lesser General Public License
+** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
+** As a special exception, The Qt Company gives you certain additional
+** rights. These rights are described in The Qt Company LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
 **
 ** $QT_END_LICENSE$
 **
@@ -48,6 +40,7 @@ class tst_QStorageInfo : public QObject
     Q_OBJECT
 private slots:
     void defaultValues();
+    void invalidStorage();
     void operatorEqual();
 #ifndef Q_OS_WINRT
     void operatorNotEqual();
@@ -69,9 +62,24 @@ void tst_QStorageInfo::defaultValues()
     QVERIFY(!storage.isRoot());
     QVERIFY(storage.device().isEmpty());
     QVERIFY(storage.fileSystemType().isEmpty());
-    QVERIFY(storage.bytesTotal() == 0);
-    QVERIFY(storage.bytesFree() == 0);
-    QVERIFY(storage.bytesAvailable() == 0);
+    QVERIFY(storage.bytesTotal() == -1);
+    QVERIFY(storage.bytesFree() == -1);
+    QVERIFY(storage.bytesAvailable() == -1);
+}
+
+void tst_QStorageInfo::invalidStorage()
+{
+    QStorageInfo storage("invalid/path");
+
+    QVERIFY(!storage.isValid());
+    QVERIFY(!storage.isReady());
+    QVERIFY(storage.rootPath().isEmpty());
+    QVERIFY(!storage.isRoot());
+    QVERIFY(storage.device().isEmpty());
+    QVERIFY(storage.fileSystemType().isEmpty());
+    QVERIFY(storage.bytesTotal() == -1);
+    QVERIFY(storage.bytesFree() == -1);
+    QVERIFY(storage.bytesAvailable() == -1);
 }
 
 void tst_QStorageInfo::operatorEqual()
@@ -113,9 +121,11 @@ void tst_QStorageInfo::root()
     QVERIFY(storage.isRoot());
     QVERIFY(!storage.device().isEmpty());
     QVERIFY(!storage.fileSystemType().isEmpty());
-    QVERIFY(storage.bytesTotal() > 0);
-    QVERIFY(storage.bytesFree() > 0);
-    QVERIFY(storage.bytesAvailable() > 0);
+#ifndef Q_OS_HAIKU
+    QVERIFY(storage.bytesTotal() >= 0);
+    QVERIFY(storage.bytesFree() >= 0);
+    QVERIFY(storage.bytesAvailable() >= 0);
+#endif
 }
 
 void tst_QStorageInfo::currentStorage()
@@ -127,9 +137,9 @@ void tst_QStorageInfo::currentStorage()
     QVERIFY(appPath.startsWith(storage.rootPath(), Qt::CaseInsensitive));
     QVERIFY(!storage.device().isEmpty());
     QVERIFY(!storage.fileSystemType().isEmpty());
-    QVERIFY(storage.bytesTotal() > 0);
-    QVERIFY(storage.bytesFree() > 0);
-    QVERIFY(storage.bytesAvailable() > 0);
+    QVERIFY(storage.bytesTotal() >= 0);
+    QVERIFY(storage.bytesFree() >= 0);
+    QVERIFY(storage.bytesAvailable() >= 0);
 }
 
 void tst_QStorageInfo::storageList()
@@ -162,6 +172,11 @@ void tst_QStorageInfo::tempFile()
     QVERIFY(file.open());
 
     QStorageInfo storage1(file.fileName());
+#ifdef Q_OS_LINUX
+    if (storage1.fileSystemType() == "btrfs")
+        QSKIP("This test doesn't work on btrfs, probably due to a btrfs bug");
+#endif
+
     qint64 free = storage1.bytesFree();
 
     file.write(QByteArray(1024*1024, '1'));
@@ -178,6 +193,11 @@ void tst_QStorageInfo::caching()
     QVERIFY(file.open());
 
     QStorageInfo storage1(file.fileName());
+#ifdef Q_OS_LINUX
+    if (storage1.fileSystemType() == "btrfs")
+        QSKIP("This test doesn't work on btrfs, probably due to a btrfs bug");
+#endif
+
     qint64 free = storage1.bytesFree();
     QStorageInfo storage2(storage1);
     QVERIFY(free == storage2.bytesFree());
